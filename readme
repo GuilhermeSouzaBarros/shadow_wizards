@@ -1,0 +1,7 @@
+Criar ambiente virutal:
+    pip install venv
+    python3.12 -m venv <Nome que tu quiser>
+    source <Nome que tu quiser>/bin/activate
+
+Instalar imports:
+    pip install -r imports.txt
