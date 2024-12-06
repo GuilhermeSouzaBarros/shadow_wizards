@@ -7,7 +7,7 @@ from player import Player
 from map import Map
 
 class Game:
-    def __init__(self):
+    def __init__(self) -> None:
         set_config_flags(FLAG_MSAA_4X_HINT)
         init_window(0, 0, "Jogo épico");
         
@@ -31,14 +31,14 @@ class Game:
         self.player = Player(self.tile)
         self.map = Map(15, 31, self.tile)
     
-    def update(self, delta_time):
+    def update(self, delta_time) -> None:
         self.player.update()
         self.update_player_col(delta_time)
         self.player.hitbox.delta_position(delta_time)
         self.close_window = window_should_close()
         print("End update\n")
 
-    def update_player_col(self, delta_time):
+    def update_player_col(self, delta_time:float) -> None:
         for row in self.map.tiles:
             for tile in row:
                 if (not tile['tipo']):
@@ -46,7 +46,7 @@ class Game:
                 if (ColRectangleCircle(tile['rectangle'], self.player.hitbox, delta_time).intersection):
                     self.player.hitbox.speed = Vector2(0.0, 0.0)
 
-    def draw(self):
+    def draw(self) -> None:
         begin_drawing()
         
         clear_background(GRAY)

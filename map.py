@@ -5,7 +5,7 @@ from vectors import Vector2
 from shapes import Rectangle
 
 class Map:
-    def __init__(self, rows, columns, tile_size):
+    def __init__(self, rows, columns, tile_size) -> None:
         self.tile_size = tile_size
         self.rows      = rows
         self.columns   = columns
@@ -25,7 +25,7 @@ class Map:
                 row.append(tile)
             self.tiles.append(row)
     
-    def draw(self):
+    def draw(self) -> None:
         for i in range(0, self.rows):
             for j in range(0, self.columns):
                 if (not self.tiles[i][j]['tipo']):

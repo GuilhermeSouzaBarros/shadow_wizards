@@ -3,13 +3,13 @@ from vectors import Vector2
 from aux import *
 
 class ColRectangleCircle:
-    def __init__(self, rectangle, circle, delta_time):
+    def __init__(self, rectangle:Rectangle, circle:Circle, delta_time:float) -> None:
         self.intersection = False
         self.point_1 = Vector2(0.0, 0.0)
         self.point_2 = Vector2(0.0, 0.0)
         self.collision(rectangle, circle, delta_time)
     
-    def simple_col(self, rectangle, circle, delta_time):
+    def simple_col(self, rectangle:Rectangle, circle:Circle, delta_time:float) -> Vector2:
         next_pos_rec = rectangle.next_position(delta_time)
         next_pos_cir = circle.next_position(delta_time)
         total_dist = Vector2(next_pos_rec.x - next_pos_cir.x,
@@ -17,7 +17,7 @@ class ColRectangleCircle:
 
         return total_dist <= rectangle.radio + circle.radio
 
-    def precise_col(self, rectangle, circle, delta_time):
+    def precise_col(self, rectangle:Rectangle, circle:Circle, delta_time:float) -> int:
         rec_retas = rectangle.to_lines()
         col = 0
         for line in rec_retas:
@@ -25,7 +25,7 @@ class ColRectangleCircle:
             col += info['instersections']
         return col
 
-    def collision(self, rectangle, circle, delta_time):
+    def collision(self, rectangle:Rectangle, circle:Circle, delta_time:float) -> None:
         #if (eq_z(circle.speed.module() + rectangle.speed.module())):
             #return
 
