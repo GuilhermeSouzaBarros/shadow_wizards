@@ -36,15 +36,13 @@ class Game:
         self.update_player_col(delta_time)
         self.player.hitbox.delta_position(delta_time)
         self.close_window = window_should_close()
-        print("End update\n")
 
     def update_player_col(self, delta_time:float) -> None:
         for row in self.map.tiles:
             for tile in row:
                 if (not tile['tipo']):
                     continue
-                if (ColRectangleCircle(tile['rectangle'], self.player.hitbox, delta_time).intersection):
-                    self.player.hitbox.speed = Vector2(0.0, 0.0)
+                ColRectangleCircle(tile['rectangle'], self.player.hitbox, delta_time)
 
     def draw(self) -> None:
         begin_drawing()
@@ -54,4 +52,3 @@ class Game:
         self.player.draw()
         
         end_drawing()
-        print(f"End Frame\n\n")

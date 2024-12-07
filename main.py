@@ -3,7 +3,7 @@ from pyray import *
 
 import game
 
-TICK = 0.008
+TICK = 0.01
 
 async def main():
     env = game.Game()

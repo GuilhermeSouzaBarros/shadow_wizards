@@ -31,4 +31,8 @@ class Player:
         self.hitbox.speed = vector
 
     def draw(self) -> None:
-        draw_circle(int(self.hitbox.position.x), int(self.hitbox.position.y), self.hitbox.radio, GOLD)
+        draw_circle(int(self.hitbox.position.x), int(self.hitbox.position.y), self.hitbox.radius, GOLD)
+        draw_line_v([self.hitbox.position.x - self.hitbox.radius, self.hitbox.position.y],
+                    [self.hitbox.position.x + self.hitbox.radius, self.hitbox.position.y], BLACK)
+        draw_line_v([self.hitbox.position.x, self.hitbox.position.y - self.hitbox.radius],
+                    [self.hitbox.position.x, self.hitbox.position.y + self.hitbox.radius], BLACK)

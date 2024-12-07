@@ -1,5 +1,5 @@
 Criar ambiente virutal:
-    pip install venv
+    sudo apt install python3.12-venv
     python3.12 -m venv <Nome que tu quiser>
     source <Nome que tu quiser>/bin/activate
 
