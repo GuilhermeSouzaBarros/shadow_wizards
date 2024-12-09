@@ -20,40 +20,47 @@ class Game:
         set_exit_key(KEY_DELETE)
         set_target_fps(60)
 
-        self.tile = Vector2(self.window_size[0] / 31, self.window_size[1] / 15)
-        if self.tile.x > self.tile.y:
-            self.tile.x = self.tile.y
+        self.rows    = 17
+        self.columns = 31
+
+        self.tile_size = Vector2(32, 32)
+        self.draw_tile_size = Vector2(self.window_size[0] / self.columns,
+                                      self.window_size[1] / self.rows)
+        if self.draw_tile_size.x > self.draw_tile_size.y:
+            self.draw_tile_size.x = self.draw_tile_size.y
         else:
-            self.tile.y = self.tile.x
+            self.draw_tile_size.y = self.draw_tile_size.x
 
         self.tick = 0.0
         self.close_window = 0
-        self.player = Player(self.tile)
-        self.player2 = Player(self.tile)
-        self.map = Map(15, 31, self.tile)
+        map_pos = Vector2(0, 0)
+        escaler = self.draw_tile_size.x / self.tile_size.x
+        self.players = [Player(self.tile_size, escaler, map_pos, self.draw_tile_size, GOLD, 1, 1),
+                        Player(self.tile_size, escaler, map_pos, self.draw_tile_size, RED, self.rows - 2, self.columns - 2)]
+        self.map = Map(self.rows, self.columns, self.tile_size, map_pos, escaler, self.draw_tile_size)
     
     def update(self, delta_time) -> None:
-        self.player.update(1)
-        self.player2.update(0)
-        self.update_player_col(delta_time)
-        self.player.hitbox.delta_position(delta_time)
-        self.player2.hitbox.delta_position(delta_time)
+        for i, player in enumerate(self.players):
+            player.update(i)
+        self.update_players_col(delta_time)
+        for player in self.players:
+            player.hitbox.delta_position(delta_time)
         self.close_window = window_should_close()
 
-    def update_player_col(self, delta_time:float) -> None:
+    def update_players_col(self, delta_time:float) -> None:
         for row in self.map.tiles:
             for tile in row:
                 if (not tile['tipo']):
                     continue
-                ColRectangleCircle(tile['rectangle'], self.player.hitbox, delta_time)
-                ColRectangleCircle(tile['rectangle'], self.player2.hitbox, delta_time)
+                ColRectangleCircle(tile['rectangle'], self.players[0].hitbox, delta_time)
+                ColRectangleCircle(tile['rectangle'], self.players[1].hitbox, delta_time)
 
     def draw(self) -> None:
         begin_drawing()
         
         clear_background(GRAY)
         self.map.draw()
-        self.player.draw(GOLD)
-        self.player2.draw(RED)
+        for player in self.players:
+            player.draw()
         
         end_drawing()

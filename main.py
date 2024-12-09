@@ -3,7 +3,7 @@ from pyray import *
 
 import game
 
-TICK = 0.01
+TICK = 0.0078125 #128 ticks por segundo
 
 async def main():
     env = game.Game()
