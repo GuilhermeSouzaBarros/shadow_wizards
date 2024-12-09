@@ -29,12 +29,15 @@ class Game:
         self.tick = 0.0
         self.close_window = 0
         self.player = Player(self.tile)
+        self.player2 = Player(self.tile)
         self.map = Map(15, 31, self.tile)
     
     def update(self, delta_time) -> None:
-        self.player.update()
+        self.player.update(1)
+        self.player2.update(0)
         self.update_player_col(delta_time)
         self.player.hitbox.delta_position(delta_time)
+        self.player2.hitbox.delta_position(delta_time)
         self.close_window = window_should_close()
 
     def update_player_col(self, delta_time:float) -> None:
@@ -43,12 +46,14 @@ class Game:
                 if (not tile['tipo']):
                     continue
                 ColRectangleCircle(tile['rectangle'], self.player.hitbox, delta_time)
+                ColRectangleCircle(tile['rectangle'], self.player2.hitbox, delta_time)
 
     def draw(self) -> None:
         begin_drawing()
         
         clear_background(GRAY)
         self.map.draw()
-        self.player.draw()
+        self.player.draw(GOLD)
+        self.player2.draw(RED)
         
         end_drawing()
