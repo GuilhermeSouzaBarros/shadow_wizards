@@ -5,14 +5,14 @@ from vectors import Vector2
 from shapes import Circle
 
 class Player:
-    def __init__(self, tile_size:Vector2, escaler:float, map_pos:Vector2,
+    def __init__(self, tile_size:Vector2, scaler:float, map_pos:Vector2,
                  draw_size:Vector2, color:Color,
                  start_row:int, start_column:int) -> None:
         pos = Vector2(tile_size.x * (start_column + 0.5),
                       tile_size.y * (start_row    + 0.5))
         self.hitbox    = Circle(pos, tile_size.x * 0.4)
         self.tile_size = tile_size
-        self.escaler   = escaler
+        self.scaler    = scaler
         self.map_pos   = map_pos
         self.draw_size = draw_size
         self.color     = color
@@ -49,7 +49,7 @@ class Player:
         self.hitbox.speed = vector
 
     def draw(self) -> None:
-        draw_circle_v([self.map_pos.x + (self.hitbox.position.x * self.escaler),
-                      self.map_pos.y + (self.hitbox.position.y * self.escaler)],
-                      self.hitbox.radius * self.escaler, self.color)
+        draw_circle_v([self.map_pos.x + (self.hitbox.position.x * self.scaler),
+                      self.map_pos.y + (self.hitbox.position.y * self.scaler)],
+                      self.hitbox.radius * self.scaler, self.color)
         

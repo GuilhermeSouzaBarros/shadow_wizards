@@ -18,5 +18,6 @@ async def main():
 
     close_window()
 
+
 if __name__ == "__main__":
     asyncio.run(main())
