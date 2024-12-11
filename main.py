@@ -7,6 +7,7 @@ TICK = 0.0078125 #128 ticks por segundo
 
 async def main():
     env = game.Game()
+    print("\n\n")
 
     while not env.close_window:
         env.tick += get_frame_time()

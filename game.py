@@ -10,8 +10,10 @@ class Game:
     def __init__(self) -> None:
         set_config_flags(FLAG_MSAA_4X_HINT)
         set_config_flags(FLAG_WINDOW_RESIZABLE)
+
         init_window(0, 0, "Jogo épico");
-        
+        set_target_fps(get_monitor_refresh_rate(get_current_monitor()))
+
         full_size = [get_monitor_width(0), get_monitor_height(0)]
         self.window_size = [int(full_size[0] * 0.8), int(full_size[1] * 0.8)]
         window_pos = (int(full_size[0] * 0.1), int(full_size[1] * 0.1))
@@ -19,7 +21,6 @@ class Game:
         set_window_size(self.window_size[0], self.window_size[1])
         set_window_position(window_pos[0], window_pos[1])
         set_exit_key(KEY_DELETE)
-        set_target_fps(60)
 
         self.rows    = 17
         self.columns = 31
@@ -77,8 +78,10 @@ class Game:
             for tile in row:
                 if (not tile['tipo']):
                     continue
-                ColRectangleCircle(tile['rectangle'], self.players[0].hitbox, delta_time)
-                ColRectangleCircle(tile['rectangle'], self.players[1].hitbox, delta_time)
+                for player in self.players:
+                    info = ColRectangleCircle(tile['rectangle'], player.hitbox, delta_time)
+                    if info.intersection:
+                        player.col_handle_tile(tile['rectangle'], info.lines_col, delta_time)
 
     def draw(self) -> None:
         if is_window_resized():

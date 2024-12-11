@@ -3,14 +3,15 @@ from raylib import *
 
 from typing import List
 
-from aux import SMALL_FLOAT
+from imaginary import Imaginary
 from vectors import Vector2
 from lines import Line, Domain, ColLines
 
 class Shape:
-    def __init__(self, position:Vector2) -> None:
+    def __init__(self, position:Vector2, angle:Imaginary=Imaginary()) -> None:
         self.position = position
         self.speed    = Vector2(0.0, 0.0)
+        self.angle    = angle
 
     def delta_position(self, delta_time:float) -> None:
         self.position.x += (self.speed.x * delta_time)
@@ -22,35 +23,48 @@ class Shape:
         next_pos.y += self.speed.y * delta_time
         return next_pos
 
+
 class Rectangle(Shape):
-    def __init__(self, position:Vector2, size:Vector2) -> None:
-        super().__init__(position)
-        self.size  = size
-        self.radius = (self.size.x ** 2 + self.size.y ** 2) ** 0.5
+    def __init__(self, position:Vector2, size:Vector2, angle:Imaginary=Imaginary()) -> None:
+        super().__init__(position, angle)
+        self.size   = size
+        self.radius = ((self.size.x ** 2 + self.size.y ** 2) ** 0.5) / 2.0
     
     def to_lines(self) -> List[Line]:
-        lines = []
-        hsize = Vector2(self.size.y / 2, self.size.x / 2)
-
-        lines.append(Line(
-            Vector2(self.size.x, 0.0),
-            Vector2(self.position.x - hsize.x, self.position.y - hsize.y), 
-            Domain(-SMALL_FLOAT, 1.0 + SMALL_FLOAT)))
-
-        lines.append(Line(
-            Vector2(0.0, self.size.y),
-            Vector2(self.position.x + hsize.x, self.position.y - hsize.y),
-            Domain(-SMALL_FLOAT, 1.0 + SMALL_FLOAT)))
+        size_im_x = Imaginary(self.size.x / 2.0, 0.0) * self.angle
+        size_im_y = Imaginary(0.0, self.size.y / 2.0) * self.angle
         
-        lines.append(Line(
-            Vector2(-self.size.x, 0.0), 
-            Vector2(self.position.x + hsize.x, self.position.y + hsize.y), 
-            Domain(-SMALL_FLOAT, 1.0 + SMALL_FLOAT)))
+        corners = [
+            Vector2(self.position.x - size_im_x.real      - size_im_y.real,
+                    self.position.y - size_im_x.imaginary - size_im_y.imaginary), #upper_left
+            Vector2(self.position.x + size_im_x.real      - size_im_y.real,
+                    self.position.y + size_im_x.imaginary - size_im_y.imaginary), #upper_right
+            Vector2(self.position.x + size_im_x.real      + size_im_y.real,
+                    self.position.y + size_im_x.imaginary + size_im_y.imaginary), #bottom_right
+            Vector2(self.position.x - size_im_x.real      + size_im_y.real,
+                    self.position.y - size_im_x.imaginary + size_im_y.imaginary)] #bottom_left
         
-        lines.append(Line(
-            Vector2(0.0, -self.size.y), 
-            Vector2(self.position.x - hsize.x, self.position.y + hsize.y), 
-            Domain(-SMALL_FLOAT, 1.0 + SMALL_FLOAT)))
+        size_im_x = Imaginary(self.size.x, 0.0) * self.angle
+        size_im_y = Imaginary(0.0, self.size.y) * self.angle
+
+        lines = [
+            Line(
+                Vector2(size_im_x.real, size_im_x.imaginary),
+                corners[0]
+            ),
+            Line(
+                Vector2(size_im_y.real, size_im_y.imaginary),
+                corners[1]
+            ),
+            Line(
+                Vector2(-size_im_x.real, -size_im_x.imaginary),
+                corners[2]
+            ),
+            Line(
+                Vector2(-size_im_y.real, -size_im_y.imaginary),
+                corners[3]
+            )
+        ]
 
         return lines
 
@@ -61,6 +75,7 @@ class Rectangle(Shape):
                  ColLines(line, rec_lines[2]),
                  ColLines(line, rec_lines[3])]
 
+        #Reta com menor t significa primeira colisão
         t_menor = colls[0]
         for i in range(1, 4):
             if (colls[i].coll and colls[i].t_1 < t_menor.t_1):
@@ -78,6 +93,7 @@ class Rectangle(Shape):
 
     def print_info(self) -> None:
         print(f"Rectangle: {self.position.x:.2f} / {self.position.y:.2f}, size: {self.size.x:.2f} / {self.size.y:.2f}")
+
 
 class Circle(Shape):
     def __init__(self, position:Vector2, radius:float) -> None:
