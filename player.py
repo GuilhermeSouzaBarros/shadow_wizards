@@ -5,12 +5,19 @@ from aux import SMALL_FLOAT
 from vectors import Vector2
 from lines import ColLines
 from shapes import Circle
+from imaginary import Imaginary
+from sword import Sword
+from math import atan2, degrees
+
 
 class Player:
     def __init__(self, tile_size:Vector2, scaler:float, map_pos:Vector2,
                  draw_size:Vector2, color:Color,
                  start_row:int, start_column:int) -> None:
+        
         pos = Vector2(tile_size.x * (start_column + 0.5),
+                      tile_size.y * (start_row    + 0.5))
+        self.start_pos = Vector2(tile_size.x * (start_column + 0.5),
                       tile_size.y * (start_row    + 0.5))
         self.hitbox    = Circle(pos, tile_size.x * 0.4)
         self.tile_size = tile_size
@@ -18,8 +25,17 @@ class Player:
         self.map_pos   = map_pos
         self.draw_size = draw_size
         self.color     = color
+        self.is_alive  = True
+        self.respawn   = 2
+        self.start_time = 0
+        self.angle = 0
 
-    def update(self, player_number:int) -> None:
+        self.sword = Sword(pos, self.tile_size.x*4.0, Vector2(10.0, 10.0),
+                            0, self.scaler, self.map_pos)
+  
+        self.direction = Vector2(0.0, 0.0)
+
+    def update_player_pos(self, player_number:int) -> None:
         speed = self.tile_size.x * 4.0
         if (is_key_down(KEY_LEFT_CONTROL)):
             speed *= 0.1
@@ -34,6 +50,9 @@ class Player:
                 vector.y += 1.0
             if (is_key_down(KEY_D)):
                 vector.x += 1.0
+            if is_key_pressed(KEY_SPACE):
+                self.sword.activate()
+
         elif (player_number == 1):
             if (is_key_down(KEY_I) or is_key_down(KEY_UP)):
                 vector.y -= 1.0
@@ -43,13 +62,42 @@ class Player:
                 vector.y += 1.0
             if (is_key_down(KEY_L) or is_key_down(KEY_RIGHT)):
                 vector.x += 1.0
+            if is_key_pressed(KEY_ENTER):
+                self.sword.activate()
+
         module = vector.module()
+        
         if (module):
+            self.angle = atan2(vector.y, vector.x)
+            self.direction = Vector2(vector.x, vector.y)
             vector.x *= speed / module
             vector.y *= speed / module
+            
+
 
         self.hitbox.speed = vector
 
+
+    def update(self, player_number:int) -> None:
+        self.hitbox.speed = Vector2(0.0, 0.0)
+        
+        if self.is_alive:
+            self.update_player_pos(player_number)
+            angle_degrees = degrees(self.angle)
+            self.sword.update(Vector2(self.hitbox.position.x, self.hitbox.position.y), 
+                          angle_degrees)
+            
+            
+            
+        elif (not self.is_alive and get_time() - self.start_time >= self.respawn):
+            self.is_alive = True
+
+    def player_died(self):
+        self.is_alive = False
+        self.start_time = get_time()
+        self.hitbox.position = self.start_pos
+
+        
     def col_handle_tile(self, tile:Rectangle, lines_col, delta_time:float) -> None:
         rec_lines = tile.to_lines()
         next_pos = self.hitbox.next_position(delta_time)
@@ -88,8 +136,9 @@ class Player:
 
 
     def draw(self) -> None:
-        draw_circle_v([self.map_pos.x + (self.hitbox.position.x * self.scaler),
-                      self.map_pos.y + (self.hitbox.position.y * self.scaler)],
-                      self.hitbox.radius * self.scaler, self.color)
+        pos = [self.map_pos.x + (self.hitbox.position.x * self.scaler),
+                      self.map_pos.y + (self.hitbox.position.y * self.scaler)]
+        draw_circle_v(pos, self.hitbox.radius * self.scaler, self.color)
+        self.sword.draw(self.scaler)
         
     

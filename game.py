@@ -42,6 +42,7 @@ class Game:
         for i, player in enumerate(self.players):
             player.update(i)
         self.update_players_col(delta_time)
+        self.update_sword_col(delta_time)
         for player in self.players:
             player.hitbox.delta_position(delta_time)
         self.close_window = window_should_close()
@@ -82,6 +83,16 @@ class Game:
                     info = ColRectangleCircle(tile['rectangle'], player.hitbox, delta_time)
                     if info.intersection:
                         player.col_handle_tile(tile['rectangle'], info.lines_col, delta_time)
+        
+    def update_sword_col(self, delta_time:float) -> None:
+        for player_a in self.players:
+            if player_a.sword.active:
+                for player_b in self.players:
+                    if player_a == player_b:
+                        continue
+                    info = ColRectangleCircle(player_a.sword.hitbox, player_b.hitbox, delta_time)
+                    if info.collision:
+                        player_b.player_died()
 
     def draw(self) -> None:
         if is_window_resized():
@@ -94,6 +105,7 @@ class Game:
         clear_background(GRAY)
         self.map.draw()
         for player in self.players:
-            player.draw()
+            if player.is_alive:
+                player.draw()
         
         end_drawing()
