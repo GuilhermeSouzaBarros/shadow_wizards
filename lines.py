@@ -3,7 +3,7 @@ from raylib import *
 from math import isnan
 
 from vectors import Vector2, Domain
-from aux import *
+from utils import *
 
 
 class Line:

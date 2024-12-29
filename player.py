@@ -1,11 +1,10 @@
 from pyray import *
 from raylib import *
 
-from aux import SMALL_FLOAT
+from utils import SMALL_FLOAT
 from vectors import Vector2
 from lines import ColLines
 from shapes import Circle
-from imaginary import Imaginary
 from sword import Sword
 from math import atan2, degrees
 
@@ -13,7 +12,7 @@ from math import atan2, degrees
 class Player:
     def __init__(self, tile_size:Vector2, scaler:float, map_pos:Vector2,
                  draw_size:Vector2, color:Color,
-                 start_row:int, start_column:int) -> None:
+                 start_row:int, start_column:int, player_id: int, map_id:int) -> None:
         
         pos = Vector2(tile_size.x * (start_column + 0.5),
                       tile_size.y * (start_row    + 0.5))
@@ -34,6 +33,12 @@ class Player:
                             0, self.scaler, self.map_pos)
   
         self.direction = Vector2(0.0, 0.0)
+
+        self.player_id = player_id
+        self.team = player_id if map_id == 1 else (player_id == 2 or player_id == 4) + 1
+
+        self.kills = 0
+        self.has_flag = False
 
     def update_player_pos(self, player_number:int) -> None:
         speed = self.tile_size.x * 4.0
@@ -72,9 +77,7 @@ class Player:
             self.direction = Vector2(vector.x, vector.y)
             vector.x *= speed / module
             vector.y *= speed / module
-            
-
-
+        
         self.hitbox.speed = vector
 
 
@@ -84,16 +87,13 @@ class Player:
         if self.is_alive:
             self.update_player_pos(player_number)
             angle_degrees = degrees(self.angle)
-            self.sword.update(Vector2(self.hitbox.position.x, self.hitbox.position.y), 
-                          angle_degrees)
-            
-            
-            
+            self.sword.update(Vector2(self.hitbox.position.x, self.hitbox.position.y), angle_degrees)
         elif (not self.is_alive and get_time() - self.start_time >= self.respawn):
             self.is_alive = True
 
     def player_died(self):
         self.is_alive = False
+        self.has_flag = False
         self.start_time = get_time()
         self.hitbox.position = self.start_pos
 

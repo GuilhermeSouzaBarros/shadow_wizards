@@ -1,45 +1,118 @@
+import json
 from pyray import *
 from raylib import *
 
-from imaginary import Imaginary
+import tiles
 from vectors import Vector2
-from shapes import Rectangle
 
 class Map:
-    def __init__(self, rows:int, columns:int, tile_size:Vector2,
-                 map_pos:Vector2, scaler:float, draw_size:float) -> None:
-        self.tile_size = tile_size
-        self.rows      = rows
-        self.columns   = columns
+    def __init__(self, map_pos:Vector2, scaler:float, 
+                 draw_size:list, map_id:int) -> None:
         self.tiles     = []
         self.map_pos   = map_pos
         self.scaler   = scaler
         self.draw_size = draw_size
-        angle = Vector2(1, 0)
-        angle.to_module(1.0)
-        for i in range(0, rows):
+
+        self.map_id = map_id # Armazena o identificador do mapa
+        self.map_info = self.load_map() # Armazena todas as características do mapa
+
+        self.num_rows = self.map_info['height']
+        self.num_columns = self.map_info['width']
+
+        self.tile_size = Vector2(int(self.map_info['tile_size']), int(self.map_info['tile_size']))
+
+        # Carrega todos os tiles do mapa
+        for i in range(0, self.num_rows):
             row = []
-            for j in range(0, columns):
-                tile = {'rectangle': Rectangle(
-                            Vector2(self.tile_size.x * (j + 0.5),
-                                    self.tile_size.y * (i + 0.5)),
-                                    self.tile_size,
-                                    Imaginary(angle.x, angle.y)),
-                                    'tipo': 0}
-                
-                if (i == 0        or j == 0           or
-                    i == rows - 1 or j == columns - 1 or
-                    not (i % 2    or j % 2)):
-                    tile['tipo'] = 1;
+            for j in range(0, self.num_columns):
+                tile_type = int(self.map_info['tiles'][i][j])
+                tile = self.build_tile(tile_type, i, j)
                 row.append(tile)
             self.tiles.append(row)
     
     def draw(self) -> None:
-        for i in range(0, self.rows):
-            for j in range(0, self.columns):
-                if (not self.tiles[i][j]['tipo']):
-                    continue
-                tile = self.tiles[i][j]['rectangle']
-                pos = [self.map_pos.x + (tile.position.x - tile.size.x/2) * self.scaler,
-                       self.map_pos.y + (tile.position.y - tile.size.y/2)* self.scaler]
-                draw_rectangle_v(pos, [self.draw_size.x, self.draw_size.y], GREEN)
+        """
+        Função: draw
+        Descrição:
+            Desenha o mapa do jogo.
+        Parâmetros:
+            Nenhum.
+        Retorno:
+            Nenhum.
+        """
+        # Itera sobre todos os tiles do mapa
+        for row in range(0, self.num_rows):
+            for column in range(0, self.num_columns):
+                tile = self.tiles[row][column]
+                pos = [self.map_pos.x + (tile.rectangle.position.x - tile.rectangle.size.x/2) * self.scaler,
+                       self.map_pos.y + (tile.rectangle.position.y - tile.rectangle.size.y/2) * self.scaler]
+                self.tiles[row][column].draw(pos, self.draw_size)
+
+    def load_map(self) -> dict:
+        """ 
+        Função: load_map
+        Descrição: 
+            Carrega e retorna um dicionário com as características do mapa.
+        Parâmetros:
+            Nenhum.
+        Retorno:
+            Nenhum.
+        """
+        map = None
+        if self.map_id == 1:
+            try:
+                with open('map/map1.json', 'r') as map_archive:
+                    map = json.load(map_archive)
+            except FileNotFoundError:
+                print("Erro: Arquivo não encontrado.")
+            except json.JSONDecodeError:
+                print("Erro: Arquivo não contém um JSON válido.")    
+        if self.map_id == 2:
+            try:
+                with open('map/map2.json', 'r') as map_archive:
+                    map = json.load(map_archive)
+            except FileNotFoundError:
+                print("Erro: Arquivo não encontrado.")
+            except json.JSONDecodeError:
+                print("Erro: Arquivo não contém um JSON válido.")  
+        if self.map_id == 3:
+            try:
+                with open('map/map3.json', 'r') as map_archive:
+                    map = json.load(map_archive)
+            except FileNotFoundError:
+                print("Erro: Arquivo não encontrado.")
+            except json.JSONDecodeError:
+                print("Erro: Arquivo não contém um JSON válido.") 
+        if self.map_id == 4:
+            try:
+                with open('map/map4.json', 'r') as map_archive:
+                    map = json.load(map_archive)
+            except FileNotFoundError:
+                print("Erro: Arquivo não encontrado.")
+            except json.JSONDecodeError:
+                print("Erro: Arquivo não contém um JSON válido.") 
+        return map
+    
+    def build_tile(self, tile_type: int, row: int, column:int):
+        """ 
+        Função: build_tile
+        Descrição:
+            Cria e retorna o tile correspondente da posição no mapa.
+        Parâmetros:
+            tile_type: int - id do tipo do tile
+            row: int - linha em que está o tile
+            column: int - coluna em que está o tile 
+        Retorno:
+            Tile correspondente ao id fornecido.
+        """
+        if not tile_type or tile_type == 6:
+            return tiles.Floor(self.tile_size, tile_type, row, column)
+        elif tile_type == 1 or tile_type == 2:
+            return tiles.Barrier(self.tile_size, tile_type, row, column)
+        elif tile_type == 3 or tile_type == 4:
+            return tiles.Border(self.tile_size, tile_type, row, column)
+        elif not tile_type % 5:
+            return tiles.SpawnPoint(self.tile_size, tile_type, row, column)
+        elif tile_type == 7 or tile_type == 8:
+            return tiles.Rails(self.tile_size, tile_type, row, column)
+        
