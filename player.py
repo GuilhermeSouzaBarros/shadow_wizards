@@ -2,18 +2,19 @@ from pyray import *
 from raylib import *
 
 from aux import SMALL_FLOAT
+from imaginary import Imaginary
 from vectors import Vector2
 from lines import ColLines
 from shapes import Circle
-from imaginary import Imaginary
 from sword import Sword
-from math import atan2, degrees
 
 
 class Player:
     def __init__(self, tile_size:Vector2, scaler:float, map_pos:Vector2,
                  draw_size:Vector2, color:Color,
-                 start_row:int, start_column:int) -> None:
+                 start_row:int, start_column:int,
+                 nick:str,
+                 sprite:str) -> None:
         
         pos = Vector2(tile_size.x * (start_column + 0.5),
                       tile_size.y * (start_row    + 0.5))
@@ -28,74 +29,74 @@ class Player:
         self.is_alive  = True
         self.respawn   = 2
         self.start_time = 0
-        self.angle = 0
+        self.angle = Imaginary()
 
-        self.sword = Sword(pos, self.tile_size.x*4.0, Vector2(10.0, 10.0),
-                            0, self.scaler, self.map_pos)
-  
-        self.direction = Vector2(0.0, 0.0)
+        self.sword = Sword(pos, self.map_pos, self.scaler)
+        
+        self.kills  = 0
+        self.deaths = 0
+
+        self.nick   = nick
+        self.sprite = load_texture(sprite)
 
     def update_player_pos(self, player_number:int) -> None:
         speed = self.tile_size.x * 4.0
         if (is_key_down(KEY_LEFT_CONTROL)):
             speed *= 0.1
-        vector = Vector2(0.0, 0.0)
+        elif (is_key_down(KEY_LEFT_SHIFT)):
+            speed *= 10
+        previous_angle = self.angle
+        self.angle = Vector2(0.0, 0.0)
 
         if (player_number == 0):
             if (is_key_down(KEY_W)):
-                vector.y -= 1.0
+                self.angle.y -= 1.0
             if (is_key_down(KEY_A)):
-                vector.x -= 1.0
+                self.angle.x -= 1.0
             if (is_key_down(KEY_S)):
-                vector.y += 1.0
+                self.angle.y += 1.0
             if (is_key_down(KEY_D)):
-                vector.x += 1.0
+                self.angle.x += 1.0
             if is_key_pressed(KEY_SPACE):
                 self.sword.activate()
 
         elif (player_number == 1):
             if (is_key_down(KEY_I) or is_key_down(KEY_UP)):
-                vector.y -= 1.0
+                self.angle.y -= 1.0
             if (is_key_down(KEY_J) or is_key_down(KEY_LEFT)):
-                vector.x -= 1.0
+                self.angle.x -= 1.0
             if (is_key_down(KEY_K) or is_key_down(KEY_DOWN)):
-                vector.y += 1.0
+                self.angle.y += 1.0
             if (is_key_down(KEY_L) or is_key_down(KEY_RIGHT)):
-                vector.x += 1.0
+                self.angle.x += 1.0
             if is_key_pressed(KEY_ENTER):
                 self.sword.activate()
-
-        module = vector.module()
         
-        if (module):
-            self.angle = atan2(vector.y, vector.x)
-            self.direction = Vector2(vector.x, vector.y)
-            vector.x *= speed / module
-            vector.y *= speed / module
-            
-
-
-        self.hitbox.speed = vector
-
+        if (self.angle.module()):
+            self.angle.to_module(1.0)
+            self.hitbox.speed.x = self.angle.x * speed
+            self.hitbox.speed.y = self.angle.y * speed
+            self.angle = Imaginary(self.angle.x, self.angle.y)
+        else:
+            self.angle = previous_angle
+            self.hitbox.speed = Vector2(0, 0)
 
     def update(self, player_number:int) -> None:
-        self.hitbox.speed = Vector2(0.0, 0.0)
-        
         if self.is_alive:
             self.update_player_pos(player_number)
-            angle_degrees = degrees(self.angle)
-            self.sword.update(Vector2(self.hitbox.position.x, self.hitbox.position.y), 
-                          angle_degrees)
-            
-            
-            
-        elif (not self.is_alive and get_time() - self.start_time >= self.respawn):
+            self.sword.update(self.hitbox.position, self.angle)
+                        
+        elif (get_time() - self.start_time >= self.respawn):
             self.is_alive = True
 
-    def player_died(self):
+    def killed(self):
+        self.kills += 1
+
+    def died(self):
+        self.deaths += 1
         self.is_alive = False
         self.start_time = get_time()
-        self.hitbox.position = self.start_pos
+        self.hitbox.position = self.start_pos.copy()
 
         
     def col_handle_tile(self, tile:Rectangle, lines_col, delta_time:float) -> None:
@@ -136,9 +137,31 @@ class Player:
 
 
     def draw(self) -> None:
-        pos = [self.map_pos.x + (self.hitbox.position.x * self.scaler),
-                      self.map_pos.y + (self.hitbox.position.y * self.scaler)]
-        draw_circle_v(pos, self.hitbox.radius * self.scaler, self.color)
-        self.sword.draw(self.scaler)
+        offset = self.hitbox.radius * 0.5
+
+        pos = [self.map_pos.x + ((self.hitbox.position.x - self.hitbox.radius) * self.scaler),
+               self.map_pos.y + ((self.hitbox.position.y - self.hitbox.radius) * self.scaler)]
+        rectangle_dest = [pos[0], pos[1],
+                          self.scaler * (self.hitbox.radius + offset) * 2,
+                          self.scaler * (self.hitbox.radius + offset) * 2]
+
+        if (self.angle.real == 1.0 and self.angle.imaginary == 0.0):
+            draw_texture_pro(self.sprite, [0, 32, 32, 32], rectangle_dest, [offset * self.scaler, 2 * offset * self.scaler], 0, self.color)
+
+        elif (self.angle.real == 0.0 and self.angle.imaginary == 1.0):
+            draw_texture_pro(self.sprite, [0, 0, 32, 32], rectangle_dest, [offset * self.scaler, 2 * offset * self.scaler], 0, self.color)
+
+        elif (self.angle.real == -1.0 and self.angle.imaginary == 0.0):
+            draw_texture_pro(self.sprite, [0, 96, 32, 32], rectangle_dest, [offset * self.scaler, 2 * offset * self.scaler], 0, self.color)
+
+        elif (self.angle.real == 0.0 and self.angle.imaginary == -1.0):
+            draw_texture_pro(self.sprite, [0, 64, 32, 32], rectangle_dest, [offset * self.scaler, 2 * offset * self.scaler], 0, self.color)
+
+        else:
+
+            pos = [self.map_pos.x + ((self.hitbox.position.x) * self.scaler),
+                   self.map_pos.y + ((self.hitbox.position.y) * self.scaler)]
+            draw_circle_v(pos, self.hitbox.radius * self.scaler, self.color)
+        self.sword.draw()
         
     

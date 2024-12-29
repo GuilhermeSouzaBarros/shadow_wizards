@@ -28,9 +28,6 @@ class ColRectangleCircle:
                 
 
     def collision(self, rectangle:Rectangle, circle:Circle, delta_time:float) -> None:
-        if (eq_z(circle.speed.module() + rectangle.speed.module())):
-            return []
-
         if not self.simple_col(rectangle, circle, delta_time):
             return []
 

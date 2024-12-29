@@ -1,49 +1,50 @@
 from pyray import *
 from raylib import *
 
-
-from collisions import ColRectangleCircle
+from imaginary import Imaginary
+from vectors import Vector2
 from shapes import *
 
 class Sword:
-    def __init__(self, pos:Vector2, speed:float, size:Vector2, angle:float,
-                 scaler:float, map_pos:Vector2) -> None:
-        self.size = size
+    def __init__(self, pos:Vector2, map_pos:Vector2, scaler:float) -> None:
         self.cooldown = 1.0
         self.time_activated = 0.5
-        self.active = False
-        self.color = BLUE
-        self.hitbox = Rectangle(pos, size, angle)
         self.last_activation = 0.0
-        self.player_pos = pos
+        self.active = False
+
         self.scaler = scaler
         self.map_pos = map_pos
-        self.angle = angle
+
+        pos = pos.copy()
+        sword_size = Vector2(40.0, 10.0)
+        self.hitbox = Rectangle(Vector2(pos.x + sword_size.x/2, pos.y - sword_size.y/2), sword_size)
+
+        self.color = BLUE
         
 
-    def activate(self):
+    def activate(self) -> None:
         current_time = get_time()
         
         if current_time - self.last_activation >= self.cooldown:
             self.active = True
             self.last_activation = current_time
-        
+    
 
-    def update(self, player_pos:Vector2, angle:float) -> None:
+    def update(self, player_pos:Vector2, angle:Imaginary) -> None:
         current_time = get_time()
-        self.player_pos = player_pos
-        self.hitbox.position = Vector2(player_pos.x, player_pos.y)
-        self.angle = angle
+
+        # Push sword half x size in facing direction
+        size_im_x = Imaginary(self.hitbox.size.x / 2.0, 0.0) * self.hitbox.angle
+        self.hitbox.position.x = player_pos.x + size_im_x.real
+        self.hitbox.position.y = player_pos.y + size_im_x.imaginary
+
+        self.hitbox.angle = angle.copy()
         if current_time - self.last_activation >= self.time_activated:
             self.active = False
         
-        
-    
-    def draw(self, scaler:float) -> None:
-        if self.active:
-            self.scaler = scaler
-            pos = [self.map_pos.x + (self.player_pos.x * self.scaler),
-                        self.map_pos.y + (self.player_pos.y * self.scaler)]
-            
-            draw_rectangle_pro([pos[0], pos[1], (self.hitbox.size.x + 30)*self.scaler, self.hitbox.size.y], [self.size.x/2, self.size.y/2], self.angle, self.color)
-        
+
+    def draw(self) -> None:
+        if not self.active:
+            return
+        self.hitbox.draw(self.map_pos, self.scaler, self.color)
+        self.hitbox.draw_lines(self.map_pos, self.scaler, BLACK)

@@ -17,3 +17,7 @@ class Imaginary():
         imaginary = (self.real * other.imaginary +
                      other.real * self.imaginary)
         return Imaginary(real, imaginary)
+
+    def copy(self):
+        return Imaginary(self.real, self.imaginary)
+    

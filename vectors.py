@@ -26,6 +26,9 @@ class Vector2:
         aux = self.x
         self.x = self.y
         self.y = -aux
+
+    def copy(self):
+        return Vector2(self.x, self.y)
     
 
 class Domain(Vector2):
