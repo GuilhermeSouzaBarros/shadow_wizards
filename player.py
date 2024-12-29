@@ -41,7 +41,6 @@ class Player:
         self.player_id = player_id
         self.team = player_id if map_id == 1 else (player_id == 2 or player_id == 4) + 1
 
-        self.kills = 0
         self.has_flag = False
 
     def update_player_pos(self, player_number:int) -> None:

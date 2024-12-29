@@ -56,41 +56,27 @@ class Map:
         Parâmetros:
             Nenhum.
         Retorno:
-            Nenhum.
+            Mapa.
         """
         map = None
-        if self.map_id == 1:
-            try:
+        try:
+            if self.map_id == 1:
                 with open('map/map1.json', 'r') as map_archive:
                     map = json.load(map_archive)
-            except FileNotFoundError:
-                print("Erro: Arquivo não encontrado.")
-            except json.JSONDecodeError:
-                print("Erro: Arquivo não contém um JSON válido.")    
-        if self.map_id == 2:
-            try:
+            if self.map_id == 2:
                 with open('map/map2.json', 'r') as map_archive:
                     map = json.load(map_archive)
-            except FileNotFoundError:
-                print("Erro: Arquivo não encontrado.")
-            except json.JSONDecodeError:
-                print("Erro: Arquivo não contém um JSON válido.")  
-        if self.map_id == 3:
-            try:
+            if self.map_id == 3:
                 with open('map/map3.json', 'r') as map_archive:
                     map = json.load(map_archive)
-            except FileNotFoundError:
-                print("Erro: Arquivo não encontrado.")
-            except json.JSONDecodeError:
-                print("Erro: Arquivo não contém um JSON válido.") 
-        if self.map_id == 4:
-            try:
+            if self.map_id == 4:
                 with open('map/map4.json', 'r') as map_archive:
                     map = json.load(map_archive)
-            except FileNotFoundError:
-                print("Erro: Arquivo não encontrado.")
-            except json.JSONDecodeError:
-                print("Erro: Arquivo não contém um JSON válido.") 
+        except FileNotFoundError:
+            print("Erro: Arquivo não encontrado.")
+        except json.JSONDecodeError:
+            print("Erro: Arquivo não contém um JSON válido.")   
+        
         return map
     
     def build_tile(self, tile_type: int, row: int, column:int):

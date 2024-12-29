@@ -14,7 +14,7 @@ class Objectives:
         self.map_objectives = map_objectives
         self.map_id = map_id
         self.tile_size = tile_size
-        self.map_pos = map_pos
+        self.map_pos   = map_pos
 
     def load(self) -> None:
         """
@@ -47,7 +47,7 @@ class Objectives:
         for objective in self.objectives:
             objective.draw()
 
-    def update(self, players:list) -> list:
+    def update(self, players:list, delta_time:float) -> list:
         """
         Função: update
         Descrição:
@@ -59,24 +59,17 @@ class Objectives:
         """
         final_score_inc = [0, 0]
         for objective in self.objectives:
-            objective.scaler = self.scaler
-            score_inc = objective.update(players)
+            objective.update(players, delta_time)
             
-            for team_idx in range(0, len(score_inc)):
-                final_score_inc[team_idx] += score_inc[team_idx] 
         return final_score_inc
 
     def load_cart(self) -> None:
-        # *** CORRIGIR ***
-        
-        # Carrega o carrinho
-        path = self.map_objectives['cart']['path']
-        row = self.map_objectives['cart']['start']['row']
-        column = self.map_objectives['cart']['start']['column']
-        path_idx = self.map_objectives['cart']['start']['path_idx']
+        # load payload path
+        path          = self.map_objectives['cart']['path']
+        path_start    = self.map_objectives['cart']['start']
         region_radius = self.map_objectives['cart']['region_radius']
 
-        self.objectives.append(Cart(path, path_idx, region_radius, self.draw_size, self.tile_size, self.map_pos, row, column, self.scaler))
+        self.objectives.append(Cart(path, path_start, region_radius, self.draw_size, self.tile_size, self.map_pos, self.scaler))
 
     def load_flags(self) -> None:
         """

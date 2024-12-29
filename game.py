@@ -30,8 +30,9 @@ class Game:
         self.tick = 0.0
         self.close_window = 0
         map_pos = Vector2(0, 0)
+        
         # *** Fazer tela inicial para seleção do mapa ***
-        self.map_id = 4
+        self.map_id = 2
 
         self.map = Map(map_pos, self.scaler, self.draw_tile_size, self.map_id)
 
@@ -67,11 +68,12 @@ class Game:
         self.update_players_col(delta_time)
         self.update_sword_col(delta_time)
         
-        score_increase = self.objectives.update(self.players)
+        score_increase = self.objectives.update(self.players, delta_time)
         self.score.update(self.players, score_increase)
         
         for player in self.players:
             player.hitbox.delta_position(delta_time)
+
         self.close_window = window_should_close()
 
     def update_window(self) -> None: 
@@ -101,7 +103,8 @@ class Game:
 
         self.map.draw_size = self.draw_tile_size
         self.map.scaler = self.scaler
-        self.objectives.scaler = self.scaler
+        for objective in self.objectives.objectives:
+            objective.scaler = self.scaler
     
     def update_players_col(self, delta_time:float) -> None:
         for row in self.map.tiles:
@@ -137,10 +140,10 @@ class Game:
 
 
     def draw(self) -> None:
-        if is_window_resized():
-            self.update_window()
         if (is_key_pressed(KEY_F11)):
             ToggleFullscreen()
+        if is_window_resized():
+            self.update_window()
             
         begin_drawing()
         
