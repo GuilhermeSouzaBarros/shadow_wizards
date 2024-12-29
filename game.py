@@ -5,13 +5,15 @@ from vectors import Vector2
 from collisions import ColRectangleCircle
 from player import Player
 from map import Map
+from objectives import Objectives
+from score import Score
 
 class Game:
     def __init__(self) -> None:
         set_config_flags(FLAG_MSAA_4X_HINT)
         set_config_flags(FLAG_WINDOW_RESIZABLE)
 
-        init_window(0, 0, "Jogo épico");
+        init_window(0, 0, "Jogo épico")
         set_target_fps(get_monitor_refresh_rate(get_current_monitor()))
 
         full_size = [get_monitor_width(0), get_monitor_height(0)]
@@ -20,23 +22,43 @@ class Game:
 
         set_window_size(self.window_size[0], self.window_size[1])
         set_window_position(window_pos[0], window_pos[1])
+        
         set_exit_key(KEY_DELETE)
-
-        self.rows    = 17
-        self.columns = 31
-
-        self.tile_size = Vector2(32, 32)
-
+ 
         self.draw_tile_size = Vector2(0.0, 0.0)
         self.scaler = 0.0
         self.tick = 0.0
         self.close_window = 0
         map_pos = Vector2(0, 0)
-        
-        self.players = [Player(self.tile_size, self.scaler, map_pos, self.draw_tile_size, RED, 1, 1, "player 1", "sprites/wizard.png"),
-                        Player(self.tile_size, self.scaler, map_pos, self.draw_tile_size, BLUE, self.rows - 2, self.columns - 2, "player 2", "sprites/wizard.png")]
-        
-        self.map = Map(self.rows, self.columns, self.tile_size, map_pos, self.scaler, self.draw_tile_size)
+        # *** Fazer tela inicial para seleção do mapa ***
+        self.map_id = 4
+
+        self.map = Map(map_pos, self.scaler, self.draw_tile_size, self.map_id)
+
+        self.tile_size = self.map.tile_size
+
+        self.rows = self.map.num_rows
+        self.columns = self.map.num_columns
+
+        self.players = [Player(self.tile_size, self.scaler, map_pos,
+                               self.draw_tile_size, self.map.map_info['spawn_points']['player_1'][0], self.map.map_info['spawn_points']['player_1'][1],
+                               1, self.map_id,
+                               "player 1", "sprites/wizard.png", RED),
+                        
+                        Player(self.tile_size, self.scaler, map_pos,
+                               self.draw_tile_size, self.map.map_info['spawn_points']['player_2'][0], self.map.map_info['spawn_points']['player_2'][1],
+                               2, self.map_id,
+                               "player 2", "sprites/wizard.png", BLUE)]
+
+
+
+        self.objectives = Objectives(self.map.map_info['objectives'], self.map_id, self.draw_tile_size, self.tile_size.x, map_pos, self.scaler)
+        # Carrega todos os objetivos de acordo com o id do mapa
+        self.objectives.load()
+
+        num_teams = len(self.players) if self.map_id == 1 else 2
+        self.score = Score(num_teams)
+
         self.update_draw_scale()
 
     def update(self, delta_time) -> None:
@@ -44,6 +66,10 @@ class Game:
             player.update(i)
         self.update_players_col(delta_time)
         self.update_sword_col(delta_time)
+        
+        score_increase = self.objectives.update(self.players)
+        self.score.update(self.players, score_increase)
+        
         for player in self.players:
             player.hitbox.delta_position(delta_time)
         self.close_window = window_should_close()
@@ -75,17 +101,21 @@ class Game:
 
         self.map.draw_size = self.draw_tile_size
         self.map.scaler = self.scaler
-
+        self.objectives.scaler = self.scaler
     
     def update_players_col(self, delta_time:float) -> None:
         for row in self.map.tiles:
             for tile in row:
-                if (not tile['tipo']):
+                if (not tile.type):
                     continue
                 for player in self.players:
-                    info = ColRectangleCircle(tile['rectangle'], player.hitbox, delta_time)
+                    info = ColRectangleCircle(tile.rectangle, player.hitbox, delta_time)
                     if info.intersection:
-                        player.col_handle_tile(tile['rectangle'], info.lines_col, delta_time)
+                        if tile.is_destructible:
+                            if not tile.is_destroyed:
+                                player.col_handle_tile(tile.rectangle, info.lines_col, delta_time)
+                        elif tile.has_collision:
+                            player.col_handle_tile(tile.rectangle, info.lines_col, delta_time)
         
     def update_sword_col(self, delta_time:float) -> None:
         for player_a in self.players:
@@ -116,6 +146,8 @@ class Game:
         
         clear_background(GRAY)
         self.map.draw()
+        self.objectives.draw()
+        self.score.draw()
         for player in self.players:
             if player.is_alive:
                 player.draw()

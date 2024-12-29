@@ -1,6 +1,8 @@
 from shapes import Rectangle, Circle
 from vectors import Vector2
-from aux import *
+from utils import *
+
+from math import sqrt
 
 class ColRectangleCircle:
     def __init__(self, rectangle:Rectangle, circle:Circle, delta_time:float) -> None:
@@ -33,3 +35,11 @@ class ColRectangleCircle:
 
         return self.precise_col(rectangle, circle, delta_time)
         
+class ColCircleCircle():
+    def __init__(self):
+        pass
+    
+    def check_collision(self, circle1: Circle, circle2: Circle, scaler: float) -> bool:
+        """ Verifica se dois círculos colidem entre si. """
+        distance = sqrt((circle1.position.x - circle2.position.x) ** 2 + (circle1.position.y - circle2.position.y) ** 2)
+        return distance <= (circle2.radius + circle1.radius)

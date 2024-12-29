@@ -1,7 +1,7 @@
 from pyray import *
 from raylib import *
 
-from aux import SMALL_FLOAT
+from utils import SMALL_FLOAT
 from imaginary import Imaginary
 from vectors import Vector2
 from lines import ColLines
@@ -11,10 +11,9 @@ from sword import Sword
 
 class Player:
     def __init__(self, tile_size:Vector2, scaler:float, map_pos:Vector2,
-                 draw_size:Vector2, color:Color,
-                 start_row:int, start_column:int,
-                 nick:str,
-                 sprite:str) -> None:
+                 draw_size:Vector2, start_row:int, start_column:int,
+                 player_id:int, map_id:int,
+                 nick:str, sprite:str, color:Color) -> None:
         
         pos = Vector2(tile_size.x * (start_column + 0.5),
                       tile_size.y * (start_row    + 0.5))
@@ -38,6 +37,12 @@ class Player:
 
         self.nick   = nick
         self.sprite = load_texture(sprite)
+
+        self.player_id = player_id
+        self.team = player_id if map_id == 1 else (player_id == 2 or player_id == 4) + 1
+
+        self.kills = 0
+        self.has_flag = False
 
     def update_player_pos(self, player_number:int) -> None:
         speed = self.tile_size.x * 4.0
@@ -95,6 +100,7 @@ class Player:
     def died(self):
         self.deaths += 1
         self.is_alive = False
+        self.has_flag = False
         self.start_time = get_time()
         self.hitbox.position = self.start_pos.copy()
 
