@@ -30,7 +30,6 @@ class Game:
         self.tick = 0.0
         self.close_window = 0
         map_pos = Vector2(0, 0)
-        
         # *** Fazer tela inicial para seleção do mapa ***
         self.map_id = 4
 
@@ -41,8 +40,15 @@ class Game:
         self.rows = self.map.num_rows
         self.columns = self.map.num_columns
 
-        self.players = [Player(self.tile_size, self.scaler, map_pos, self.draw_tile_size,   GOLD, self.map.map_info['spawn_points']['player_1'][0], self.map.map_info['spawn_points']['player_1'][1], player_id=1, map_id=self.map_id),
-                        Player(self.tile_size, self.scaler, map_pos, self.draw_tile_size, RED, self.map.map_info['spawn_points']['player_2'][0], self.map.map_info['spawn_points']['player_2'][1], player_id=2, map_id=self.map_id)]
+        self.players = [Player(self.tile_size, self.scaler, map_pos,
+                               self.draw_tile_size, self.map.map_info['spawn_points']['player_1'][0], self.map.map_info['spawn_points']['player_1'][1],
+                               1, self.map_id,
+                               "player 1", "sprites/wizard.png", RED),
+                        
+                        Player(self.tile_size, self.scaler, map_pos,
+                               self.draw_tile_size, self.map.map_info['spawn_points']['player_2'][0], self.map.map_info['spawn_points']['player_2'][1],
+                               2, self.map_id,
+                               "player 2", "sprites/wizard.png", BLUE)]
 
 
 
@@ -53,7 +59,7 @@ class Game:
         num_teams = len(self.players) if self.map_id == 1 else 2
         self.score = Score(num_teams)
 
-        self.update_draw_escale()
+        self.update_draw_scale()
 
     def update(self, delta_time) -> None:
         for i, player in enumerate(self.players):
@@ -77,9 +83,9 @@ class Game:
         self.window_size[1] = float(ffi.unpack(new_height, ffi.sizeof(new_width))[0])
         ffi.release(new_width)
         ffi.release(new_height)
-        self.update_draw_escale()
+        self.update_draw_scale()
 
-    def update_draw_escale(self) -> None:
+    def update_draw_scale(self) -> None:
         self.draw_tile_size.x = self.window_size[0] / self.columns
         self.draw_tile_size.y = self.window_size[1] / self.rows
         if self.draw_tile_size.x > self.draw_tile_size.y:
@@ -91,6 +97,8 @@ class Game:
         for player in self.players:
             player.draw_size = self.draw_tile_size
             player.scaler = self.scaler
+            player.sword.scaler = self.scaler
+
         self.map.draw_size = self.draw_tile_size
         self.map.scaler = self.scaler
         self.objectives.scaler = self.scaler
@@ -111,13 +119,22 @@ class Game:
         
     def update_sword_col(self, delta_time:float) -> None:
         for player_a in self.players:
-            if player_a.sword.active:
-                for player_b in self.players:
-                    if player_a == player_b:
-                        continue
-                    info = ColRectangleCircle(player_a.sword.hitbox, player_b.hitbox, delta_time)
-                    if info.collision:
-                        player_b.player_died()
+            if not (player_a.is_alive and player_a.sword.active):
+                continue
+
+            for player_b in self.players:
+                if not player_b.is_alive or player_a == player_b:
+                    continue
+
+                info = ColRectangleCircle(player_a.sword.hitbox, player_b.hitbox, delta_time)
+
+                if info.intersection:
+                    player_a.killed()
+                    player_b.died()
+                    print(f"{player_a.nick} killed {player_b.nick}")
+                    print(f"{player_a.nick}: {player_a.kills} / {player_a.deaths}")
+                    print(f"{player_b.nick}: {player_b.kills} / {player_b.deaths}\n")
+
 
     def draw(self) -> None:
         if is_window_resized():

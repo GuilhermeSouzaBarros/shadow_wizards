@@ -1,12 +1,12 @@
 from pyray  import *
 from raylib import *
+from math import atan2, degrees
 
-from math import atan2
 from typing import List
 
 from imaginary import Imaginary
 from vectors import Vector2
-from lines import Line, Domain, ColLines
+from lines import Line, ColLines
 
 class Shape:
     def __init__(self, position:Vector2, angle:Imaginary=Imaginary()) -> None:
@@ -94,6 +94,25 @@ class Rectangle(Shape):
 
     def print_info(self) -> None:
         print(f"Rectangle: {self.position.x:.2f} / {self.position.y:.2f}, size: {self.size.x:.2f} / {self.size.y:.2f}")
+
+
+    def draw(self, map_pos:Vector2, scaler:float, color:Color) -> None:
+        size_im_x = Imaginary(self.size.x / 2.0, 0.0) * self.angle
+        size_im_y = Imaginary(0.0, self.size.y / 2.0) * self.angle
+        up_left_corner = [self.position.x - size_im_x.real      - size_im_y.real,
+                          self.position.y - size_im_x.imaginary - size_im_y.imaginary]
+        draw_rectangle_pro([map_pos.x + up_left_corner[0] * scaler,
+                            map_pos.y + up_left_corner[1] * scaler,
+                            self.size.x * scaler,
+                            self.size.y * scaler],
+                            [0, 0],
+                            degrees(atan2(self.angle.imaginary, self.angle.real)),
+                            color)
+
+    def draw_lines(self, map_pos:Vector2, scaler:float, color:Color) -> None:
+        lines = self.to_lines()
+        for line in lines:
+            line.draw(map_pos, scaler, color)
 
 
 class Circle(Shape):
