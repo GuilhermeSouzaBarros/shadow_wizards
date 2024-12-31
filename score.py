@@ -9,27 +9,35 @@ class Score():
         self.num_teams = num_teams
         
         self._font_size = 20
+        self.colors = [RED, BLUE, GREEN, GOLD]
 
-    def draw(self) -> None:
+    def draw(self, scaler:float) -> None:
         """
         Função: draw
         Descrição:
-            Desenha a pontuação de todos os times do jogo.
+            Desenha o placar do jogo com a pontuação de cada um dos times.
         Parâmetros:
             Nenhum.
         Retorno:
             Nenhum.
         """
-        # Posição inicial do placar
-        x_print = 10
-        y_print = 10
+        self.draw_score(scaler) 
 
-        for team in range(1, self.num_teams + 1):
-            score_txt = f'Team {team}: {self.final_score[team-1]}'
-            draw_text(score_txt, x_print, y_print, self._font_size, RAYWHITE)
-            
-            # Faz com que a pontuação do próximo time seja escrita mais à direita
-            x_print += 160  
+    def draw_score(self, scaler:float) -> None:
+        """
+        Função: draw_score
+        Descrição:
+            Desenha a pontuação de cada um dos times.
+        Parâmetros:
+            Nenhum.
+        Retorno:
+            Nenhum.
+        """
+        text_pos = Vector2(10 * scaler, 0)
+        for team in range(1, self.num_teams+1):
+            score_txt = f"Team {team}: {self.final_score[team-1]}"
+            draw_text_ex(get_font_default(), score_txt, text_pos, self._font_size * scaler, 1.0, self.colors[team-1])
+            text_pos.x += 160 * scaler
 
     def countdown(self) -> None:
         pass

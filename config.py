@@ -1,0 +1,21 @@
+class Config:
+    STATE_INITIAL_MENU = 1 
+    STATE_PLAY_GAME = 2
+    STATE_EXIT = 0
+
+    GAME_TITLE = "Shadow Wizards"
+
+    TICK = 0.0078125 #128 ticks por segundo
+
+    FREE_FOR_ALL_MAP_ID = 1
+    PAYLOAD_MAP_ID = 2
+    CAPTURE_THE_FLAG_MAP_ID = 3
+    DOMINATION_MAP_ID = 4
+
+    RED_SKIN_ID = 1
+    BLUE_SKIN_ID = 2
+    GREEN_SKIN_ID = 3
+    GOLD_SKIN_ID = 4
+
+    BASE_WIDTH = 800
+    BASE_HEIGHT = 600
