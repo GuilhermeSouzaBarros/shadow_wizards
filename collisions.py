@@ -39,7 +39,8 @@ class ColCircleCircle():
     def __init__(self):
         pass
     
-    def check_collision(self, circle1: Circle, circle2: Circle, scaler: float) -> bool:
+    def check_collision(self, circle1: Circle, circle2: Circle) -> bool:
         """ Verifica se dois círculos colidem entre si. """
         distance = sqrt((circle1.position.x - circle2.position.x) ** 2 + (circle1.position.y - circle2.position.y) ** 2)
         return distance <= (circle2.radius + circle1.radius)
+    

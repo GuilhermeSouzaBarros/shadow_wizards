@@ -6,12 +6,8 @@ import tiles
 from vectors import Vector2
 
 class Map:
-    def __init__(self, map_pos:Vector2, scaler:float, 
-                 draw_size:list, map_id:int) -> None:
+    def __init__(self, map_id:int) -> None:
         self.tiles     = []
-        self.map_pos   = map_pos
-        self.scaler   = scaler
-        self.draw_size = draw_size
 
         self.map_id = map_id # Armazena o identificador do mapa
         self.map_info = self.load_map() # Armazena todas as características do mapa
@@ -19,7 +15,7 @@ class Map:
         self.num_rows = self.map_info['height']
         self.num_columns = self.map_info['width']
 
-        self.tile_size = Vector2(int(self.map_info['tile_size']), int(self.map_info['tile_size']))
+        self.tile_size = int(self.map_info['tile_size'])
 
         # Carrega todos os tiles do mapa
         for i in range(0, self.num_rows):
@@ -30,7 +26,7 @@ class Map:
                 row.append(tile)
             self.tiles.append(row)
     
-    def draw(self) -> None:
+    def draw(self, map_offset:Vector2, scaler:float) -> None:
         """
         Função: draw
         Descrição:
@@ -44,9 +40,7 @@ class Map:
         for row in range(0, self.num_rows):
             for column in range(0, self.num_columns):
                 tile = self.tiles[row][column]
-                pos = [self.map_pos.x + (tile.rectangle.position.x - tile.rectangle.size.x/2) * self.scaler,
-                       self.map_pos.y + (tile.rectangle.position.y - tile.rectangle.size.y/2) * self.scaler]
-                self.tiles[row][column].draw(pos, self.draw_size)
+                tile.draw(map_offset, scaler)
 
     def load_map(self) -> dict:
         """ 

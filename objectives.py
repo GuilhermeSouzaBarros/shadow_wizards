@@ -6,15 +6,12 @@ from gamemodes.capture_flag import CapturePoint, Flag
 from gamemodes.payload import Cart
 
 class Objectives:
-    def __init__(self, map_objectives:dict, map_id:int, draw_size:Vector2, tile_size:float, map_pos:Vector2, scaler:float=0.0):
+    def __init__(self, tile_size:float, map_objectives:dict, map_id:int):
+        self.tile_size = tile_size
         self.objectives = []
-        self.scaler = scaler
 
-        self.draw_size = draw_size
         self.map_objectives = map_objectives
         self.map_id = map_id
-        self.tile_size = tile_size
-        self.map_pos   = map_pos
 
     def load(self) -> None:
         """
@@ -34,7 +31,7 @@ class Objectives:
         elif self.map_id == 4:
             self.load_domination()
 
-    def draw(self) -> None:
+    def draw(self, map_offset:Vector2, scaler:float) -> None:
         """
         Função: draw
         Descrição:
@@ -45,7 +42,7 @@ class Objectives:
             Nenhum:
         """
         for objective in self.objectives:
-            objective.draw()
+            objective.draw(map_offset, scaler)
 
     def update(self, players:list, delta_time:float) -> list:
         """
@@ -69,7 +66,7 @@ class Objectives:
         path_start    = self.map_objectives['cart']['start']
         region_radius = self.map_objectives['cart']['region_radius']
 
-        self.objectives.append(Cart(path, path_start, region_radius, self.draw_size, self.tile_size, self.map_pos, self.scaler))
+        self.objectives.append(Cart(path, path_start, region_radius, self.tile_size))
 
     def load_flags(self) -> None:
         """

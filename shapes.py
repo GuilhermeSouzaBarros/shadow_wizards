@@ -96,23 +96,27 @@ class Rectangle(Shape):
         print(f"Rectangle: {self.position.x:.2f} / {self.position.y:.2f}, size: {self.size.x:.2f} / {self.size.y:.2f}")
 
 
-    def draw(self, map_pos:Vector2, scaler:float, color:Color) -> None:
+    def draw(self, map_offset:Vector2, scaler:float, color:Color, outlines:bool=True) -> None:
         size_im_x = Imaginary(self.size.x / 2.0, 0.0) * self.angle
         size_im_y = Imaginary(0.0, self.size.y / 2.0) * self.angle
         up_left_corner = [self.position.x - size_im_x.real      - size_im_y.real,
                           self.position.y - size_im_x.imaginary - size_im_y.imaginary]
-        draw_rectangle_pro([map_pos.x + up_left_corner[0] * scaler,
-                            map_pos.y + up_left_corner[1] * scaler,
-                            self.size.x * scaler,
-                            self.size.y * scaler],
-                            [0, 0],
-                            degrees(atan2(self.angle.imaginary, self.angle.real)),
-                            color)
+        
+        rec = [map_offset.x + up_left_corner[0] * scaler,
+               map_offset.y + up_left_corner[1] * scaler,
+               self.size.x * scaler,
+               self.size.y * scaler]
+        ori = [0, 0]
+        degree = degrees(atan2(self.angle.imaginary, self.angle.real))
 
-    def draw_lines(self, map_pos:Vector2, scaler:float, color:Color) -> None:
+        draw_rectangle_pro(rec, ori, degree, color)
+        if outlines:
+            self.draw_lines(map_offset, scaler, BLACK)
+
+    def draw_lines(self, map_offset:Vector2, scaler:float, color:Color) -> None:
         lines = self.to_lines()
         for line in lines:
-            line.draw(map_pos, scaler, color)
+            line.draw(map_offset, scaler, color)
 
 
 class Circle(Shape):
@@ -157,4 +161,13 @@ class Circle(Shape):
     def print_info(self) -> None:
         print(f"Circle: {self.position.x:.2f} / {self.position.y:.2f}, radius: {self.radius:.2f}")
         print(f"Speed: {self.speed.x:.2f} / {self.speed.y:.2f}")
+    
+    def draw(self, map_offset:Vector2, scaler:float, color:Color, outlines:bool=True) -> None:
+        pos = self.position * scaler
+        pos += map_offset
+        pos = pos.to_list()
+        radius = self.radius * scaler
+        draw_circle_v(pos, radius, color)
+        if outlines:
+            draw_circle_lines_v(pos, radius, BLACK)
         

@@ -10,6 +10,9 @@ class Vector2:
     def __sub__(self, other):
         return Vector2(self.x - other.x, self.y - other.y)
 
+    def __mul__(self, value:float):
+        return Vector2(self.x * value, self.y * value)
+
     @property
     def __str__(self):
         return f"{self.x:.2f} / {self.y:.2f}"
@@ -35,6 +38,9 @@ class Vector2:
 
     def copy(self):
         return Vector2(self.x, self.y)
+    
+    def to_list(self):
+        return [self.x, self.y]
     
 
 class Domain(Vector2):

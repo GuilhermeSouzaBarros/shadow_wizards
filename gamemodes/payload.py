@@ -8,11 +8,7 @@ from shapes import Rectangle, Circle
 from collisions import ColCircleCircle
 
 class Cart:
-    def __init__(self, path:list, path_start:int, region_radius:int, draw_size:Vector2, tile_size:float, map_pos:float, scaler:float=1.0):
-        self.map_pos = map_pos
-        self.draw_size = draw_size
-        self.scaler = scaler
-
+    def __init__(self, path:list, path_start:int, region_radius:int, tile_size:float):
         self.region_radius = region_radius
         self.tile_size = tile_size
 
@@ -97,15 +93,14 @@ class Cart:
         self.region = Circle(self.rectangle.position, self.region_radius)
         
 
-    def draw(self) -> None:
-        self.draw_cart()
-        self.draw_region()
+    def draw(self, map_offset:Vector2, scaler:float) -> None:
+        self.draw_cart   (map_offset, scaler)
+        self.draw_region (map_offset, scaler)
 
-    def draw_cart(self) -> None:
-        self.hitbox.draw(self.map_pos, self.scaler, self.color)
-        self.hitbox.draw_lines(self.map_pos, self.scaler, BLACK)
+    def draw_cart(self, map_offset:Vector2, scaler:float) -> None:
+        self.hitbox.draw(map_offset, scaler, self.color)
 
-    def draw_region(self) -> None:
+    def draw_region(self, map_offset:Vector2, scaler:float) -> None:
         """
         Função: draw
         Descrição:
@@ -115,9 +110,9 @@ class Cart:
         Retorno:
             Nenhum.
         """
-        pos = [self.map_pos.x + (self.region.position.x * self.scaler),
-               self.map_pos.y + (self.region.position.y * self.scaler)]
-        draw_circle_lines_v(pos, self.region.radius * self.scaler, self.color)
+        pos = [map_offset.x + (self.region.position.x * scaler),
+               map_offset.y + (self.region.position.y * scaler)]
+        draw_circle_lines_v(pos, self.region.radius * scaler, self.color)
             
 
     def check_domination(self, players:list) -> int:
@@ -135,8 +130,9 @@ class Cart:
         teams_inside = []
         collision_check = ColCircleCircle()
         for player in players:
-            
-            collision = collision_check.check_collision(player.hitbox, self.region, self.scaler)            
+            if not player.is_alive:
+                continue
+            collision = collision_check.check_collision(player.hitbox, self.region)            
             if collision:
                 if not (player.team in teams_inside):
                     teams_inside.append(player.team)

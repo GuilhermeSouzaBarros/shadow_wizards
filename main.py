@@ -12,8 +12,9 @@ async def main():
     while not env.close_window:
         env.tick += get_frame_time()
         while env.tick >= TICK:
-            env.update(TICK)
+            env.update_tick(TICK)
             env.tick -= TICK
+        env.update_frame()
         env.draw()
         await asyncio.sleep(0)
 
