@@ -6,9 +6,9 @@ from gamemodes.capture_flag import CapturePoint, Flag
 from gamemodes.payload import Cart
 
 class Objectives:
-    def __init__(self, tile_size:float, map_objectives:dict, map_id:int):
+    def __init__(self, tile_size:int, map_objectives:dict, map_id:int):
         self.tile_size = tile_size
-        self.objectives = []
+        self.objectives = {}
 
         self.map_objectives = map_objectives
         self.map_id = map_id
@@ -31,19 +31,6 @@ class Objectives:
         elif self.map_id == 4:
             self.load_domination()
 
-    def draw(self, map_offset:Vector2, scaler:float) -> None:
-        """
-        Função: draw
-        Descrição:
-            Desenha todos os objetivos da partida.
-        Parâmetros:
-            Nenhum.
-        Retorno:
-            Nenhum:
-        """
-        for objective in self.objectives:
-            objective.draw(map_offset, scaler)
-
     def update(self, players:list, delta_time:float) -> list:
         """
         Função: update
@@ -55,10 +42,28 @@ class Objectives:
             Uma lista com o incremento da pontuação de cada time.
         """
         final_score_inc = [0, 0]
-        for objective in self.objectives:
-            objective.update(players, delta_time)
+        for objective_type in self.objectives:
+            for objective in self.objectives[objective_type]:
+                if 'flags' not in self.objectives:
+                    objective.update(players=players, delta_time=delta_time)
+                else:
+                    objective.update(players=players, delta_time=delta_time, flags=self.objectives['flags'])
             
         return final_score_inc
+
+    def draw(self, map_offset:Vector2, scaler:float) -> None:
+        """
+        Função: draw
+        Descrição:
+            Desenha todos os objetivos da partida.
+        Parâmetros:
+            Nenhum.
+        Retorno:
+            Nenhum:
+        """
+        for objective_type in self.objectives:
+            for objective in self.objectives[objective_type]:
+                objective.draw(map_offset, scaler)
 
     def load_cart(self) -> None:
         # load payload path
@@ -66,7 +71,7 @@ class Objectives:
         path_start    = self.map_objectives['cart']['start']
         region_radius = self.map_objectives['cart']['region_radius']
 
-        self.objectives.append(Cart(path, path_start, region_radius, self.tile_size))
+        self.objectives.update({'carts': [Cart(path, path_start, region_radius, self.tile_size)]})
 
     def load_flags(self) -> None:
         """
@@ -78,15 +83,16 @@ class Objectives:
         Retorno:
             Nenhum.
         """
+        self.objectives.update({'flags': []})
         column = self.map_objectives['flags']['team_1']['column']
         row = self.map_objectives['flags']['team_1']['row']
         radius = self.map_objectives['flags']['team_1']['radius']
-        self.objectives.append(Flag(self.tile_size, self.map_pos, row, column, radius, 1, self.scaler))
+        self.objectives['flags'].append(Flag(self.tile_size, row, column, radius, 1))
 
         column = self.map_objectives['flags']['team_2']['column']
         row = self.map_objectives['flags']['team_2']['row']
         radius = self.map_objectives['flags']['team_2']['radius']
-        self.objectives.append(Flag(self.tile_size, self.map_pos, row, column, radius, 2, self.scaler))
+        self.objectives['flags'].append(Flag(self.tile_size, row, column, radius, 2))
 
 
     def load_capture_points(self) -> None:
@@ -99,17 +105,18 @@ class Objectives:
         Retorno:
             Nenhum.
         """
+        self.objectives.update({'capture_points': []})
         # Carrega o ponto de captura do time 1
         column = self.map_objectives['capture_points']['team_1']['column']
         row = self.map_objectives['capture_points']['team_1']['row']
         radius = self.map_objectives['capture_points']['team_1']['radius']
-        self.objectives.append(CapturePoint(self.tile_size, self.map_pos, row, column, radius, 1, self.scaler))
+        self.objectives['capture_points'].append(CapturePoint(self.tile_size, row, column, radius, 1))
         
         # Carrega o ponto de captura do time 2
         column = self.map_objectives['capture_points']['team_2']['column']
         row = self.map_objectives['capture_points']['team_2']['row']
         radius = self.map_objectives['capture_points']['team_2']['radius']
-        self.objectives.append(CapturePoint(self.tile_size, self.map_pos, row, column, radius, 2, self.scaler))
+        self.objectives['capture_points'].append(CapturePoint(self.tile_size, row, column, radius, 2))
 
     def load_domination(self) -> None:
         """
@@ -124,6 +131,5 @@ class Objectives:
         column = self.map_objectives['zone']['column']
         row = self.map_objectives['zone']['row']
         radius = self.map_objectives['zone']['radius']
-        self.objectives.append(Domination(self.tile_size, self.map_pos, row, column, radius))
-
+        self.objectives.update({'dominations': [Domination(self.tile_size, row, column, radius)]})
         

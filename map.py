@@ -54,18 +54,8 @@ class Map:
         """
         map = None
         try:
-            if self.map_id == 1:
-                with open('map/map1.json', 'r') as map_archive:
-                    map = json.load(map_archive)
-            if self.map_id == 2:
-                with open('map/map2.json', 'r') as map_archive:
-                    map = json.load(map_archive)
-            if self.map_id == 3:
-                with open('map/map3.json', 'r') as map_archive:
-                    map = json.load(map_archive)
-            if self.map_id == 4:
-                with open('map/map4.json', 'r') as map_archive:
-                    map = json.load(map_archive)
+            with open(f'map/map{self.map_id}.json', 'r') as map_archive:
+                map = json.load(map_archive)
         except FileNotFoundError:
             print("Erro: Arquivo não encontrado.")
         except json.JSONDecodeError:

@@ -156,7 +156,7 @@ class Player:
 
     def draw(self, map_offset:Vector2, scaler:float, hitbox:bool) -> None:
         color = self.color
-        color = (color[0], color[1], color[2], int(color[3] / (2 - self.is_alive)))
+        color = (color[0], color[1], color[2], int(color[3] / (2 - (not self.has_flag and self.is_alive))))
         if (hitbox):
             self.hitbox.draw(map_offset, scaler, color)
         else:

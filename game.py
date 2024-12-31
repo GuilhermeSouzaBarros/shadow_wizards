@@ -29,7 +29,7 @@ class Game:
         self.close_window = 0
         
         # *** Fazer tela inicial para seleção do mapa ***
-        self.map_id = 2
+        self.map_id = 4
 
         self.map = Map(self.map_id)
 
@@ -63,7 +63,7 @@ class Game:
         self.curr_team_vision = 0 # 0: Both, 1: Team_1, 2: Team_2
 
         self.map_offset = Vector2(0, 0)
-        self.scaler = 0.0
+        self.scaler = 1.0
         self.update_draw_scale()
 
     def update_window(self) -> None: 
@@ -98,8 +98,6 @@ class Game:
         
         score_increase = self.objectives.update(self.players, delta_time)
         self.score.update(self.players, score_increase)
-
-        self.close_window = window_should_close()
 
     
     def update_players_col(self, delta_time:float) -> None:
@@ -146,6 +144,8 @@ class Game:
 
         if is_window_resized():
             self.update_window()
+        
+        self.close_window = window_should_close()
 
     def draw(self) -> None:
         begin_drawing()
