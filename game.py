@@ -31,8 +31,13 @@ class Game:
         self.tick = 0.0
         self.close_window = 0
         
+<<<<<<< HEAD
         self.game_state = Config.STATE_INITIAL_MENU
         self.home_screen = HomeScreen(self.window_size)
+=======
+        # *** Fazer tela inicial para seleção do mapa ***
+        self.map_id = 4
+>>>>>>> 472f5406c9dbc9e78ea0f1080233468076f91794
 
         # *** Serão atualizados na função load_map quando o mapa for escolhido ***
         self.map_id = 0
@@ -48,7 +53,12 @@ class Game:
         self.curr_team_vision = 0 # 0: Both, 1: Team_1, 2: Team_2
 
         self.map_offset = Vector2(0, 0)
+<<<<<<< HEAD
         self.scaler = 0.0
+=======
+        self.scaler = 1.0
+        self.update_draw_scale()
+>>>>>>> 472f5406c9dbc9e78ea0f1080233468076f91794
 
     def update_window(self) -> None: 
         window = get_window_handle()
@@ -86,8 +96,6 @@ class Game:
             
             score_increase = self.objectives.update(self.players, delta_time)
             self.score.update(self.players, score_increase)
-
-        self.close_window = window_should_close()
 
     
     def update_players_col(self, delta_time:float) -> None:
@@ -142,6 +150,8 @@ class Game:
 
         if is_window_resized():
             self.update_window()
+        
+        self.close_window = window_should_close()
 
     def draw(self) -> None:
         begin_drawing()
