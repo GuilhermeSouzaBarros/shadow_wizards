@@ -27,8 +27,24 @@ class Character():
             self.skill_name = "Gun"
             self.color = PINK
         elif character_id == 3:
-            skill = Trap()
+            skill = Traps(self.pos)
             self.skill_name = "Trap"
+            self.color = LIME
+        elif character_id == 4:
+            skill = SuperSpeed()
+            self.skill_name = "Speed"
+            self.color = GOLD
+        elif character_id == 5:
+            skill = Intangibility()
+            self.skill_name = "Intangibility"
             self.color = YELLOW
+        elif character_id == 6:
+            skill = Parry()
+            self.skill_name = "Parry"
+            self.color = GREEN
+        elif character_id == 7:
+            skill = Ray()
+            self.skill_name = "RAY"
+            self.color = PURPLE
 
         return skill

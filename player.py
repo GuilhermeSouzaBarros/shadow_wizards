@@ -37,7 +37,7 @@ class Player:
 
         self.sword = Sword(pos)
         pos_copy = pos.copy()
-        self.character = Character(2, pos_copy)
+        self.character = Character(1, pos_copy)
         
         self.kills  = 0
         self.deaths = 0
@@ -99,7 +99,8 @@ class Player:
 
     def update(self) -> None:
         if self.is_alive:
-            if (self.character.skill_name == "Dash" and self.character.skill.is_activated):
+            if (self.character.skill_name == "Speed" or 
+                (self.character.skill_name == "Dash" and self.character.skill.is_activated)):
                 self.update_player_pos(self.character.skill.speed_multiplier)
                 
             else:

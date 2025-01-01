@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from pyray import *
 from raylib import *
-from shapes import Circle
+from shapes import *
 from imaginary import Imaginary
 
 class Skill(ABC):
@@ -134,7 +134,7 @@ class Gun(Skill):
         self.number_of_bullets = 3
         self.bullets_activated = 0
         self.skill_duration = 2
-        self.cooldown = 2
+        self.cooldown = 0.5
         self.speed_multiplier = 1
         self.bullets = [Projectile(pos, self.tile_size, self.skill_duration, self.cooldown, 
                         self.speed_multiplier) 
@@ -151,16 +151,20 @@ class Gun(Skill):
                 if not bullet.is_activated:
                     bullet.activate(player_pos, angle)
                     self.bullets_activated += 1
+                    self.last_activation = get_time()
                     break
 
     def deactivate(self):
         self.bullets_activated -= 1
 
     def update(self, player_pos, angle:Imaginary):
+        """
+        Atualiza estado bas balas e desativa ou ativa dependendo do evento
+        """
+        current_time = get_time()
         for bullet in self.bullets:
             if bullet.is_activated:
                 bullet.update()
-                current_time = get_time()
                 if current_time - bullet.last_activation > bullet.skill_duration:
                     self.deactivate()
         if is_key_pressed(KEY_E):
@@ -219,17 +223,55 @@ class Fireball(Skill):
             self.projectile.draw(map_offset, scaler, RED)
 
 class Trap(Skill):
-    def __init__(self):
+    def __init__(self, pos:Vector2, tile_size:Vector2, duration:float, cooldown:float):
+        super().__init__()
+        self.cooldown = cooldown
+        self.hitbox = Rectangle(pos, tile_size)
+        self.skill_duration = duration
+        self.tile_size = tile_size
+
+    def activate(self, player_pos = None, angle = None):
+        """
+        Ativa armadilha de acordo com a posição do player
+        """
+        current_time = get_time()
+        if(current_time - self.last_activation > self.cooldown):
+            self.hitbox.position = player_pos
+            self.last_activation = get_time()
+            self.is_activated = True
+    
+    def deactivate(self):
+        self.is_activated = False
+    
+    def update(self):
+        current_time = get_time()
+
+        if current_time - self.last_activation > self.skill_duration:
+            self.deactivate()
+    
+    def draw(self, map_offset=None, scaler=None):
+        """
+        Desenha armadilha se ativa
+        """
+        if self.is_activated:
+            self.hitbox.draw(map_offset, scaler, YELLOW)
+
+class Traps(Skill):
+    def __init__(self, pos:Vector2):
         """
         Herda classe Skill, define o número de armadilhas que 
-        o personagem pode colocar, define tempo até ativar a armadilha
+        o personagem pode colocar, define tempo até ativar a armadilha. 
+        Cria lista de objeto Trap para lidar com cada armadilha separadamente
         """
         super().__init__()
-        self.number_of_traps = 3
+        self.number_of_traps = 5
         self.traps_activated = 0
         self.time_to_activate = 1
         self.cooldown = 1
-        self.traps_pos = []
+        self.tile_size = Vector2(32, 32)
+        self.skill_duration = 5
+        self.traps = [Trap(pos, self.tile_size, self.skill_duration, self.cooldown) 
+                      for _ in range(self.number_of_traps)]
 
     def activate(self, player_pos:Vector2):
         """
@@ -239,28 +281,80 @@ class Trap(Skill):
         current_time = get_time()
         if (self.traps_activated < self.number_of_traps and 
             current_time - self.last_activation > self.cooldown):
-            self.traps_activated += 1
-            self.traps_pos.append(player_pos)
+            for trap in self.traps:
+                if not trap.is_activated:
+                    trap.activate(player_pos)
+                    self.traps_activated += 1
+                    self.last_activation = current_time
+                    break
 
+    def deactivate(self):
+        self.traps_activated -= 1
 
+    def update(self, player_pos:Vector2, angle:Imaginary):
+        current_time = get_time()
+        for trap in self.traps:
+            if trap.is_activated:
+                trap.update()
+                if current_time - trap.last_activation > trap.skill_duration:
+                    self.deactivate()
 
-    def draw(self):
+        if is_key_pressed(KEY_E):
+            self.activate(player_pos)
+                    
+
+    def draw(self, map_offset, scaler):
         """
         Desenha armadilhas
         """
+        for trap in self.traps:
+            if trap.is_activated:
+                trap.draw(map_offset, scaler)
+
+class Intangibility(Skill):
+    def __init__(self):
+        super().__init__()
+        self.cooldown = 3
+        self.skill_duration = 3
+
+    def activate(self):
+        pass
+
+    def update(self):
+        pass
+
+    def draw(self):
+        pass
+
+class Ray(Skill):
+    def __init__(self):
+        """
+        Habilidade de raios
+        """
+        super().__init__()
+
+    def activate(self):
+        pass
+
+    def update(self):
+        pass
+
+    def draw(self):
         pass
 
 class SuperSpeed(Skill):
     def __init__(self):
         super().__init__()
-        self.speed_multiplicator = 7.0
+        self.speed_multiplier = 6.0
+        self.is_activated = True
 
-    def activate(self):
+    def activate(self, player_pos:Vector2):
         pass
 
+    def update(self, pos, angle):
+        pass
 
-
-    def draw(self):
+    def draw(self, map_scaler, scaler):
         pass
 
 
