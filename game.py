@@ -51,6 +51,9 @@ class Game:
 
         self.map_offset = Vector2(0, 0)
 
+        # lista de habilidades que afetam outros players
+        self.active_skills = ["Fireball", "Gun", "Trap"]
+
         self.scaler = 0.0
 
 
@@ -85,6 +88,7 @@ class Game:
             for player in self.players:
                 player.hitbox.delta_position(delta_time)
                 player.sword.update(player.hitbox.position, player.angle, player.player_id)
+                player.character.skill.update(player.hitbox.position.copy(), player.angle.copy())
 
             self.update_sword_col(delta_time)
             
@@ -120,6 +124,22 @@ class Game:
                 if info.intersection:
                     player_a.killed()
                     player_b.died()
+
+    # ainda em desenvolvimento
+    """
+    def update_skill_col(self, delta_time:float):
+        for player_a in self.players:
+            if not (player_a.is_alive and player_a.character.skill.is_activated):
+                continue
+            if player_a.character.skill_name not in self.active_skills:
+                continue
+
+            for player_b in self.players:
+                if not player_b.is_alive or player_a == player_b:
+                    continue
+                info = ColCircleCircle()
+                if info.check_collision(player_a.character.skill)
+    """
 
     def update_frame(self) -> None:
         if (is_key_pressed(KEY_F11)):

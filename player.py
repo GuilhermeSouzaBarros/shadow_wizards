@@ -9,6 +9,7 @@ from vectors import Vector2
 from lines import ColLines
 from shapes import Circle
 from sword import Sword
+from character import Character
 
 
 class Player:
@@ -32,8 +33,11 @@ class Player:
         self.respawn     = 2
         self.start_time  = 0
         self.angle       = Imaginary(start_angle[0], start_angle[1])
+        self.speed_multiplier = 4.0
 
         self.sword = Sword(pos)
+        pos_copy = pos.copy()
+        self.character = Character(2, pos_copy)
         
         self.kills  = 0
         self.deaths = 0
@@ -69,8 +73,8 @@ class Player:
             if (is_key_down(KEY_L) or is_key_down(KEY_RIGHT)):
                 self.angle.x += 1.0
 
-    def update_player_pos(self) -> None:
-        speed = self.tile_size * 4.0
+    def update_player_pos(self, speed_multiplier) -> None:
+        speed = self.tile_size * speed_multiplier
         if (is_key_down(KEY_LEFT_CONTROL)):
             speed *= 0.1
         elif (is_key_down(KEY_LEFT_SHIFT)):
@@ -95,7 +99,11 @@ class Player:
 
     def update(self) -> None:
         if self.is_alive:
-            self.update_player_pos()
+            if (self.character.skill_name == "Dash" and self.character.skill.is_activated):
+                self.update_player_pos(self.character.skill.speed_multiplier)
+                
+            else:
+                self.update_player_pos(self.speed_multiplier)
                         
         elif (get_time() - self.start_time >= self.respawn):
             self.is_alive = True
@@ -175,4 +183,5 @@ class Player:
             draw_texture_pro(self.sprite, [0, angle * 32, 32, 32], rectangle_dest, [offset * scaler, 2 * offset * scaler], 0, color)
 
         self.sword.draw(map_offset, scaler, color)
+        self.character.skill.draw(map_offset, scaler)
     
