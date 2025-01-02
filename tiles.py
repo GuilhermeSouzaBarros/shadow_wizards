@@ -22,8 +22,10 @@ class Tile(ABC):
             Vector2(tile_size, tile_size)
         )
 
+        self.in_vision = []
+
     @abstractmethod    
-    def draw(self, map_offset:list, scaler:float) -> None:
+    def draw(self, map_offset:list, scaler:float, vision:int) -> None:
         """ Este método é um método abstrato. """            
         raise NotImplementedError
 
@@ -33,7 +35,7 @@ class Floor(Tile):
         """ Inicializa o objeto Floor. """
         super().__init__(tile_size, type, row, column)
     
-    def draw(self, map_offset:Vector2, scaler:float) -> None:
+    def draw(self, map_offset:Vector2, scaler:float, vision:int) -> None:
         """ 
         Função: draw
         Descrição:
@@ -44,7 +46,12 @@ class Floor(Tile):
         Retorno:
             Nenhum.     
         """
-        self.hitbox.draw(map_offset, scaler, GRAY, outlines=False)
+        if (not vision and len(self.in_vision)) or vision in self.in_vision:
+            color = color_brightness(GRAY, 0)
+        else:
+            color = color_brightness(GRAY, -0.5)
+
+        self.hitbox.draw(map_offset, scaler, color, outlines=False)
 
 
 class Rails(Tile):
@@ -53,7 +60,7 @@ class Rails(Tile):
         super().__init__(tile_size, type, row, column)
         self.is_end = (row == 6 and column == 2) or (row == 8 and column == 22)
 
-    def draw(self, map_offset:Vector2, scaler:float) -> None:
+    def draw(self, map_offset:Vector2, scaler:float, vision:int) -> None:
         """ 
         Função: draw
         Descrição:
@@ -77,7 +84,7 @@ class Border(Tile):
         """ Inicializa o objeto Border. """
         super().__init__(tile_size, type, row, column)
 
-    def draw(self, map_offset:Vector2, scaler:float) -> None:
+    def draw(self, map_offset:Vector2, scaler:float, vision:int) -> None:
         """ 
         Função: draw
         Descrição:
@@ -103,7 +110,7 @@ class Barrier(Tile):
         super().__init__(tile_size, type, row, column)
         self.is_destroyed = False 
 
-    def draw(self, map_offset:Vector2, scaler:float) -> None:
+    def draw(self, map_offset:Vector2, scaler:float, vision:int) -> None:
         """ 
         Função: draw
         Descrição:
@@ -134,7 +141,7 @@ class SpawnPoint(Tile):
         # Controla qual a qual player o spawn point corresponde
         self.player_spawn_id = type/5  
 
-    def draw(self, map_offset:Vector2, scaler:float):
+    def draw(self, map_offset:Vector2, scaler:float, vision:int):
         """ 
         Função: draw
         Descrição:

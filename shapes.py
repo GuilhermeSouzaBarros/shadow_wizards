@@ -9,28 +9,86 @@ from vectors import Vector2
 from lines import Line, ColLines
 
 class Shape:
-    def __init__(self, position:Vector2, angle:Imaginary=Imaginary()) -> None:
-        self.position = position
-        self.speed    = Vector2(0.0, 0.0)
-        self.angle    = angle
+    def __init__(self, position:Vector2, angle:Imaginary=Imaginary(), speed:Vector2=Vector2(0, 0)) -> None:
+        self._position = position
+        self.speed    = speed
+        self._angle    = angle
+
+    @property
+    def position(self) -> Vector2: 
+        return self._position
+    
+    @position.setter
+    def position(self, new_position:Vector2) -> None:
+        self._position = new_position
+
+    @property
+    def angle(self) -> Imaginary:
+        return self._angle
+
+    @angle.setter
+    def angle(self, new_angle:Imaginary) -> None:
+        self._angle = new_angle
 
     def delta_position(self, delta_time:float) -> None:
-        self.position.x += (self.speed.x * delta_time)
-        self.position.y += (self.speed.y * delta_time)
-    
+        change = self.speed.copy()
+        change.x *= delta_time
+        change.y *= delta_time
+        self.position += change
+
     def next_position(self, delta_time:float) -> Vector2:
-        next_pos = Vector2(self.position.x, self.position.y)
+        next_pos = self._position.copy()
         next_pos.x += self.speed.x * delta_time
         next_pos.y += self.speed.y * delta_time
         return next_pos
 
+    def copy(self):
+        return Shape(self._position.copy(), self._angle.copy())
 
 class Rectangle(Shape):
-    def __init__(self, position:Vector2, size:Vector2, angle:Imaginary=Imaginary()) -> None:
-        super().__init__(position, angle)
-        self.size   = size
-        self.radius = ((self.size.x ** 2 + self.size.y ** 2) ** 0.5) / 2.0
+    def __init__(self, position:Vector2, size:Vector2, angle:Imaginary=Imaginary(), speed:Vector2=Vector2(0, 0)) -> None:
+        super().__init__(position, angle, speed)
+        self._size   = size
+        self.inner_radius = 0
+        self.outer_radius = 0
+        self.att_radius()
+        self.lines  = self.to_lines()
     
+    @property
+    def position(self) -> Vector2: 
+        return self._position
+    
+    @position.setter
+    def position(self, new_position:Vector2) -> None:
+        self._position = new_position
+        self.lines = self.to_lines()
+
+    @property
+    def angle(self) -> Imaginary:
+        return self._angle
+
+    @angle.setter
+    def angle(self, new_angle:Imaginary) -> None:
+        self._angle = new_angle
+        self.lines = self.to_lines()
+
+    @property
+    def size(self) -> Vector2:
+        return self._size
+    
+    @size.setter
+    def size(self, new_size:Vector2):
+        self._size = new_size
+        self.att_radius()
+
+    def att_radius(self):
+        self.inner_radius = min(self.size.x, self.size.y) / 2.0
+        self.outer_radius = ((self.size.x ** 2 + self.size.y ** 2) ** 0.5) / 2.0
+
+
+    def copy(self):
+        return Rectangle(self.position.copy(), self.size.copy(), self.angle.copy(), self.speed)
+
     def to_lines(self) -> List[Line]:
         size_im_x = Imaginary(self.size.x / 2.0, 0.0) * self.angle
         size_im_y = Imaginary(0.0, self.size.y / 2.0) * self.angle
@@ -70,11 +128,10 @@ class Rectangle(Shape):
         return lines
 
     def collision_line(self, line:Line) -> ColLines:
-        rec_lines = self.to_lines()
-        colls = [ColLines(line, rec_lines[0]),
-                 ColLines(line, rec_lines[1]),
-                 ColLines(line, rec_lines[2]),
-                 ColLines(line, rec_lines[3])]
+        colls = [ColLines(line, self.lines[0]),
+                 ColLines(line, self.lines[1]),
+                 ColLines(line, self.lines[2]),
+                 ColLines(line, self.lines[3])]
 
         #Reta com menor t significa primeira colisão
         t_menor = colls[0]
@@ -114,16 +171,18 @@ class Rectangle(Shape):
             self.draw_lines(map_offset, scaler, BLACK)
 
     def draw_lines(self, map_offset:Vector2, scaler:float, color:Color) -> None:
-        lines = self.to_lines()
-        for line in lines:
+        for line in self.lines:
             line.draw(map_offset, scaler, color)
 
 
 class Circle(Shape):
-    def __init__(self, position:Vector2, radius:float) -> None:
-        super().__init__(position)
+    def __init__(self, position:Vector2, radius:float, speed:Vector2=Vector2(0, 0)) -> None:
+        super().__init__(position, speed=speed)
         self.radius = radius
 
+    def copy(self):
+        return Circle(self.position.copy(), self.radius, self.speed)
+    
     def collision_line(self, line:Line, delta_time:float) -> dict:
         next_pos_circle = self.next_position(delta_time)
         info = {'intersections': 0}

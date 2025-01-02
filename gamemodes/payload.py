@@ -5,7 +5,7 @@ from utils import sign_of
 from imaginary import Imaginary
 from vectors import Vector2
 from shapes import Rectangle, Circle
-from collisions import ColCircleCircle
+from collisions import CollisionInfo
 
 class Cart:
     def __init__(self, path:list, path_start:int, region_radius:int, tile_size:float):
@@ -93,14 +93,14 @@ class Cart:
         self.region = Circle(self.rectangle.position, self.region_radius)
         
 
-    def draw(self, map_offset:Vector2, scaler:float) -> None:
-        self.draw_cart   (map_offset, scaler)
-        self.draw_region (map_offset, scaler)
+    def draw(self, map_offset:Vector2, scaler:float, vision:int) -> None:
+        self.draw_cart   (map_offset, scaler, vision)
+        self.draw_region (map_offset, scaler, vision)
 
-    def draw_cart(self, map_offset:Vector2, scaler:float) -> None:
+    def draw_cart(self, map_offset:Vector2, scaler:float, vision:int) -> None:
         self.hitbox.draw(map_offset, scaler, self.color)
 
-    def draw_region(self, map_offset:Vector2, scaler:float) -> None:
+    def draw_region(self, map_offset:Vector2, scaler:float, vision:int) -> None:
         """
         Função: draw
         Descrição:
@@ -128,12 +128,11 @@ class Cart:
             2, quando o time 2 estiver movimentando o carrinho.
         """
         teams_inside = []
-        collision_check = ColCircleCircle()
         for player in players:
             if not player.is_alive:
                 continue
-            collision = collision_check.check_collision(player.hitbox, self.region)            
-            if collision:
+            info = CollisionInfo.collision(player.hitbox, self.region)            
+            if info.intersection:
                 if not (player.team in teams_inside):
                     teams_inside.append(player.team)
 

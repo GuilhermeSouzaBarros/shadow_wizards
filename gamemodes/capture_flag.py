@@ -1,7 +1,7 @@
 from pyray import *
 from raylib import *
 
-from collisions import ColCircleCircle
+from collisions import CollisionInfo
 from gamemodes.obj import Objective
 
 class Flag(Objective):
@@ -33,13 +33,12 @@ class Flag(Objective):
         Retorno: 
             Nenhum.
         """
-        collision_check = ColCircleCircle()
         for player in players:
             if player.team == self.team:
                 continue
 
-            has_collision = collision_check.check_collision(player.hitbox, self.hitbox)
-            if has_collision:
+            info = CollisionInfo.collision(player.hitbox, self.hitbox)
+            if info.intersection:
                 self.taken = True
                 player.has_flag = True
                 break
@@ -64,7 +63,7 @@ class Flag(Objective):
                 self.hitbox.position = player.hitbox.position.copy()
         return []
     
-    def draw(self, map_offset:Vector2, scaler:float) -> None:
+    def draw(self, map_offset:Vector2, scaler:float, vision:int) -> None:
         """ 
         Função:
             draw
@@ -101,12 +100,11 @@ class CapturePoint(Objective):
             1, quando a bandeira foi capturada pelo time 1;
             2, quando a bandeira foi capturada pelo time 2.
         """
-        collision_check = ColCircleCircle()
         for player in players:
             if not player.has_flag or self.team != player.team:
                 continue
-            collision = collision_check.check_collision(player.hitbox, self.hitbox)
-            if collision:
+            info = CollisionInfo.collision(player.hitbox, self.hitbox)
+            if info.intersection:
                 print(f"{player.nick} captured the flag!")
                 player.has_flag = False
                 flag.update_region()
@@ -147,7 +145,7 @@ class CapturePoint(Objective):
             return [0, self.pts_gain]
         return []
 
-    def draw(self, map_offset:Vector2, scaler:float) -> None:
+    def draw(self, map_offset:Vector2, scaler:float, vision:int) -> None:
         """ 
         Função: draw
         Descrição:
