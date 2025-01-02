@@ -7,7 +7,7 @@ from vectors import Vector2
 
 class Map:
     def __init__(self, map_id:int) -> None:
-        self.tiles     = []
+        self.tiles = []
 
         self.map_id = map_id # Armazena o identificador do mapa
         self.map_info = self.load_map() # Armazena todas as características do mapa
@@ -26,7 +26,7 @@ class Map:
                 row.append(tile)
             self.tiles.append(row)
     
-    def draw(self, map_offset:Vector2, scaler:float) -> None:
+    def draw(self, map_offset:Vector2, scaler:float, vision:int) -> None:
         """
         Função: draw
         Descrição:
@@ -40,7 +40,7 @@ class Map:
         for row in range(0, self.num_rows):
             for column in range(0, self.num_columns):
                 tile = self.tiles[row][column]
-                tile.draw(map_offset, scaler)
+                tile.draw(map_offset, scaler, vision)
 
     def load_map(self) -> dict:
         """ 

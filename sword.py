@@ -35,10 +35,12 @@ class Sword:
             current_time = get_time()
 
             # Push sword half of x size in facing direction
+            player_pos = player_pos.copy()
             self.hitbox.angle = angle.copy()
             size_im_x = Imaginary(self.hitbox.size.x / 2.0, 0.0) * self.hitbox.angle
-            self.hitbox.position.x = player_pos.x + size_im_x.real
-            self.hitbox.position.y = player_pos.y + size_im_x.imaginary
+            player_pos.x += size_im_x.real
+            player_pos.y += size_im_x.imaginary
+            self.hitbox.position = player_pos
 
             if current_time - self.last_activation >= self.time_activated:
                 self.deactivate()

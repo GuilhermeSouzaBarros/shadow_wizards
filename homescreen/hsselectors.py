@@ -1,352 +1,140 @@
 from pyray import *
 from raylib import *
 
-from config import Config
+from config import *
+from vectors import Vector2
 from shapes import Rectangle
 
 from homescreen.hsbutton import Button
 
 class Selector:
-    def __init__(self, options:list, num_options:int, left_button_pos:Vector2, right_button_pos:Vector2, buttons_size:Vector2, font_size:float=20.0):
+    def __init__(self, window_size:list, options:list, pos:Vector2, size:Vector2):
         self.options = options
-        self.num_options = num_options
+        self.num_options = len(options)
         self.current = 1
 
-        self.buttons_size = buttons_size
-        self.left_button_pos = left_button_pos
-        self.right_button_pos = right_button_pos
+        self.percentage_pos = pos
+        self.percentage_size = size
 
-        self.left_button = Button(left_button_pos, self.buttons_size, BLANK, LIGHTGRAY, "<", font_size)
-        self.right_button = Button(right_button_pos, self.buttons_size, BLANK, LIGHTGRAY, ">", font_size)
-        self.font_size = font_size
-
-    def update(self) -> None:
-        """
-        Função: update
-        Descrição:
-            Atualiza o estado do seletor.
-        Parâmetros:
-            Nenhum.
-        Retorno:
-            Nenhum.
-        """
-        change_amount = self.update_buttons()
-        self.change(change_amount)
-
-    def update_scale(self, scaler:float) -> None:
-        """
-        Função: update_scale
-        Descrição:
-            Atualiza a escala dos botões do seletor.
-        Parâmetros:
-            scaler: float - novo valor para a escala.
-        Retorno:
-            Nenhum.
-        """
-        self.right_button.update_scale(scaler)
-        self.left_button.update_scale(scaler)
-
-    def draw_buttons(self, scaler:float) -> None:
-        """
-        Função: draw_buttons
-        Descrição:
-            Desenha os botões do seletor.
-        Parâmetros:
-            Nenhum.
-        Retorno:
-            Nenhum.
-        """
-        self.left_button.draw(scaler)
-        self.right_button.draw(scaler)
-
-    def draw(self, scaler:float) -> None:
-        """
-        Função: draw
-        Descrição:
-            Desenha o seletor.
-        Parâmetros:
-            scaler: float - escala em que deve ser o desenho do botão.
-        Retorno:
-            Nenhum.
-        """
-        
-        self.draw_buttons(scaler)
-
-    def change(self, increment:int) -> None:
-        """
-        Função: change
-        Descrição:
-            Atualiza o índice da seleção atual.
-        Parâmetros:
-            increment: int - o incremento em relação à lista de opções disponíveis.
-        Retorno:
-            Nenhum.
-        """
-        if self.current + increment > self.num_options:
-            self.current = increment
-        elif self.current + increment < 1:
-            self.current = self.num_options
-        else:
-            self.current += increment
+        self.side_buttons_size = Vector2(size.x * 0.1, size.y * 0.2)
+        self.left_button  = Button(window_size, Vector2(pos.x - size.x * 0.6, pos.y), self.side_buttons_size, BLANK, LIGHTGRAY, "<")
+        self.right_button = Button(window_size, Vector2(pos.x + size.x * 0.6, pos.y), self.side_buttons_size, BLANK, LIGHTGRAY, ">")
 
     def update_buttons(self) -> int:
-        """
-        Função: check_button_press
-        Descrição:
-            Checa se algum dos botões para alterar a seleção atual foi acionado.
-        Parâmetros:
-            Nenuhm.
-        Retorno:
-            0, nenhum botão foi acionado;
-            -1, o botão da esquerda foi acionado;
-            1, o botão da direita foi acionado.
-        """
-        if self.left_button.update():
-            return -1
-        if self.right_button.update():
-            return 1
-        return 0
+        self.left_button.update()
+        self.right_button.update()
+    
+    def change(self) -> None:
+        self.current += -self.left_button.is_pressed + self.right_button.is_pressed
+        self.current %= self.num_options
+        if self.current < 0:
+            self.current = self.num_options
+
+    def update(self) -> None:
+        self.update_buttons()
+        self.change()
+
+    def update_scale(self, window_size:list) -> None:
+        self.left_button.update_scale(window_size)
+        self.right_button.update_scale(window_size)
+
+    def draw_buttons(self) -> None:
+        self.left_button.draw()
+        self.right_button.draw()
+
+    def draw(self) -> None:
+        self.draw_buttons()
+
 
 class MapSelector(Selector):
-    def __init__(self):
-        maps = ((Config.FREE_FOR_ALL_MAP_ID, "Free For All"), (Config.PAYLOAD_MAP_ID, "Payload"), (Config.CAPTURE_THE_FLAG_MAP_ID, "Capture the Flag"), (Config.DOMINATION_MAP_ID, "Domination"))
+    def __init__(self, window_size:list):
+        maps = ((FREE_FOR_ALL_MAP_ID, "Free For All"),
+                (PAYLOAD_MAP_ID, "Payload"),
+                (CAPTURE_THE_FLAG_MAP_ID, "Capture the Flag"),
+                (DOMINATION_MAP_ID, "Domination"))
 
-        self.map_colors = [PURPLE, MAGENTA, BLUE, BLACK]
+        self.map_colors = [PURPLE, MAGENTA, BLUE, LIGHTGRAY]
 
-        right_button_pos = Vector2(405, 270)
-        left_button_pos = Vector2(30, 270)
-        buttons_size = Vector2(35, 50)
+        self.percentage_pos  = Vector2(0.25, 0.5)
+        self.percentage_size = Vector2(0.35, 0.4)
 
-        super().__init__(maps, len(maps), left_button_pos, right_button_pos, buttons_size)
+        self.pixel_pos  = Vector2(self.percentage_pos.x  * window_size[0], self.percentage_pos.y  * window_size[1])
+        self.pixel_size = Vector2(self.percentage_size.x * window_size[0], self.percentage_size.y * window_size[1])
+        self.map_rec    = Rectangle(self.pixel_pos, self.pixel_size)
 
-        self.map_rec_pos = Vector2(75, 210)
-        self.map_rec_size = Vector2(320, 180)
-        self.map_rec = Rectangle(self.map_rec_pos, self.map_rec_size)       
+        super().__init__(window_size, maps, self.percentage_pos, self.percentage_size)
+    
+    def update_scale(self, window_size:list) -> None:
+        self.pixel_pos  = Vector2(self.percentage_pos.x  * window_size[0], self.percentage_pos.y  * window_size[1])
+        self.pixel_size = Vector2(self.percentage_size.x * window_size[0], self.percentage_size.y * window_size[1])
+        self.map_rec    = Rectangle(self.pixel_pos, self.pixel_size)
+        super().update_scale(window_size)
 
-    def update(self, scaler:float) -> None:
-        """
-        Função: update
-        Descrição:
-            Atualiza o estado do seletor de mapas.
-        Parâmetros:
-            Nenhum.
-        Retorno:
-            Nenhum.
-        """
-        super().update()
-        self.update_scale(scaler)
-
-    def update_scale(self, scaler:float) -> None:
-        """
-        Função: update_scale
-        Descrição:
-            Atualiza a escala dos botões.
-        Parâmetros:
-            scaler: float - novo valor para a escala.
-        Retorno:
-            Nenhum.
-        """
-        super().update_scale(scaler)
-        
-        updated_map_rec_pos = Vector2(self.map_rec_pos.x * scaler, self.map_rec_pos.y * scaler)
-        updated_map_rec_size = Vector2(self.map_rec_size.x * scaler, self.map_rec_size.y * scaler)
-
-        self.map_rec.position = updated_map_rec_pos
-        self.map_rec.size = updated_map_rec_size
-
-    def draw_buttons(self, scaler:float) -> None:
-        """
-        Função: draw_buttons
-        Descrição:
-            Desenha os botões do seletor de mapa.
-        Parâmetros:
-            Nenhum.
-        Retorno:
-            Nenhum.
-        """
-        super().draw_buttons(scaler)
-
-    def draw_map(self, scaler:float) -> None:
-        """
-        Função: draw_map
-        Descrição:
-            Desenha o mapa selecionado no momento.
-        Parâmetros:
-            scaler: float - escala atual da janela.
-        Retorno:
-            Nenhum.
-        """
-        draw_rectangle_v(self.map_rec.position, self.map_rec.size, self.map_colors[self.current-1])
+    def draw_map(self) -> None:
+        self.map_rec.draw(Vector2(0, 0), 1.0, self.map_colors[self.current-1])
 
         map_name = self.options[self.current-1][1]
-        spacing = 1.0
+        font_size = self.pixel_size.y * 0.15
+        spacing = self.pixel_size.x * 0.01
+        text_size = measure_text_ex(get_font_default(), map_name, font_size, spacing)
+        text_pos = Vector2(self.map_rec.position.x - text_size.x/2.0, self.map_rec.position.y - text_size.y/2.0)
 
-        text_size = measure_text_ex(get_font_default(), map_name, 20.0 * scaler, spacing)
-        text_pos = Vector2(self.map_rec.position.x + (self.map_rec.size.x - text_size.x)/2.0, 145 * scaler)
+        draw_text_ex(get_font_default(), map_name, text_pos.to_list(), font_size, spacing, BLACK)
 
-        draw_text_ex(get_font_default(), map_name, text_pos, 20.0 * scaler, spacing, BLACK)
+    def draw(self) -> None:
+        self.draw_map()
+        super().draw()
 
-    def change(self, increment:int) -> None:
-        """
-        Função: change
-        Descrição:
-            Atualiza o índice da seleção atual.
-        Parâmetros:
-            increment: int - o incremento em relação à lista de opções disponíveis.
-        Retorno:
-            Nenhum.
-        """
-        super().change(increment)
 
-    def check_button_press(self) -> int:
-        """
-        Função: check_button_press
-        Descrição:
-            Checa se algum dos botões para alterar a seleção de mapa atual foi acionado.
-        Parâmetros:
-            Nenuhm.
-        Retorno:
-            0, nenhum botão foi acionado;
-            -1, o botão da esquerda foi acionado;
-            1, o botão da direita foi acionado.
-        """
-        return super().check_button_press()
-
-    def draw(self, scaler:float) -> None:
-        """
-        Função: draw
-        Descrição:
-            Desenha os botões para alterar a escolha do mapa e qual mapa está sendo escolhido no momento.
-        Parâmetros:
-            Nenhum.
-        Retorno:
-            Nenhum.
-        """
-        super().draw(scaler)
-        self.draw_map(scaler)
-    
 class SkinSelector(Selector):
-    def __init__(self):
-        skins = ((Config.RED_SKIN_ID, "Red Shadow Wizard"), (Config.BLUE_SKIN_ID, "Blue Shadow Wizard"), (Config.GREEN_SKIN_ID, "Green Shadow Wizard"), (Config.GOLD_SKIN_ID, "Golden Shadow Wizard"))
+    def __init__(self, window_size:list):
+        skins = ((RED_SKIN_ID, "Red Shadow Wizard"),
+                 (BLUE_SKIN_ID, "Blue Shadow Wizard"),
+                 (GREEN_SKIN_ID, "Green Shadow Wizard"),
+                 (GOLD_SKIN_ID, "Golden Shadow Wizard"))
         
-        # *** Definir a posição dos botões
-        right_button_pos = Vector2(750, 270)
-        left_button_pos = Vector2(495, 270)
-        buttons_size = Vector2(35, 50)
+        self.percentage_pos  = Vector2(0.75, 0.5)
+        self.percentage_size = Vector2(0.35, 0.4)
+        self.percentage_skin_radius = self.percentage_size.y / 2.0
 
-        self.skin_pos = Vector2(640, 310)
-        self.skin_radius = 90
+        self.pixel_pos  = Vector2(self.percentage_pos.x  * window_size[0], self.percentage_pos.y  * window_size[1])
+        self.pixel_size = Vector2(self.percentage_size.x * window_size[0], self.percentage_size.y * window_size[1])
+        self.pixel_skin_radius = self.percentage_skin_radius * window_size[1] / 2
 
-        self.name_pos = Vector2(535, 145)
+        self.text_pos = Vector2(self.percentage_pos.x, self.percentage_pos.y - self.percentage_size.y * 0.6)
+        super().__init__(window_size, skins, self.percentage_pos, self.percentage_size)
 
-        super().__init__(skins, len(skins), left_button_pos, right_button_pos, buttons_size)
+    def update_scale(self, window_size:list) -> None:
+        self.pixel_pos  = Vector2(self.percentage_pos.x  * window_size[0], self.percentage_pos.y  * window_size[1])
+        self.pixel_size = Vector2(self.percentage_size.x * window_size[0], self.percentage_size.y * window_size[1])
+        self.pixel_skin_radius = self.percentage_skin_radius * window_size[1] / 2
+        super().update_scale(window_size)
 
-    def update(self, scaler:float):
-        """
-        Função: update
-        Descrição:
-            Atualiza o estado do seletor de skin.
-        Parâmetros:
-            Nenhum.
-        Retorno:
-            Nenhum.
-        """
-        super().update()
-        self.update_scale(scaler)
-
-    def update_scale(self, scaler:float) -> None:
-        """
-        Função: update_scale
-        Descrição:
-            Atualiza a escala dos botões.
-        Parâmetros:
-            scaler: float - novo valor para a escala.
-        Retorno:
-            Nenhum.
-        """
-        super().update_scale(scaler)
-
-    def draw_buttons(self, scaler:float):
-        """
-        Função: draw_buttons
-        Descrição:
-            Desenha os botões do seletor de skin.
-        Parâmetros:
-            Nenhum.
-        Retorno:
-            Nenhum.
-        """
-        super().draw_buttons(scaler)
-
-    def draw_skin(self, scaler:float) -> None:        
-        """
-        Função: draw_skin
-        Descrição:
-            Desenha a skin selecionada no momento junto com o seu nome.
-        Parâmetros:
-            scaler: float - escala atual da janela.
-        Retorno:
-            Nenhum.
-        """
+    def draw_skin(self) -> None:
+        draw_circle_v(self.pixel_pos.to_list(), self.pixel_skin_radius, self.skin_color)
+        
         skin_name = self.options[self.current-1][1]
-        draw_circle_v(Vector2(self.skin_pos.x * scaler, self.skin_pos.y * scaler), self.skin_radius * scaler, self.skin_color)
+        font_size = self.pixel_size.y * 0.15
+        spacing = self.pixel_size.x * 0.01
+        text_size = measure_text_ex(get_font_default(), skin_name, font_size, spacing)
+        text_pos = Vector2(self.pixel_pos.x - text_size.x/2.0, self.pixel_pos.y - self.pixel_size.y * 0.6 - text_size.y/2.0)
         
-        spacing = 1.0
-
-        text_size = measure_text_ex(get_font_default(), skin_name, 20.0 * scaler, spacing)
-        text_pos = Vector2(self.skin_pos.x * scaler + (self.skin_radius * scaler - text_size.x), 145 * scaler)
-        
-        draw_text_ex(get_font_default(), skin_name, text_pos, 20.0 * scaler, spacing, BLACK)
-
-    def change(self, increment:int):
-        """
-        Função: change
-        Descrição:
-            Atualiza o índice da seleção atual.
-        Parâmetros:
-            increment: int - o incremento em relação à lista de opções disponíveis.
-        Retorno:
-            Nenhum.
-        """
-        super().change(increment)
-
-    def check_button_press(self):
-        """
-        Função: check_button_press
-        Descrição:
-            Checa se algum dos botões para alterar a seleção de skin atual foi acionado.
-        Parâmetros:
-            Nenuhm.
-        Retorno:
-            0, nenhum botão foi acionado;
-            -1, o botão da esquerda foi acionado;
-            1, o botão da direita foi acionado.
-        """
-        return super().check_button_press()
+        draw_text_ex(get_font_default(), skin_name, text_pos.to_list(), font_size, spacing, BLACK)
 
     @property
     def skin_color(self) -> Color:
         current_skin = self.options[self.current-1][0]
-        if current_skin == Config.RED_SKIN_ID:
+        if current_skin == RED_SKIN_ID:
             return RED
-        elif current_skin == Config.BLUE_SKIN_ID:
+        elif current_skin == BLUE_SKIN_ID:
             return BLUE
-        elif current_skin == Config.GREEN_SKIN_ID:
+        elif current_skin == GREEN_SKIN_ID:
             return GREEN
-        elif current_skin == Config.GOLD_SKIN_ID:
+        elif current_skin == GOLD_SKIN_ID:
             return GOLD
         
         raise AttributeError
 
-    def draw(self, scaler:float) -> None:
-        """
-        Função: draw
-        Descrição:
-            Desenha os botões para alterar a escolha da skin e qual skin está sendo escolhido no momento.
-        Parâmetros:
-            Nenhum.
-        Retorno:
-            Nenhum.
-        """
-        super().draw(scaler)
-        self.draw_skin(scaler)
+    def draw(self) -> None:
+        self.draw_skin()
+        super().draw()

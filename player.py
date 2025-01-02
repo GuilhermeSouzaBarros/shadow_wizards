@@ -3,11 +3,10 @@ from raylib import *
 
 from math import atan2, degrees
 
-from utils import SMALL_FLOAT
 from imaginary import Imaginary
 from vectors import Vector2
-from lines import ColLines
-from shapes import Circle
+from collisions import CollisionInfo
+from shapes import Shape, Circle
 from sword import Sword
 from character import Character
 
@@ -51,6 +50,7 @@ class Player:
         self.has_flag = False
 
         self.in_vision = [self.team]
+        self.vision_range = 128
 
     def update_angle(self) -> None:
         if (self.player_id == 1):
@@ -92,10 +92,10 @@ class Player:
         else:
             self.angle = previous_angle
             self.hitbox.speed = Vector2(0, 0)
-        
-
-    def update_vision(self) -> None:
-        pass
+    
+    def is_in_vision(self, other_hitbox:Shape) -> None:
+        player_vision = Circle(self.hitbox.position.copy(), self.vision_range)
+        return CollisionInfo.collision(player_vision, other_hitbox).intersection
 
     def update(self) -> None:
         if self.is_alive:
@@ -110,8 +110,6 @@ class Player:
             self.is_alive = True
             self.hitbox.position = self.start_pos.copy()
             self.angle           = self.start_angle.copy()
-        
-        self.in_vision = [self.team]
 
     def killed(self):
         self.kills += 1
@@ -125,45 +123,7 @@ class Player:
 
         self.sword.deactivate()
 
-        
-    def col_handle_tile(self, tile:Rectangle, lines_col, delta_time:float) -> None:
-        rec_lines = tile.to_lines()
-        next_pos = self.hitbox.next_position(delta_time)
-        rec_side = tile.in_side_region(self.hitbox.position)
-        for i, info in enumerate(lines_col):
-            if (rec_side and (info['intersections'] == 2 or
-                (info['intersections'] and rec_lines[i].is_point_above(self.hitbox.position)))):
-                push_dir = Vector2(rec_lines[i].direction.x, rec_lines[i].direction.y)
-                push_dir.rotate_90_anti()
-                push_dir.to_module(1.0)
-                
-                distance = Vector2(tile.size.x / 2 + self.hitbox.radius, tile.size.y / 2 + self.hitbox.radius)
-                distance.x -= abs(next_pos.x - tile.position.x)
-                distance.y -= abs(next_pos.y - tile.position.y)
-
-                self.hitbox.speed.x += (distance.x * push_dir.x / delta_time)
-                self.hitbox.speed.y += (distance.y * push_dir.y / delta_time)
-                return
-
-        for i, info_0 in enumerate(lines_col):
-            if (not info_0['intersections']):
-                continue
-            for j, info_1 in enumerate(lines_col):
-                if (info_0 == info_1 or not info_1['intersections']):
-                    continue
-
-                intersection = ColLines(rec_lines[i], rec_lines[j])
-
-                push_dir = Vector2(next_pos.x - intersection.point.x, next_pos.y - intersection.point.y)
-                push_dir.to_module(self.hitbox.radius + SMALL_FLOAT)
-
-                next_pos = Vector2(intersection.point.x + push_dir.x, intersection.point.y + push_dir.y)
-                
-                self.hitbox.speed.x = (next_pos.x - self.hitbox.position.x) / delta_time
-                self.hitbox.speed.y = (next_pos.y - self.hitbox.position.y) / delta_time
-
-
-    def draw(self, map_offset:Vector2, scaler:float, hitbox:bool) -> None:
+    def draw(self, map_offset:Vector2, scaler:float, vision:int, hitbox:bool) -> None:
         color = self.color
         color = (color[0], color[1], color[2], int(color[3] / (2 - (not self.has_flag and self.is_alive))))
         if (hitbox):

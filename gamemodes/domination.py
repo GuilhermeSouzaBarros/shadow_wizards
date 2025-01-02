@@ -2,7 +2,7 @@ from pyray import *
 from raylib import *
 
 from vectors import Vector2
-from collisions import ColCircleCircle
+from collisions import CollisionInfo
 from gamemodes.obj import Objective
 from time import time
 
@@ -37,12 +37,11 @@ class Domination(Objective):
             2, quando o time 2 estiver dominando a área.
         """
         teams_inside = []
-        collision_check = ColCircleCircle()
         for player in players:
             if not player.is_alive:
                 continue
-            collision = collision_check.check_collision(player.hitbox, self.hitbox)            
-            if collision:
+            info = CollisionInfo.collision(player.hitbox, self.hitbox)            
+            if info.intersection:
                 if not (player.team in teams_inside):
                     teams_inside.append(player.team)
 
@@ -71,7 +70,7 @@ class Domination(Objective):
                 self.last_increment = now
         return pts_increase
 
-    def draw(self, map_offset:Vector2, scaler:float) -> None:
+    def draw(self, map_offset:Vector2, scaler:float, vision:int) -> None:
         """
         Função: draw
         Descrição:

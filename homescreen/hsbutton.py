@@ -1,94 +1,53 @@
 from pyray import *
 from raylib import *
 
+from vectors import Vector2
 from shapes import Rectangle
-from imaginary import Imaginary
 
 class Button():
-    def __init__(self, button_pos: Vector2, button_size: Vector2, default_color: Color, hovering_color: Color, text: str, font_size:float=20.0):
-        
-        self.button_pos = button_pos
-        self.button_size = button_size
-        
-        self.button_rec = Rectangle(button_pos, button_size)
+    def __init__(self, window_size:list, pos:Vector2, size: Vector2, default_color: Color, hovering_color: Color, text: str):
+        self.percentage_pos = pos
+        self.percentage_size = size
+
+        pixel_pos = Vector2(pos.x * window_size[0], pos.y * window_size[1])
+        pixel_size = Vector2(size.x * window_size[0], size.y * window_size[1])
+        self.rec = Rectangle(pixel_pos, pixel_size)
         self.default_color = default_color
         self.hovering_color = hovering_color
+
         self.text = text
-        self.font_size = font_size
+        self.spacing = int(pixel_size.x / 100)
+        self.font_size = int(pixel_size.y * 0.8)
+        self.text_size = measure_text_ex(get_font_default(), self.text, self.font_size, 1.0)
+        self.text_pos = Vector2(self.rec.position.x - self.text_size.x/2.0,
+                                self.rec.position.y - self.text_size.y/2.0)
 
-    def draw(self, scaler:float) -> None:
-        """
-        Função: draw
-        Descrição:
-            Desenha o botão.
-        Parâmetros:
-            Nenhum.
-        Retorno:
-            Nenhum.
-        """
+        self.is_hovering = False
+        self.is_pressed = False
+
+    def draw(self) -> None:
         if self.is_hovering:
-            # Desenha o botão com cor quando o mouse estiver por cima dele
-            draw_rectangle_v(self.button_rec.position, self.button_rec.size, self.hovering_color)
+            self.rec.draw(Vector2(0, 0), 1.0, self.hovering_color, outlines=False)
         else:
-            # Desenha o botão transparente enquanto o mouse não estiver por cima dele
-            draw_rectangle_v(self.button_rec.position, self.button_rec.size, self.default_color)
+            self.rec.draw(Vector2(0, 0), 1.0, self.default_color, outlines=False)
         
-        # Calcula o posicionamento do texto centralizado
-        text_size = measure_text_ex(get_font_default(), self.text, self.font_size * scaler, 1.0)
-        text_pos = Vector2(self.button_rec.position.x + (self.button_rec.size.x - text_size.x)/2.0, self.button_rec.position.y + (self.button_rec.size.y - text_size.y)/2.0)
-        spacing = 1.0
-
-        # Desenha o texto do botão
-        draw_text_ex(get_font_default(), self.text, text_pos, self.font_size * scaler, spacing, WHITE)
+        draw_text_ex(get_font_default(), self.text, self.text_pos.to_list(), self.font_size, self.spacing, WHITE)
 
     def update(self) -> bool:
-        """
-        Função: update
-        Descrição:
-            Retorna o estado atualizado do botão.
-        Parâmetros:
-            scaler: float - fator de escala
-        Retorno:
-            False, o botão não foi pressionado;
-            True, o botão foi pressionado.
-        """
-        return self.check_button_press()
-
-    def update_scale(self, scaler:float) -> None:
-        """
-        Função: update_scale
-        Descrição:
-            Atualiza o tamanho e a posição do botão de acordo com o scaler.
-        Parâmetros:
-            scaler: float - fator de escala.
-        Retorno:
-            Nenhum.
-        """
-        updated_rec_pos = Vector2(self.button_pos.x * scaler, self.button_pos.y * scaler)
-        self.button_rec.position = updated_rec_pos
-
-        updated_rec_size = Vector2(self.button_size.x * scaler, self.button_size.y * scaler)
-        self.button_rec.size = updated_rec_size
-
-    @property
-    def is_hovering(self) -> bool:
-        # Retorna se o mouse está em cima do botão ou não
         mouse_pos = get_mouse_position()
-        if check_collision_point_rec(mouse_pos, [self.button_rec.position.x, self.button_rec.position.y, self.button_rec.size.x, self.button_rec.size.y]):
-            return True
-        return False
+        self.is_hovering = check_collision_point_rec(mouse_pos, [self.rec.position.x - self.rec.size.x / 2,
+                                                                 self.rec.position.y - self.rec.size.y / 2,
+                                                                 self.rec.size.x, self.rec.size.y])
+        self.is_pressed  = self.is_hovering and is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
 
-    def check_button_press(self) -> bool:
-        """
-        Função: check_button_press
-        Descrição:
-            Checa se o botão foi acionado.
-        Parâmetros:
-            Nenuhm.
-        Retorno:
-            True, o botão foi acionado;
-            False, o botão não foi acionado.
-        """
-        if self.is_hovering and is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-                return True
-        return False
+    def update_scale(self, window_size:list):
+        pixel_pos = Vector2(self.percentage_pos.x * window_size[0], self.percentage_pos.y * window_size[1])
+        pixel_size = Vector2(self.percentage_size.x * window_size[0], self.percentage_size.y * window_size[1])
+        self.rec = Rectangle(pixel_pos, pixel_size)
+
+        self.spacing = int(pixel_size.x / 100)
+        self.font_size = int(pixel_size.y * 0.8)
+        self.text_size = measure_text_ex(get_font_default(), self.text, self.font_size, 1.0)
+        self.text_pos = Vector2(self.rec.position.x - self.text_size.x/2.0,
+                                self.rec.position.y - self.text_size.y/2.0)
+        
