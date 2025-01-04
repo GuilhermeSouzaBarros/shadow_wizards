@@ -45,10 +45,9 @@ class Objectives:
         for objective_type in self.objectives:
             for objective in self.objectives[objective_type]:
                 if 'flags' not in self.objectives:
-                    objective.update(players=players, delta_time=delta_time)
+                    final_score_inc = objective.update(players=players, delta_time=delta_time)
                 else:
-                    objective.update(players=players, delta_time=delta_time, flags=self.objectives['flags'])
-            
+                    final_score_inc = objective.update(players=players, delta_time=delta_time, flags=self.objectives['flags'])
         return final_score_inc
 
     def draw(self, map_offset:Vector2, scaler:float, vision:int) -> None:

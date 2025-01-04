@@ -89,7 +89,7 @@ class Domination(Objective):
             color = BLUE
         else:
             # Desenha a área de dominação quando nenhum time está dominando
-            color = YELLOW
+            color = WHITE
 
         pos = [map_offset.x + (self.hitbox.position.x * scaler), map_offset.y + (self.hitbox.position.y * scaler)]
         draw_circle_lines_v(pos, self.hitbox.radius * scaler, color)    

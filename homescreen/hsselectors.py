@@ -90,8 +90,13 @@ class SkinSelector(Selector):
     def __init__(self, window_size:list):
         skins = ((RED_SKIN_ID, "Red Shadow Wizard"),
                  (BLUE_SKIN_ID, "Blue Shadow Wizard"),
-                 (GREEN_SKIN_ID, "Green Shadow Wizard"),
-                 (GOLD_SKIN_ID, "Golden Shadow Wizard"))
+                 (PINK_SKIN_ID, "Pink Shadow Wizard "),
+                 (LIME_SKIN_ID, "Lime Shadow Wizard"),
+                 (GOLD_SKIN_ID, "Golden Shadow Wizard"),
+                 (YELLOW_SKIN_ID, "Yellow Shadow Wizard"),
+                 (DARKGREEN_SKIN_ID, "Dark Green Shadow Wizard"),
+                 (PURPLE_SKIN_ID, "Purple Shadow Wizard")
+                 )
         
         self.percentage_pos  = Vector2(0.75, 0.5)
         self.percentage_size = Vector2(0.35, 0.4)
@@ -128,10 +133,18 @@ class SkinSelector(Selector):
             return RED
         elif current_skin == BLUE_SKIN_ID:
             return BLUE
-        elif current_skin == GREEN_SKIN_ID:
-            return GREEN
+        elif current_skin == PINK_SKIN_ID:
+            return PINK
+        elif current_skin == LIME_SKIN_ID:
+            return LIME
         elif current_skin == GOLD_SKIN_ID:
             return GOLD
+        elif current_skin == YELLOW_SKIN_ID:
+            return YELLOW
+        elif current_skin == DARKGREEN_SKIN_ID:
+            return DARKGREEN
+        elif current_skin == PURPLE_SKIN_ID:
+            return PURPLE
         
         raise AttributeError
 

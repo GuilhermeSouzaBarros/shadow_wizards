@@ -13,6 +13,9 @@ class Vector2:
     def __mul__(self, value:float):
         return Vector2(self.x * value, self.y * value)
 
+    def __truediv__(self, value:float):
+        return Vector2(self.x / value, self.y / value)
+
     @property
     def __str__(self):
         return f"{self.x:.2f} / {self.y:.2f}"

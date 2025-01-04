@@ -27,7 +27,7 @@ class Cart:
         self.path         = path
         self.path_start   = path_start
         self.current_line = [path_start, path_start + 1]
-        self.speed        = 2 # in tiles per second, keep it simple
+        self.speed        = 0.5 # in tiles per second, keep it simple
 
         self.color = WHITE
         self.curr_team = 0
@@ -36,8 +36,9 @@ class Cart:
     
     def update(self, players:list, delta_time:float) -> list:
         self.hitbox.speed = Vector2(0, 0)
+        self.update_players_col(players, delta_time)
         if self.end_push:
-            return
+            return [0, 0]
         team_push = self.check_domination(players)
         if self.curr_team != team_push:
             print(f"Current team pushing: {team_push}\n")
@@ -45,7 +46,7 @@ class Cart:
 
         if not team_push:
             self.color = WHITE
-            return
+            return [0, 0]
 
         elif team_push == 1:
             self.color = RED
@@ -60,6 +61,9 @@ class Cart:
         distance = next_point_pos - self.hitbox.position
 
         delta_pos = self.speed * self.tile_size * delta_time
+        
+        final_result = [0, 0]
+
         if (abs(distance.x) > delta_pos or abs(distance.y) > delta_pos) :
             self.hitbox.speed.x = sign_of(distance.x) * self.speed * self.tile_size
             self.hitbox.speed.y = sign_of(distance.y) * self.speed * self.tile_size
@@ -75,11 +79,14 @@ class Cart:
                 self.end_push = 1
                 self.winning_team = self.curr_team
                 print(f"Push ended, team {self.curr_team} won")
+                final_result[self.curr_team-1] = 100
     
         self.hitbox.delta_position(delta_time)
         self.region.position = self.hitbox.position.copy()
+        
 
-
+        return final_result
+    
     def update_region(self) -> None:
         """
         Função: update_region
@@ -91,7 +98,37 @@ class Cart:
             Nenhum
         """
         self.region = Circle(self.rectangle.position, self.region_radius)
+
+    # *** Função redundante, usar só para testes ***
+    def rec_circle_intersection(self, player:Circle):
+        # Retorna o quanto o player está penetrando o retângulo e o ponto do retângulo em que ocorre a colisão. Caso não tenha penetração, não retorna nenhum ponto de colisão.
         
+        # Encontra o ponto mais próximo no retângulo ao centro do círculo
+        closest_x = max((self.hitbox.position.x - self.tile_size/2), min(player.position.x, (self.hitbox.position.x - self.tile_size/2) + self.hitbox.size.x))
+        closest_y = max((self.hitbox.position.y - self.tile_size/2), min(player.position.y, (self.hitbox.position.y - self.tile_size/2) + self.hitbox.size.y))
+        
+        distance = Vector2(player.position.x - closest_x, player.position.y - closest_y)
+        
+        distance = distance.module()
+
+        # Se a distância for menor que o raio, o player está colidindo com o retângulo
+        if distance < player.radius:
+            penetration = player.radius - distance
+            return penetration, Vector2(closest_x, closest_y)
+        return 0, None
+
+    def update_players_col(self, players:list, delta_time:float) -> None:
+        for player in players:
+            penetration, collision_point = self.rec_circle_intersection(player.hitbox)
+
+            # info = CollisionInfo.collision(self.hitbox, player.hitbox, delta_time, calculate_distance=True)
+
+            if penetration:
+                repulsion_dir = Vector2(player.hitbox.position.x - collision_point.x, player.hitbox.position.y - collision_point.y)
+                repulsion_length = repulsion_dir.module()
+                repulsion_dir = repulsion_dir / repulsion_length
+                
+                player.hitbox.position += (repulsion_dir * penetration)
 
     def draw(self, map_offset:Vector2, scaler:float, vision:int) -> None:
         self.draw_cart   (map_offset, scaler, vision)

@@ -26,6 +26,6 @@
             "player_4": [ 6, 23, [1, 0]]
     },
     "objectives":{
-            "zone": {"row": 8, "column": 12, "radius":128}
+            "zone": {"row": 7, "column": 12, "radius":128}
     }
 }

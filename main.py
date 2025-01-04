@@ -29,9 +29,12 @@ async def main():
             game = Game(window.size, menu.selected_map, menu.selected_skin)
         while not window.close_window:
             game.tick += get_frame_time()
-            while game.tick >= TICK:
+            while game.tick >= TICK and not game.end:
                 game.update_tick(TICK)
                 game.tick -= TICK
+
+            if game.end:
+                break
 
             window.update()
             if is_window_resized():
@@ -42,6 +45,7 @@ async def main():
 
             game.draw()
             await asyncio.sleep(0)
+        
 
     close_window()
 

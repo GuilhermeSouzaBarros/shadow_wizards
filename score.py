@@ -1,6 +1,8 @@
 from pyray import *
 from raylib import *
 
+from config import *
+
 class Score():
     def __init__(self, num_teams=2):
         self.objejctives_score = [0] * num_teams
@@ -10,6 +12,12 @@ class Score():
         
         self._font_size = 20
         self.colors = [RED, BLUE, GREEN, GOLD]
+
+        self.time_remaining:float = MATCH_DURATION
+
+    @property
+    def countdown_over(self) -> bool:
+        return self.time_remaining <= 0.0
 
     def draw(self, scaler:float) -> None:
         """
@@ -38,11 +46,21 @@ class Score():
             score_txt = f"Team {team}: {self.final_score[team-1]}"
             draw_text_ex(get_font_default(), score_txt, text_pos, self._font_size * scaler, 1.0, self.colors[team-1])
             text_pos.x += 160 * scaler
+        
 
-    def countdown(self) -> None:
-        pass
+        self.draw_countdown(text_pos, scaler)
 
-    def update(self, players:list, score_increase:list=[]) -> None:
+    def countdown(self, delta_time:float) -> None:
+        self.time_remaining -= delta_time
+
+    def draw_countdown(self, text_pos:Vector2, scaler:float) -> None:
+        minutes = int(self.time_remaining / 60)
+        seconds = int(self.time_remaining) % 60
+        countdown_txt = f"{minutes}:{seconds:02d}"
+        draw_text_ex(get_font_default(), countdown_txt, text_pos, self._font_size * scaler, 1.0, RAYWHITE)
+
+
+    def update(self, delta_time:float, players:list, score_increase:list=[]) -> None:
         """
         Função: update
         Descrição:
@@ -53,6 +71,9 @@ class Score():
         Retorno:
             Nenhum.
         """
+        self.countdown(delta_time)
+
+
         # Calcula a pontuação obtida através de kills
         for player in players:
             self.kills_score[player.team-1] = player.kills * 5

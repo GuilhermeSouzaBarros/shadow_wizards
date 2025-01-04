@@ -38,6 +38,7 @@ class Game:
         self.show_hitboxes = False
         self.curr_team_vision = 0 # 0: Both, 1: Team_1, 2: Team_2
 
+        self.end = False
 
     def update_draw_scale(self, window_size:list) -> None:
         draw_tile_size = Vector2(window_size[0] / self.columns, window_size[1] / self.rows)
@@ -113,7 +114,6 @@ class Game:
             player.update()
 
         self.update_players_col(delta_time)
-
         for player in self.players:
             player.hitbox.delta_position(delta_time)
             player.sword.update(player.hitbox.position, player.angle, player.player_id)
@@ -122,7 +122,9 @@ class Game:
         self.update_sword_col()
         
         score_increase = self.objectives.update(self.players, delta_time)
-        self.score.update(self.players, score_increase)
+        self.score.update(delta_time, self.players, score_increase)
+
+        self.end = self.score.countdown_over
     
     def update_frame(self) -> None:
         self.clear_vision()
