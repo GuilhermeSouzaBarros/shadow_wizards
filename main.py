@@ -2,7 +2,6 @@ import asyncio
 from pyray import *
 
 from window import Window
-from vectors import Vector2
 from home_screen import HomeScreen
 from game import Game
 

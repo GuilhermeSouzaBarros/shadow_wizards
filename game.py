@@ -8,6 +8,8 @@ from map import Map
 from objectives import Objectives
 from score import Score
 
+from shapes import Rectangle
+
 class Game:
     def __init__(self, window_size, map_id:int, skin_color:int) -> None:
         self.tick = 0.0
@@ -54,11 +56,10 @@ class Game:
                     continue
                 if (tile.is_destructible and not tile.is_destroyed) or tile.has_collision:
                     for player in self.players:
-                        info = CollisionInfo.collision(tile.hitbox, player.hitbox, delta_time, calculate_distance=True)
+                        info = CollisionInfo.collision(player.hitbox, tile.hitbox, delta_time, calculate_distance=True)
                         if info.intersection:
-                            player.hitbox.speed.x += info.distance.x / delta_time
-                            player.hitbox.speed.y += info.distance.y / delta_time
-                            
+                            player.hitbox.speed -= info.distance * (1 / delta_time)
+
     def update_sword_col(self) -> None:
         for player_a in self.players:
             if not (player_a.is_alive and player_a.sword.active):
@@ -110,6 +111,16 @@ class Game:
         # Not at all finished, just basic distance checking
 
     def update_tick(self, delta_time) -> None:
+        """
+        angle = Imaginary(3 ** 0.5, 1, 1)
+        print(f"angle to sum: {angle.__str__}")
+        for i in range(0, 8):
+            print(f"Curr: {self.test_tile.angle.__str__}")
+            print(self.test_tile.distance_to_side(Imaginary()).__str__)
+            print( )
+            self.test_tile.angle *= angle
+        1/0
+        """
         for player in self.players:
             player.update()
 

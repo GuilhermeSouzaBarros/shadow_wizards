@@ -11,11 +11,11 @@ class Line:
         self.direction = direction
         self.point     = point
         self.limit_t   = limit_t
-        self.domain    = self.domain()
+        self._domain    = self.domain()
 
     @property
     def __str__(self):
-        return f"P = ({self.point.x:.2f}, {self.point.y:.2f}) + t({self.direction.x, self.direction.y}) / {self.limit_t.x:.2f} <= t <= {self.limit_t.y:.2f}"
+        return f"P = ({self.point.x:.2f}, {self.point.y:.2f}) + t({self.direction.__str__}) / {self.limit_t.x:.2f} <= t <= {self.limit_t.y:.2f}"
 
     def domain(self) -> Domain:    
         dom = {'x': Domain(self.point.x + self.limit_t.x * self.direction.x,
@@ -29,8 +29,11 @@ class Line:
         return dom
 
     def has_point(self, point:Vector2) -> int:
-        has = ((self.domain['x'].a <= point.x and point.x <= self.domain['x'].b) and
-               (self.domain['y'].a <= point.y and point.y <= self.domain['y'].b))
+
+        #has = ((self._domain['x'].a - SMALL_FLOAT <= point.x and point.x <= self._domain['x'].b + SMALL_FLOAT) and
+        #       (self._domain['y'].a - SMALL_FLOAT <= point.y and point.y <= self._domain['y'].b + SMALL_FLOAT))
+        has = ((self._domain['x'].a <= point.x and point.x <= self._domain['x'].b) and
+               (self._domain['y'].a <= point.y and point.y <= self._domain['y'].b))
         return has
 
     def is_point_above(self, point:Vector2) -> int:
@@ -44,6 +47,22 @@ class Line:
 
         return (intersection.did_intersect and intersection.t_line_2 < 0.0)
 
+    def point_distance(self, point:Vector2) -> Vector2:
+        perpendicular_line_dir = Vector2(self.direction.x, self.direction.y)
+        perpendicular_line_dir.rotate_90_anti()
+        perpendicular_line = Line(perpendicular_line_dir, point, Vector2(float('-inf'), float('inf')))
+
+        intersection = ColLines(self, perpendicular_line)
+
+        return (intersection.point - point)
+
+    def is_parallel(self, other_line):
+        if (self.direction.x and self.direction.y and other_line.direction.x and other_line.direction.y):
+            ratio = Vector2(self.direction.x / other_line.direction.x, self.direction.y / other_line.direction.y)
+            return ratio.x == ratio.y
+        else:
+            return not ((self.direction.x or other_line.direction.x) and (self.direction.y or other_line.direction.y))
+        
     def draw(self, map_offset:Vector2, scaler:float, color:Color):
         s_pos = [
             map_offset.x + scaler * self.point.x,
