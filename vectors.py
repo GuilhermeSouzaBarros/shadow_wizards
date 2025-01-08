@@ -20,7 +20,7 @@ class Vector2:
     def module(self) -> float:
         return (self.x ** 2 + self.y ** 2) ** 0.5
 
-    def to_module(self, value:float) -> None:
+    def to_module(self, value:float=1.0) -> None:
         module = self.module()
         if (module):
             self.x *= value / module

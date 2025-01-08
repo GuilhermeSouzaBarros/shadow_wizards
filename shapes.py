@@ -4,6 +4,7 @@ from math import atan2, degrees
 
 from typing import List
 
+from utils import sign_of
 from imaginary import Imaginary
 from vectors import Vector2
 from lines import Line, ColLines
@@ -79,15 +80,25 @@ class Rectangle(Shape):
     @size.setter
     def size(self, new_size:Vector2):
         self._size = new_size
+        self.to_lines()
         self.att_radius()
 
     def att_radius(self):
         self.inner_radius = min(self.size.x, self.size.y) / 2.0
         self.outer_radius = ((self.size.x ** 2 + self.size.y ** 2) ** 0.5) / 2.0
 
-
     def copy(self):
         return Rectangle(self.position.copy(), self.size.copy(), self.angle.copy(), self.speed)
+
+    def distance_to_side(self, angle:Imaginary) -> Vector2:
+        relative_angle = self.angle * angle
+        angle_size = Vector2(abs(relative_angle.imaginary * self.size.x),
+                             abs(relative_angle.real * self.size.y))
+
+        if angle_size.y > angle_size.x:
+            return Vector2(sign_of(relative_angle.real) * self.size.x * 0.5, relative_angle.imaginary * self.size.y * 0.5)
+        else:
+            return Vector2(self.size.x * 0.5 * relative_angle.real, sign_of(relative_angle.imaginary) * self.size.y * 0.5)
 
     def to_lines(self) -> List[Line]:
         size_im_x = Imaginary(self.size.x / 2.0, 0.0) * self.angle
@@ -150,10 +161,10 @@ class Rectangle(Shape):
         return count == 1
 
     def print_info(self) -> None:
-        print(f"Rectangle: {self.position.x:.2f} / {self.position.y:.2f}, size: {self.size.x:.2f} / {self.size.y:.2f}")
+        print(f"Rectangle: {self.position.__str__}, size: {self.size.__str__}")
 
 
-    def draw(self, map_offset:Vector2, scaler:float, color:Color, outlines:bool=True) -> None:
+    def draw(self, map_offset:Vector2=Vector2(0, 0), scaler:float=1, color:Color=GRAY, outlines:bool=True) -> None:
         size_im_x = Imaginary(self.size.x / 2.0, 0.0) * self.angle
         size_im_y = Imaginary(0.0, self.size.y / 2.0) * self.angle
         up_left_corner = [self.position.x - size_im_x.real      - size_im_y.real,
@@ -221,7 +232,7 @@ class Circle(Shape):
         print(f"Circle: {self.position.x:.2f} / {self.position.y:.2f}, radius: {self.radius:.2f}")
         print(f"Speed: {self.speed.x:.2f} / {self.speed.y:.2f}")
     
-    def draw(self, map_offset:Vector2, scaler:float, color:Color, outlines:bool=True) -> None:
+    def draw(self, map_offset:Vector2=Vector2(0, 0), scaler:float=1, color:Color=GRAY, outlines:bool=True) -> None:
         pos = self.position * scaler
         pos += map_offset
         pos = pos.to_list()
@@ -229,4 +240,43 @@ class Circle(Shape):
         draw_circle_v(pos, radius, color)
         if outlines:
             draw_circle_lines_v(pos, radius, BLACK)
+
+class ColCircleLine:
+    def __init__(self, circle:Circle, line:Line, delta_time:float=0):
+        self.did_intersect = 0
+        self.intersections = [False, False]
+        self.point_1 = Vector2(0, 0)
+        self.point_2 = Vector2(0, 0)
+        self.collision_line(circle, line, delta_time)
+
+    def collision_line(self, circle:Circle, line:Line, delta_time:float) -> dict:
+        next_pos_circle = circle.next_position(delta_time)
+
+        #equação de segundo grau para achar t em P = A + tV
         
+        a = (line.direction.x) ** 2 + (line.direction.y) ** 2
+
+        b = 2 * (line.direction.x * (line.point.x - next_pos_circle.x) +
+                 line.direction.y * (line.point.y - next_pos_circle.y))
+        
+        c = ((line.point.x - next_pos_circle.x) ** 2 +
+             (line.point.y - next_pos_circle.y) ** 2 -
+             (circle.radius) ** 2)
+
+        delta = b ** 2 - 4 * a * c
+        if (delta < 0.0):
+            return
+
+        t_1 = (-b + delta ** 0.5) / (2 * a)
+        t_2 = (-b - delta ** 0.5) / (2 * a)
+
+        self.point_1 = Vector2(line.point.x + t_1 * line.direction.x, line.point.y + t_1 * line.direction.y)
+        self.point_2 = Vector2(line.point.x + t_2 * line.direction.x, line.point.y + t_2 * line.direction.y)
+        
+        self.intersections[0] = line.has_point(self.point_1)
+        self.intersections[1] = line.has_point(self.point_2)
+        self.did_intersect = self.intersections[0] + self.intersections[1]
+
+    @property
+    def __str__(self):
+        return f"{self.intersections[0]}: {self.point_1.__str__} e {self.intersections[1]}: {self.point_2.__str__}"
