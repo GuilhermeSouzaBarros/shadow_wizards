@@ -8,10 +8,8 @@ from map import Map
 from objectives import Objectives
 from score import Score
 
-from shapes import Rectangle
-
 class Game:
-    def __init__(self, window_size, map_id:int, skin_color:int) -> None:
+    def __init__(self, window_size, map_id:int, player_id:int) -> None:
         self.tick = 0.0
         
         # *** Serão atualizados na função load_map quando o mapa for escolhido ***
@@ -34,7 +32,7 @@ class Game:
 
         self.scaler = 1.0
 
-        self.load_map(map_id, skin_color)   
+        self.load_map(map_id, player_id)   
         self.update_draw_scale(window_size) 
 
         self.show_hitboxes = False
@@ -111,16 +109,6 @@ class Game:
         # Not at all finished, just basic distance checking
 
     def update_tick(self, delta_time) -> None:
-        """
-        angle = Imaginary(3 ** 0.5, 1, 1)
-        print(f"angle to sum: {angle.__str__}")
-        for i in range(0, 8):
-            print(f"Curr: {self.test_tile.angle.__str__}")
-            print(self.test_tile.distance_to_side(Imaginary()).__str__)
-            print( )
-            self.test_tile.angle *= angle
-        1/0
-        """
         for player in self.players:
             player.update()
 
@@ -149,6 +137,9 @@ class Game:
             self.curr_team_vision += 1
             self.curr_team_vision %= 3
             print(f"Visão {self.curr_team_vision}")
+
+        if (is_key_pressed(KEY_ESCAPE)):
+            self.end = True
         
     def draw(self) -> None:
         begin_drawing()
@@ -162,7 +153,7 @@ class Game:
 
         end_drawing()
     
-    def load_map(self, map_id:int, skin_color:int) -> None:
+    def load_map(self, map_id:int, character_id:int) -> None:
         self.map_id = map_id
         self.map = Map(self.map_id)
 
@@ -175,16 +166,13 @@ class Game:
                                self.map.map_info['spawn_points']['player_1'][0],
                                self.map.map_info['spawn_points']['player_1'][1],
                                self.map.map_info['spawn_points']['player_1'][2],
-                               1, self.map_id,
-                               "player 1", "sprites/wizard.png", 
-                               skin_color),
+                               1, character_id, self.map_id, "player 1"),
                         
                         Player(self.tile_size,
                                self.map.map_info['spawn_points']['player_2'][0],
                                self.map.map_info['spawn_points']['player_2'][1],
                                self.map.map_info['spawn_points']['player_2'][2],
-                               2, self.map_id,
-                               "player 2", "sprites/wizard.png", BLUE)]
+                               2, 2, self.map_id, "player 2")]
 
         self.objectives = Objectives(self.tile_size, self.map.map_info['objectives'], self.map_id)
         # Carrega todos os objetivos de acordo com o id do mapa
@@ -192,3 +180,8 @@ class Game:
 
         num_teams = len(self.players) if self.map_id == 1 else 2
         self.score = Score(num_teams)
+
+    def unload(self) -> None:
+        for player in self.players:
+            unload_texture(player.sprite)
+        print("Game unloaded")

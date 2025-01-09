@@ -11,7 +11,8 @@ class Selector:
     def __init__(self, window_size:list, options:list, pos:Vector2, size:Vector2):
         self.options = options
         self.num_options = len(options)
-        self.current = 1
+        self.current_id = 1
+        self.current = self.options[0]
 
         self.percentage_pos = pos
         self.percentage_size = size
@@ -25,10 +26,11 @@ class Selector:
         self.right_button.update()
     
     def change(self) -> None:
-        self.current += -self.left_button.is_pressed + self.right_button.is_pressed
-        self.current %= self.num_options
-        if self.current < 0:
-            self.current = self.num_options
+        self.current_id += -self.left_button.is_pressed + self.right_button.is_pressed
+        self.current_id %= self.num_options
+        if self.current_id < 0:
+            self.current_id = self.num_options
+        self.current = self.options[self.current_id-1]
 
     def update(self) -> None:
         self.update_buttons()
@@ -48,12 +50,10 @@ class Selector:
 
 class MapSelector(Selector):
     def __init__(self, window_size:list):
-        maps = ((FREE_FOR_ALL_MAP_ID, "Free For All"),
-                (PAYLOAD_MAP_ID, "Payload"),
-                (CAPTURE_THE_FLAG_MAP_ID, "Capture the Flag"),
-                (DOMINATION_MAP_ID, "Domination"))
-
-        self.map_colors = [PURPLE, MAGENTA, BLUE, LIGHTGRAY]
+        maps = ((FREE_FOR_ALL_MAP_ID, "Free For All", PURPLE),
+                (PAYLOAD_MAP_ID, "Payload", MAGENTA),
+                (CAPTURE_THE_FLAG_MAP_ID, "Capture the Flag", BLUE),
+                (DOMINATION_MAP_ID, "Domination", LIGHTGRAY))
 
         self.percentage_pos  = Vector2(0.25, 0.5)
         self.percentage_size = Vector2(0.35, 0.4)
@@ -71,9 +71,9 @@ class MapSelector(Selector):
         super().update_scale(window_size)
 
     def draw_map(self) -> None:
-        self.map_rec.draw(Vector2(0, 0), 1.0, self.map_colors[self.current-1])
+        self.map_rec.draw(Vector2(0, 0), 1.0, self.current[2])
 
-        map_name = self.options[self.current-1][1]
+        map_name = self.current[1]
         font_size = self.pixel_size.y * 0.15
         spacing = self.pixel_size.x * 0.01
         text_size = measure_text_ex(get_font_default(), map_name, font_size, spacing)
@@ -86,68 +86,55 @@ class MapSelector(Selector):
         super().draw()
 
 
-class SkinSelector(Selector):
+class CharacterSelector(Selector):
     def __init__(self, window_size:list):
-        skins = ((RED_SKIN_ID, "Red Shadow Wizard"),
-                 (BLUE_SKIN_ID, "Blue Shadow Wizard"),
-                 (PINK_SKIN_ID, "Pink Shadow Wizard "),
-                 (LIME_SKIN_ID, "Lime Shadow Wizard"),
-                 (GOLD_SKIN_ID, "Golden Shadow Wizard"),
-                 (YELLOW_SKIN_ID, "Yellow Shadow Wizard"),
-                 (DARKGREEN_SKIN_ID, "Dark Green Shadow Wizard"),
-                 (PURPLE_SKIN_ID, "Purple Shadow Wizard")
-                 )
+        characters = [] 
+        for character in CHARACTERS:
+            characters.append(character.copy())
+        
+        for character in characters:
+            character['sprite'] = load_texture(character['sprite'])
         
         self.percentage_pos  = Vector2(0.75, 0.5)
         self.percentage_size = Vector2(0.35, 0.4)
-        self.percentage_skin_radius = self.percentage_size.y / 2.0
+        self.percentage_character_radius = self.percentage_size.y / 2.0
 
         self.pixel_pos  = Vector2(self.percentage_pos.x  * window_size[0], self.percentage_pos.y  * window_size[1])
         self.pixel_size = Vector2(self.percentage_size.x * window_size[0], self.percentage_size.y * window_size[1])
-        self.pixel_skin_radius = self.percentage_skin_radius * window_size[1] / 2
+        self.pixel_character_radius = self.percentage_character_radius * window_size[1] / 2
 
         self.text_pos = Vector2(self.percentage_pos.x, self.percentage_pos.y - self.percentage_size.y * 0.6)
-        super().__init__(window_size, skins, self.percentage_pos, self.percentage_size)
+        super().__init__(window_size, characters, self.percentage_pos, self.percentage_size)
 
     def update_scale(self, window_size:list) -> None:
         self.pixel_pos  = Vector2(self.percentage_pos.x  * window_size[0], self.percentage_pos.y  * window_size[1])
         self.pixel_size = Vector2(self.percentage_size.x * window_size[0], self.percentage_size.y * window_size[1])
-        self.pixel_skin_radius = self.percentage_skin_radius * window_size[1] / 2
+        self.pixel_character_radius = self.percentage_character_radius * window_size[1] / 2
         super().update_scale(window_size)
 
-    def draw_skin(self) -> None:
-        draw_circle_v(self.pixel_pos.to_list(), self.pixel_skin_radius, self.skin_color)
+    def draw_character(self) -> None:
+        tint = self.current['color']
+        if self.current['id'] == CHARACTER_RED['id']:
+            tint = WHITE
+
+        draw_texture_pro(self.current['sprite'], [0, 64, 32, 32],
+                         [self.pixel_pos.x - self.pixel_size.y / 2,
+                          self.pixel_pos.y - self.pixel_size.y / 2,
+                          self.pixel_size.y, self.pixel_size.y], [0, 0], 0, tint)
         
-        skin_name = self.options[self.current-1][1]
+    
+        character_name = self.current["name"]
         font_size = self.pixel_size.y * 0.15
         spacing = self.pixel_size.x * 0.01
-        text_size = measure_text_ex(get_font_default(), skin_name, font_size, spacing)
+        text_size = measure_text_ex(get_font_default(), character_name, font_size, spacing)
         text_pos = Vector2(self.pixel_pos.x - text_size.x/2.0, self.pixel_pos.y - self.pixel_size.y * 0.6 - text_size.y/2.0)
         
-        draw_text_ex(get_font_default(), skin_name, text_pos.to_list(), font_size, spacing, BLACK)
+        draw_text_ex(get_font_default(), character_name, text_pos.to_list(), font_size, spacing, BLACK)
 
     @property
-    def skin_color(self) -> Color:
-        current_skin = self.options[self.current-1][0]
-        if current_skin == RED_SKIN_ID:
-            return RED
-        elif current_skin == BLUE_SKIN_ID:
-            return BLUE
-        elif current_skin == PINK_SKIN_ID:
-            return PINK
-        elif current_skin == LIME_SKIN_ID:
-            return LIME
-        elif current_skin == GOLD_SKIN_ID:
-            return GOLD
-        elif current_skin == YELLOW_SKIN_ID:
-            return YELLOW
-        elif current_skin == DARKGREEN_SKIN_ID:
-            return DARKGREEN
-        elif current_skin == PURPLE_SKIN_ID:
-            return PURPLE
-        
-        raise AttributeError
+    def character_id(self) -> int:
+        return self.current['id']
 
     def draw(self) -> None:
-        self.draw_skin()
+        self.draw_character()
         super().draw()

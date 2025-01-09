@@ -2,6 +2,7 @@ from pyray import *
 from raylib import *
 
 from math import atan2, degrees
+from config import *
 
 from imaginary import Imaginary
 from vectors import Vector2
@@ -10,12 +11,17 @@ from shapes import Shape, Circle
 from sword import Sword
 from character import Character
 
-
 class Player:
     def __init__(self, tile_size:float,
                  start_row:int, start_column:int, start_angle:list,
-                 player_id:int, map_id:int,
-                 nick:str, sprite:str, color:Color) -> None:
+                 player_id:int, character_id:int, map_id:int, nick:str) -> None:
+        self.character_id = character_id
+        for character in CHARACTERS:
+            if character['id'] == self.character_id:
+                self.character_name = character['name']
+                self.sprite = character['sprite']
+                self.color = character['color']
+        
         self.tile_size   = tile_size
 
         pos = Vector2(tile_size * (start_column + 0.5),
@@ -27,7 +33,6 @@ class Player:
         self.start_angle = Imaginary(start_angle[0], start_angle[1])
 
         self.hitbox      = Circle(pos, tile_size * 0.4)
-        self.color       = color
         self.is_alive    = True
         self.respawn     = 2
         self.start_time  = 0
@@ -35,14 +40,13 @@ class Player:
         self.speed_multiplier = 4.0
 
         self.sword = Sword(pos)
-        pos_copy = pos.copy()
-        self.character = Character(1, pos_copy)
+        self.character = Character(character_id, pos.copy())
         
         self.kills  = 0
         self.deaths = 0
 
         self.nick   = nick
-        self.sprite = load_texture(sprite)
+        self.sprite = load_texture(self.sprite) 
 
         self.player_id = player_id
         self.team = player_id if map_id == 1 else (player_id == 2 or player_id == 4) + 1
@@ -124,8 +128,16 @@ class Player:
         self.sword.deactivate()
 
     def draw(self, map_offset:Vector2, scaler:float, vision:int, hitbox:bool) -> None:
+        if not self.has_flag and (vision or not len(self.in_vision)) and not vision in self.in_vision:
+            return
+        
         color = self.color
+        tint = self.color
+        if self.character_id == CHARACTER_RED['id']:
+            tint = WHITE
+
         color = (color[0], color[1], color[2], int(color[3] / (2 - (not self.has_flag and self.is_alive))))
+        tint = (tint[0], tint[1], tint[2], int(tint[3] / (2 - (not self.has_flag and self.is_alive))))
         if (hitbox):
             self.hitbox.draw(map_offset, scaler, color)
         else:
@@ -141,7 +153,7 @@ class Player:
                             scaler * (self.hitbox.radius + offset) * 2,
                             scaler * (self.hitbox.radius + offset) * 2]
 
-            draw_texture_pro(self.sprite, [0, angle * 32, 32, 32], rectangle_dest, [offset * scaler, 2 * offset * scaler], 0, color)
+            draw_texture_pro(self.sprite, [0, angle * 32, 32, 32], rectangle_dest, [offset * scaler, 2 * offset * scaler], 0, tint)
 
         self.sword.draw(map_offset, scaler, color)
         self.character.skill.draw(map_offset, scaler)
