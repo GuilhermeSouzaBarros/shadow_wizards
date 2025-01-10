@@ -55,6 +55,8 @@ class Game:
                 if (tile.is_destructible and not tile.is_destroyed) or tile.has_collision:
                     for player in self.players:
                         info = CollisionInfo.collision(player.hitbox, tile.hitbox, delta_time, calculate_distance=True)
+                        if player.character.skill_name == "Intangibility" and player.character.skill.is_activated:
+                            continue
                         if info.intersection:
                             player.hitbox.speed -= info.distance * (1 / delta_time)
 
@@ -66,11 +68,30 @@ class Game:
             for player_b in self.players:
                 if player_a == player_b or not player_b.is_alive:
                     continue
-
+                
+                if player_b.character.skill_name == "Shield" and player_b.character.skill.is_activated:
+                    continue
                 info = CollisionInfo.collision(player_a.sword.hitbox, player_b.hitbox)
                 if info.intersection:
                     player_a.killed()
                     player_b.died()
+
+    def update_skill_col(self, delta_time:float) -> None:
+        for row in self.map.tiles:
+            for tile in row:
+                if (not tile.type):
+                    continue
+                if (tile.is_destructible and not tile.is_destroyed) or tile.has_collision:
+                    for player in self.players:
+                        projectiles = ["Gun", "Fireball"]
+                        if not (player.character.skill_name in projectiles):
+                            continue
+                        for projectile in player.character.skill.projectiles:
+                            info = CollisionInfo.collision(projectile.hitbox, tile.hitbox, delta_time, calculate_distance=True)
+                            if info.intersection:
+                                projectile.deactivate()
+                                projectile.is_activated = False
+                                player.character.skill.number_of_activated -= 1
 
     def clear_vision(self) -> None:
         for player in self.players:
@@ -113,10 +134,11 @@ class Game:
             player.update()
 
         self.update_players_col(delta_time)
+        self.update_skill_col(delta_time)
         for player in self.players:
             player.hitbox.delta_position(delta_time)
-            player.sword.update(player.hitbox.position, player.angle, player.player_id)
             player.character.skill.update(player.hitbox.position.copy(), player.angle.copy())
+            player.sword.update(player.hitbox.position, player.angle, player.player_id)
 
         self.update_sword_col()
         

@@ -16,7 +16,7 @@ class Character():
         """
         if character_id == CHARACTER_RED["id"]:
             skill = Fireball(self.pos)
-            self.skill_name = "Flames"
+            self.skill_name = "Fireball"
             self.color = RED
         elif character_id == CHARACTER_BLUE["id"]:
             skill = Dash()
@@ -28,7 +28,7 @@ class Character():
             self.color = PINK
         elif character_id == CHARACTER_LIME["id"]:
             skill = Traps(self.pos)
-            self.skill_name = "Trap"
+            self.skill_name = "Traps"
             self.color = LIME
         elif character_id == CHARACTER_GOLD["id"]:
             skill = SuperSpeed()
@@ -39,12 +39,12 @@ class Character():
             self.skill_name = "Intangibility"
             self.color = YELLOW
         elif character_id == CHARACTER_DARKGREEN["id"]:
-            skill = Parry()
-            self.skill_name = "Parry"
+            skill = Shield()
+            self.skill_name = "Shield"
             self.color = GREEN
         elif character_id == CHARACTER_PURPLE["id"]:
-            skill = Ray()
-            self.skill_name = "RAY"
+            skill = Laser(self.pos)
+            self.skill_name = "Laser"
             self.color = PURPLE
 
         return skill
