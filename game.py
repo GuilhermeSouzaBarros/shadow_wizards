@@ -55,7 +55,8 @@ class Game:
                 if (tile.is_destructible and not tile.is_destroyed) or tile.has_collision:
                     for player in self.players:
                         info = CollisionInfo.collision(player.hitbox, tile.hitbox, delta_time, calculate_distance=True)
-                        if player.character.skill_name == "Intangibility" and player.character.skill.is_activated:
+                        if (player.character.skill_name == "Intangibility" and player.character.skill.is_activated and
+                            tile.type != 3 and tile.type != 4):
                             continue
                         if info.intersection:
                             player.hitbox.speed -= info.distance * (1 / delta_time)
