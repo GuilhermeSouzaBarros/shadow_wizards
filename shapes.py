@@ -83,24 +83,16 @@ class Rectangle(Shape):
         self.to_lines()
         self.att_radius()
 
+    @property
+    def __str__(self) -> None:
+        return f"pos: {self.position.__str__}, size: {self.size.__str__}"
+
     def att_radius(self):
         self.inner_radius = min(self.size.x, self.size.y) / 2.0
         self.outer_radius = ((self.size.x ** 2 + self.size.y ** 2) ** 0.5) / 2.0
 
     def copy(self):
         return Rectangle(self.position.copy(), self.size.copy(), self.angle.copy(), self.speed)
-
-    def distance_to_side(self, angle:Imaginary) -> Vector2:
-        relative_angle = angle / self.angle
-        angle_size = Vector2(abs(relative_angle.imaginary * self.size.x),
-                             abs(relative_angle.real * self.size.y))
-        
-        if angle_size.x < angle_size.y:
-            ratio = relative_angle.imaginary / relative_angle.real
-            return Vector2(sign_of(relative_angle.real) * self.size.x * 0.5,  ratio * self.size.x * 0.5)
-        else:
-            ratio = relative_angle.real / relative_angle.imaginary
-            return Vector2(ratio * self.size.y * 0.5, sign_of(relative_angle.imaginary) * self.size.y * 0.5)
         
     def to_lines(self) -> List[Line]:
         size_im_x = Imaginary(self.size.x / 2.0, 0.0) * self.angle
@@ -140,20 +132,33 @@ class Rectangle(Shape):
 
         return lines
 
-    def collision_line(self, line:Line) -> ColLines:
-        colls = [ColLines(line, self.lines[0]),
-                 ColLines(line, self.lines[1]),
-                 ColLines(line, self.lines[2]),
-                 ColLines(line, self.lines[3])]
-
-        #Reta com menor t significa primeira colisão
-        t_menor = colls[0]
-        for i in range(1, 4):
-            if (colls[i].coll and colls[i].t_1 < t_menor.t_1):
-                t_menor = colls[i]
-
-        return t_menor
+    def collision_line(self, line:Line) -> dict:
+        """Dictionary has the keys: 'rectangle_line'(class Line) and 'col'(class ColLines)"""
+        min_t_col = None
+        for r_line in self.lines:
+            col = ColLines(line, r_line)
+            if col.did_intersect and (min_t_col != None or col.t_line_1 < min_t_col['col'].t_line_1):
+                min_t_col = {'rectangle_line': r_line, 'col': col}
+        return min_t_col
     
+    def is_point_inside(self, point:Vector2) -> bool:
+        for line in self.lines:
+            if line.is_point_above(point, False):
+                return False
+        return True
+
+    def distance_to_side(self, angle:Imaginary) -> Vector2:
+        relative_angle = angle / self.angle
+        angle_size = Vector2(abs(relative_angle.imaginary * self.size.x),
+                             abs(relative_angle.real * self.size.y))
+        
+        if angle_size.x < angle_size.y:
+            ratio = relative_angle.imaginary / relative_angle.real
+            return Vector2(sign_of(relative_angle.real) * self.size.x * 0.5,  ratio * self.size.x * 0.5)
+        else:
+            ratio = relative_angle.real / relative_angle.imaginary
+            return Vector2(ratio * self.size.y * 0.5, sign_of(relative_angle.imaginary) * self.size.y * 0.5)
+        
     def in_side_region(self, point:Vector2) -> int:
         """Expand the sides to infinity, the diagonals are the outside and the sides the inside"""
         lines = self.to_lines()
@@ -161,10 +166,6 @@ class Rectangle(Shape):
         for line in lines:
             count += line.is_point_above(point)
         return count == 1
-
-    @property
-    def __str__(self) -> None:
-        return f"pos: {self.position.__str__}, size: {self.size.__str__}"
 
     def draw(self, color:Color, map_offset:Vector2=Vector2(0, 0), scaler:float=1, outlines:bool=True) -> None:
         size_im_x = Imaginary(self.size.x / 2.0, 0.0) * self.angle

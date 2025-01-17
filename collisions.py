@@ -167,6 +167,21 @@ class ColRectangleCircle(CollisionInfo):
         if not self.intersection:
             return
 
+        if not self.border_intersection or rectangle.is_point_inside(next_cir.position):
+            ori_angle = circle.position - rectangle.position
+            ori_line = Line(ori_angle, rectangle.position.copy(), Domain(0, float("inf")))
+
+            for line in rectangle.lines:
+                col = ColLines(ori_line, line)
+                if col.did_intersect:
+                    push_line = line
+                    break
+
+            distance = push_line.point_distance(next_cir.position)
+            distance.to_module(distance.module() + next_cir.radius)
+            self.distance = distance
+            return
+
         num_col = len(lines_col)
         diff = Vector2(0, 0)
         if num_col == 1 or (num_col == 2 and (lines_col[0]['line'].is_parallel(lines_col[1]['line']))):

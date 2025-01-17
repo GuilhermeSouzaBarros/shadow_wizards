@@ -141,8 +141,8 @@ class Player:
             tint = WHITE
             pos_x += 32
 
-        color = (color[0], color[1], color[2], int(color[3] / (2 - (not self.has_flag and self.is_alive))))
-        tint = (tint[0], tint[1], tint[2], int(tint[3] / (2 - (not self.has_flag and self.is_alive))))
+        color = (color[0], color[1], color[2], int(color[3] / (2 - ((not self.has_flag and self.is_alive and not self.character.skill.is_activated)))))
+        tint = (tint[0], tint[1], tint[2], int(tint[3] / (2 - ((not self.has_flag and self.is_alive and not self.character.skill.is_activated)))))
         if (hitbox):
             self.hitbox.draw(color, map_offset, scaler)
         else:
