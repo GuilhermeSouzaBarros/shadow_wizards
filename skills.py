@@ -169,7 +169,7 @@ class Gun(Skill):
         """
         for bullet in self.projectiles:
             if bullet.is_activated:
-                bullet.draw(*args, PINK)
+                bullet.draw(PINK, *args)
 
 class Fireball(Skill):
     def __init__(self, pos:Vector2):
@@ -213,7 +213,7 @@ class Fireball(Skill):
         """
         for bullet in self.projectiles:
             if bullet.is_activated:
-                bullet.draw(*args, RED)
+                bullet.draw(RED, *args)
 
 class Trap(Skill):
     def __init__(self, pos:Vector2, tile_size:Vector2, duration:float, cooldown:float):
@@ -245,7 +245,7 @@ class Trap(Skill):
         Desenha armadilha se ativa
         """
         if self.is_activated:
-            self.hitbox.draw(*args, YELLOW)
+            self.hitbox.draw(YELLOW, *args)
 
 class Traps(Skill):
     def __init__(self, pos:Vector2):
@@ -363,7 +363,7 @@ class Laser(Skill):
 
     def draw(self, *args):
         if self.is_activated:
-            self.hitbox.draw(*args, WHITE)
+            self.hitbox.draw(WHITE, *args)
 
 class SuperSpeed(Skill):
     def __init__(self):

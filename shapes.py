@@ -91,15 +91,17 @@ class Rectangle(Shape):
         return Rectangle(self.position.copy(), self.size.copy(), self.angle.copy(), self.speed)
 
     def distance_to_side(self, angle:Imaginary) -> Vector2:
-        relative_angle = self.angle * angle
+        relative_angle = angle / self.angle
         angle_size = Vector2(abs(relative_angle.imaginary * self.size.x),
                              abs(relative_angle.real * self.size.y))
-
-        if angle_size.y > angle_size.x:
-            return Vector2(sign_of(relative_angle.real) * self.size.x * 0.5, relative_angle.imaginary * self.size.y * 0.5)
+        
+        if angle_size.x < angle_size.y:
+            ratio = relative_angle.imaginary / relative_angle.real
+            return Vector2(sign_of(relative_angle.real) * self.size.x * 0.5,  ratio * self.size.x * 0.5)
         else:
-            return Vector2(self.size.x * 0.5 * relative_angle.real, sign_of(relative_angle.imaginary) * self.size.y * 0.5)
-
+            ratio = relative_angle.real / relative_angle.imaginary
+            return Vector2(ratio * self.size.y * 0.5, sign_of(relative_angle.imaginary) * self.size.y * 0.5)
+        
     def to_lines(self) -> List[Line]:
         size_im_x = Imaginary(self.size.x / 2.0, 0.0) * self.angle
         size_im_y = Imaginary(0.0, self.size.y / 2.0) * self.angle
@@ -160,11 +162,11 @@ class Rectangle(Shape):
             count += line.is_point_above(point)
         return count == 1
 
-    def print_info(self) -> None:
-        print(f"Rectangle: {self.position.__str__}, size: {self.size.__str__}")
+    @property
+    def __str__(self) -> None:
+        return f"pos: {self.position.__str__}, size: {self.size.__str__}"
 
-
-    def draw(self, map_offset:Vector2=Vector2(0, 0), scaler:float=1, color:Color=GRAY, outlines:bool=True) -> None:
+    def draw(self, color:Color, map_offset:Vector2=Vector2(0, 0), scaler:float=1, outlines:bool=True) -> None:
         size_im_x = Imaginary(self.size.x / 2.0, 0.0) * self.angle
         size_im_y = Imaginary(0.0, self.size.y / 2.0) * self.angle
         up_left_corner = [self.position.x - size_im_x.real      - size_im_y.real,
@@ -194,45 +196,11 @@ class Circle(Shape):
     def copy(self):
         return Circle(self.position.copy(), self.radius, self.speed)
     
-    def collision_line(self, line:Line, delta_time:float) -> dict:
-        next_pos_circle = self.next_position(delta_time)
-        info = {'intersections': 0}
-
-        #equação de segundo grau para achar t em P = A + tV
-        
-        a = (line.direction.x) ** 2 + (line.direction.y) ** 2
-
-        b = 2 * (line.direction.x * (line.point.x - next_pos_circle.x) +
-                 line.direction.y * (line.point.y - next_pos_circle.y))
-        
-        c = ((line.point.x - next_pos_circle.x) ** 2 +
-             (line.point.y - next_pos_circle.y) ** 2 -
-             (self.radius) ** 2)
-
-        delta = b ** 2 - 4 * a * c
-        if (delta < 0.0):
-            return info
-
-        t_1 = (-b + delta ** 0.5) / (2 * a)
-        t_2 = (-b - delta ** 0.5) / (2 * a)
-
-        info.update({"point_1":
-            Vector2(line.point.x + t_1 * line.direction.x,
-                    line.point.y + t_1 * line.direction.y)})
-        
-        info.update({"point_2":
-            Vector2(line.point.x + t_2 * line.direction.x,
-                    line.point.y + t_2 * line.direction.y)})
-        
-        info['intersections'] = (line.has_point(info["point_1"]) +
-                                 line.has_point(info["point_2"]))
-        return info
+    @property
+    def __str__(self) -> None:
+        f"pos: {self.position.x:.2f} / {self.position.y:.2f}, radius: {self.radius:.2f}"
     
-    def print_info(self) -> None:
-        print(f"Circle: {self.position.x:.2f} / {self.position.y:.2f}, radius: {self.radius:.2f}")
-        print(f"Speed: {self.speed.x:.2f} / {self.speed.y:.2f}")
-    
-    def draw(self, map_offset:Vector2=Vector2(0, 0), scaler:float=1, color:Color=GRAY, outlines:bool=True) -> None:
+    def draw(self, color:Color, map_offset:Vector2=Vector2(0, 0), scaler:float=1, outlines:bool=True) -> None:
         pos = self.position * scaler
         pos += map_offset
         pos = pos.to_list()

@@ -135,7 +135,7 @@ class Cart:
         self.draw_region (map_offset, scaler, vision)
 
     def draw_cart(self, map_offset:Vector2, scaler:float, vision:int) -> None:
-        self.hitbox.draw(map_offset, scaler, self.color)
+        self.hitbox.draw(self.color, map_offset, scaler)
 
     def draw_region(self, map_offset:Vector2, scaler:float, vision:int) -> None:
         """

@@ -51,7 +51,7 @@ class Floor(Tile):
         else:
             color = color_brightness(GRAY, -0.5)
 
-        self.hitbox.draw(map_offset, scaler, color, outlines=False)
+        self.hitbox.draw(color, map_offset, scaler, outlines=False)
 
 
 class Rails(Tile):
@@ -77,7 +77,7 @@ class Rails(Tile):
         else:
             color = PURPLE
 
-        self.hitbox.draw(map_offset, scaler, color, outlines=False)
+        self.hitbox.draw(color, map_offset, scaler, outlines=False)
 
 class Border(Tile):
     def __init__(self, tile_size: Vector2, type:int, row:int, column:int) -> None:
@@ -101,7 +101,7 @@ class Border(Tile):
             color = BLACK
         else:
             color = BLUE
-        self.hitbox.draw(map_offset, scaler, color, outlines=False)
+        self.hitbox.draw(color, map_offset, scaler, outlines=False)
 
 
 class Barrier(Tile):
@@ -131,7 +131,7 @@ class Barrier(Tile):
             # Desenha os obstáculos permanentes do mapa
             color = GREEN
 
-        self.hitbox.draw(map_offset, scaler, color, outlines=False)
+        self.hitbox.draw(color, map_offset, scaler, outlines=False)
 
 
 class SpawnPoint(Tile):
@@ -152,4 +152,4 @@ class SpawnPoint(Tile):
         Retorno:
             Nenhum.    
         """
-        self.hitbox.draw(map_offset, scaler, ORANGE)
+        self.hitbox.draw(ORANGE, map_offset, scaler)

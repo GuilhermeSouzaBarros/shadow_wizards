@@ -52,4 +52,4 @@ class Sword:
     def draw(self, map_offset:Vector2, scaler:float, color:Color) -> None:
         if not self.active:
             return
-        self.hitbox.draw (map_offset, scaler, color)
+        self.hitbox.draw (color, map_offset, scaler)

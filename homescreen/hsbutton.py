@@ -27,9 +27,9 @@ class Button():
 
     def draw(self) -> None:
         if self.is_hovering:
-            self.rec.draw(Vector2(0, 0), 1.0, self.hovering_color, outlines=False)
+            self.rec.draw(self.hovering_color, outlines=True)
         else:
-            self.rec.draw(Vector2(0, 0), 1.0, self.default_color, outlines=False)
+            self.rec.draw(self.default_color, outlines=False)
         
         draw_text_ex(get_font_default(), self.text, self.text_pos.to_list(), self.font_size, self.spacing, WHITE)
 

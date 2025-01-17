@@ -136,10 +136,15 @@ class Player:
         if self.character_id == CHARACTER_RED['id']:
             tint = WHITE
 
+        pos_x = 0
+        if self.character_id == CHARACTER_BLUE['id']:
+            tint = WHITE
+            pos_x += 32
+
         color = (color[0], color[1], color[2], int(color[3] / (2 - (not self.has_flag and self.is_alive))))
         tint = (tint[0], tint[1], tint[2], int(tint[3] / (2 - (not self.has_flag and self.is_alive))))
         if (hitbox):
-            self.hitbox.draw(map_offset, scaler, color)
+            self.hitbox.draw(color, map_offset, scaler)
         else:
             angle = degrees(atan2(self.angle.imaginary, self.angle.real))
             angle += 360 * (angle < 0.0)
@@ -153,7 +158,7 @@ class Player:
                             scaler * (self.hitbox.radius + offset) * 2,
                             scaler * (self.hitbox.radius + offset) * 2]
 
-            draw_texture_pro(self.sprite, [0, angle * 32, 32, 32], rectangle_dest, [offset * scaler, 2 * offset * scaler], 0, tint)
+            draw_texture_pro(self.sprite, [pos_x, angle * 32, 32, 32], rectangle_dest, [offset * scaler, 2 * offset * scaler], 0, tint)
 
         self.sword.draw(map_offset, scaler, color)
         self.character.skill.draw(map_offset, scaler)

@@ -6,10 +6,10 @@ from lines import Line, ColLines
 from shapes import Shape, Rectangle, Circle, ColCircleLine
 
 class CollisionInfo(ABC):
-    def __init__(self):
+    def __init__(self, calculate_distance:bool):
         self.intersection = False
         self.border_intersection = False
-        self.calculate_distance = False
+        self.calculate_distance = calculate_distance
         self.distance = Vector2(0, 0)
 
     def collision(shape_1:Shape, shape_2:Shape, delta_time:float=0.0, calculate_distance:bool=False) -> None:
@@ -34,30 +34,30 @@ class CollisionInfo(ABC):
             shape.delta_position(delta_time)
         return shape
 
+
+
 class ColRectangleRectangle(CollisionInfo):
     def __init__(self, rectangle_1:Rectangle, rectangle_2:Rectangle, delta_time:float=0.0, calculate_distance:bool=False) -> None:
-        super().__init__()
+        super().__init__(calculate_distance)
         self.needs_precise = True
-        self.collision(rectangle_1, rectangle_2, delta_time, calculate_distance)
+        self.collision(rectangle_1, rectangle_2, delta_time)
 
-    def simple_col(self, rectangle_1:Rectangle, rectangle_2:Rectangle, delta_time:float, calculate_distance:bool=False) -> None:
+    def simple_col(self, rectangle_1:Rectangle, rectangle_2:Rectangle, delta_time:float) -> None:
         next_pos_1 = rectangle_1.next_position(delta_time)
         next_pos_2 = rectangle_2.next_position(delta_time)
-        total_dist = Vector2(next_pos_1.x - next_pos_2.x,
-                             next_pos_1.y - next_pos_2.y).module()
+        total_dist = (next_pos_1 - next_pos_2).module()
 
         if total_dist > rectangle_1.outer_radius + rectangle_2.outer_radius:
             self.intersection = False
             self.needs_precise = False
            
-        elif not calculate_distance and total_dist < rectangle_1.inner_radius + rectangle_2.inner_radius:
+        elif total_dist < rectangle_1.inner_radius + rectangle_2.inner_radius:
             self.intersection = True
             self.needs_precise = False
 
-    def precise_col(self, rectangle_1:Rectangle, rectangle_2:Rectangle, delta_time:float=0, calculate_distance:bool=False):
+    def precise_col(self, rectangle_1:Rectangle, rectangle_2:Rectangle, delta_time:float=0):
         next_pos_1 = CollisionInfo.shape_copy(rectangle_1, delta_time)
         next_pos_2 = CollisionInfo.shape_copy(rectangle_2, delta_time)
-
         next_pos_1.lines = next_pos_1.to_lines()
         next_pos_2.lines = next_pos_2.to_lines()
 
@@ -69,7 +69,7 @@ class ColRectangleRectangle(CollisionInfo):
                     self.intersection = True
                     self.border_intersection = True
                     lines_col.append({'line_1': line_1, 'line_2':line_2, 'col': col})
-                elif not calculate_distance:
+                elif not self.calculate_distance:
                     return
 
         if not self.border_intersection or len(lines_col) != 2:
@@ -123,34 +123,34 @@ class ColRectangleRectangle(CollisionInfo):
             self.distance = corner - push.point
 
 
-    def collision(self, rectangle_1:Rectangle, rectangle_2:Rectangle, delta_time:float=0.0, calculate_distance:bool=False) -> None:
-        self.simple_col(rectangle_1, rectangle_2, delta_time, calculate_distance)
-        if self.needs_precise or (self.intersection and self.calculate_distance):
-             self.precise_col(rectangle_1, rectangle_2, delta_time, calculate_distance)
+    def collision(self, rectangle_1:Rectangle, rectangle_2:Rectangle, delta_time:float=0.0) -> None:
+        self.simple_col(rectangle_1, rectangle_2, delta_time)
+        if self.needs_precise or not self.intersection and self.calculate_distance:
+             self.precise_col(rectangle_1, rectangle_2, delta_time)
+
 
 
 class ColRectangleCircle(CollisionInfo):
     def __init__(self, rectangle:Rectangle, circle:Circle, delta_time:float=0.0, calculate_distance:bool=False) -> None:
-        super().__init__()
+        super().__init__(calculate_distance)
         self.needs_precise = True
-        self.collision(rectangle, circle, delta_time, calculate_distance)
+        self.collision(rectangle, circle, delta_time)
 
-    def simple_col(self, rectangle:Rectangle, circle:Circle, delta_time:float, calculate_distance:bool=False) -> None:
+    def simple_col(self, rectangle:Rectangle, circle:Circle, delta_time:float) -> None:
         next_pos_rec = rectangle.next_position(delta_time)
         next_pos_cir = circle.next_position(delta_time)
-        total_dist = Vector2(next_pos_rec.x - next_pos_cir.x,
-                             next_pos_rec.y - next_pos_cir.y).module()
+        total_dist = (next_pos_rec - next_pos_cir).module()
 
         if total_dist > rectangle.outer_radius + circle.radius:
             self.intersection = False
             self.needs_precise = False
            
-        elif not calculate_distance and total_dist < rectangle.inner_radius + circle.radius:
+        elif total_dist < rectangle.inner_radius + circle.radius:
             self.intersection = True
             self.needs_precise = False
 
 
-    def precise_col(self, rectangle:Rectangle, circle:Circle, delta_time:float, calculate_distance:bool=False) -> None:
+    def precise_col(self, rectangle:Rectangle, circle:Circle, delta_time:float) -> None:
         next_rec = CollisionInfo.shape_copy(rectangle, delta_time)
         next_cir = CollisionInfo.shape_copy(circle, delta_time)
 
@@ -159,7 +159,8 @@ class ColRectangleCircle(CollisionInfo):
             col = ColCircleLine(next_cir, line, delta_time)
             if col.did_intersect:
                 self.intersection = True
-                if not calculate_distance:
+                self.border_intersection = True
+                if not self.calculate_distance:
                     return
                 lines_col.append({'line': line, 'col': col})
         
@@ -167,6 +168,7 @@ class ColRectangleCircle(CollisionInfo):
             return
 
         num_col = len(lines_col)
+        diff = Vector2(0, 0)
         if num_col == 1 or (num_col == 2 and (lines_col[0]['line'].is_parallel(lines_col[1]['line']))):
             if (num_col == 1):
                 col = lines_col[0]['col']
@@ -203,17 +205,17 @@ class ColRectangleCircle(CollisionInfo):
         radius.to_module(next_cir.radius)
         self.distance = radius - diff
             
-    def collision(self, rectangle:Rectangle, circle:Circle, delta_time:float, calculate_distance:bool=False) -> None:
-        self.simple_col(rectangle, circle, delta_time, calculate_distance)
+    def collision(self, rectangle:Rectangle, circle:Circle, delta_time:float) -> None:
+        self.simple_col(rectangle, circle, delta_time)
         if (self.needs_precise or (self.intersection and self.calculate_distance)):
-            self.precise_col(rectangle, circle, delta_time, calculate_distance)
+            self.precise_col(rectangle, circle, delta_time)
         
 class ColCircleCircle(CollisionInfo):
     def __init__(self, circle_1:Circle, circle_2:Circle, delta_time:float=0.0, calculate_distance:bool=False):
-        super().__init__()
-        self.collision(circle_1, circle_2, delta_time, calculate_distance)
+        super().__init__(calculate_distance)
+        self.collision(circle_1, circle_2, delta_time)
     
-    def collision(self, circle_1:Circle, circle_2:Circle, delta_time:float=0.0, calculate_distance:bool=False) -> bool:
+    def collision(self, circle_1:Circle, circle_2:Circle, delta_time:float=0.0) -> bool:
         next_cir_1 = CollisionInfo.shape_copy(circle_1, delta_time)
         next_cir_2 = CollisionInfo.shape_copy(circle_2, delta_time)
 
@@ -222,7 +224,7 @@ class ColCircleCircle(CollisionInfo):
         distance = origins.module()
         self.intersection = distance <= total_radius
 
-        if self.intersection and calculate_distance:
+        if self.intersection and self.calculate_distance:
             distance = origins.copy()
             distance.to_module(total_radius)
             self.distance = distance - origins

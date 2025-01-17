@@ -71,7 +71,7 @@ class MapSelector(Selector):
         super().update_scale(window_size)
 
     def draw_map(self) -> None:
-        self.map_rec.draw(Vector2(0, 0), 1.0, self.current[2])
+        self.map_rec.draw(self.current[2])
 
         map_name = self.current[1]
         font_size = self.pixel_size.y * 0.15
@@ -116,8 +116,12 @@ class CharacterSelector(Selector):
         tint = self.current['color']
         if self.current['id'] == CHARACTER_RED['id']:
             tint = WHITE
+        pos_x = 0
+        if self.current['id'] == CHARACTER_BLUE['id']:
+            tint = WHITE
+            pos_x += 32
 
-        draw_texture_pro(self.current['sprite'], [0, 64, 32, 32],
+        draw_texture_pro(self.current['sprite'], [pos_x, 64, 32, 32],
                          [self.pixel_pos.x - self.pixel_size.y / 2,
                           self.pixel_pos.y - self.pixel_size.y / 2,
                           self.pixel_size.y, self.pixel_size.y], [0, 0], 0, tint)

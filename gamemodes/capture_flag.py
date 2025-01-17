@@ -80,7 +80,7 @@ class Flag(Objective):
             color = BLUE
 
         # Calcula a posição da bandeira
-        self.hitbox.draw(map_offset, scaler, color)
+        self.hitbox.draw(color, map_offset, scaler)
 
 
 class CapturePoint(Objective):

@@ -23,7 +23,7 @@ CAPTURE_THE_FLAG_MAP_ID = 3
 DOMINATION_MAP_ID = 4
 
 CHARACTER_RED       = {"id": 1, "name": "Red Shadow Wizard",    "sprite": "sprites/red_wizard.png", "color": RED}
-CHARACTER_BLUE      = {"id": 2, "name": "Blue Shadow Wizard",   "sprite": "sprites/wizard.png",     "color": BLUE}
+CHARACTER_BLUE      = {"id": 2, "name": "Blue Shadow Wizard",   "sprite": "sprites/blue_wizard.png",     "color": BLUE}
 CHARACTER_PINK      = {"id": 3, "name": "Pink Shadow Wizard",   "sprite": "sprites/wizard.png",     "color": PINK}
 CHARACTER_LIME      = {"id": 4, "name": "Lime Shadow Wizard",   "sprite": "sprites/wizard.png",     "color": LIME}
 CHARACTER_GOLD      = {"id": 5, "name": "Golden Shadow Wizard", "sprite": "sprites/wizard.png",     "color": GOLD}

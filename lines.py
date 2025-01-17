@@ -3,15 +3,43 @@ from raylib import *
 from math import isnan
 
 from vectors import Vector2, Domain
+from imaginary import Imaginary
 from utils import *
 
 
 class Line:
     def __init__(self, direction:Vector2, point:Vector2, limit_t:Domain=Domain(0.0, 1.0)) -> None:
-        self.direction = direction
-        self.point     = point
-        self.limit_t   = limit_t
+        self._direction = direction
+        self._point     = point
+        self._limit_t   = limit_t
         self._domain    = self.domain()
+
+    @property
+    def direction(self) -> Vector2:
+        return self._direction
+    
+    @direction.setter
+    def direction(self, direction:Vector2) -> None:
+        self._direction = direction
+        self._domain = self.domain()
+
+    @property
+    def point(self):
+        return self._point
+    
+    @point.setter
+    def point(self, point:Vector2) -> None:
+        self._point = point
+        self._domain = self.domain()
+    
+    @property
+    def limit_t(self):
+        return self._limit_t
+    
+    @limit_t.setter
+    def limit_t(self, limit_t:Domain) -> None:
+        self._limit_t = limit_t
+        self._domain = self.domain()
 
     @property
     def __str__(self):
@@ -21,17 +49,18 @@ class Line:
         dom = {'x': Domain(self.point.x + self.limit_t.x * self.direction.x,
                            self.point.x + self.limit_t.y * self.direction.x),
                'y': Domain(self.point.y + self.limit_t.x * self.direction.y,
-                           self.point.y + self.limit_t.y * self.direction.y)}      
+                           self.point.y + self.limit_t.y * self.direction.y)}
         if isnan(dom['x'].a):
-            dom['x'] = Domain(self.point.x, self.point.x)
+            dom['x'].a = self.point.x
         if isnan(dom['y'].a):
-            dom['y'] = Domain(self.point.y, self.point.y)
+            dom['y'].a = self.point.y
+        if isnan(dom['x'].b):
+            dom['x'].b = self.point.x
+        if isnan(dom['y'].b):
+            dom['y'].b = self.point.y
         return dom
 
     def has_point(self, point:Vector2) -> int:
-
-        #has = ((self._domain['x'].a - SMALL_FLOAT <= point.x and point.x <= self._domain['x'].b + SMALL_FLOAT) and
-        #       (self._domain['y'].a - SMALL_FLOAT <= point.y and point.y <= self._domain['y'].b + SMALL_FLOAT))
         has = ((self._domain['x'].a <= point.x and point.x <= self._domain['x'].b) and
                (self._domain['y'].a <= point.y and point.y <= self._domain['y'].b))
         return has
@@ -63,16 +92,19 @@ class Line:
         else:
             return not ((self.direction.x or other_line.direction.x) and (self.direction.y or other_line.direction.y))
         
+    def reflection_angle(self, other_line) -> Imaginary:
+        self_angle = Imaginary(-self.direction.x, -self.direction.y, 1)
+        other_angle = Imaginary(other_line.direction.x, other_line.direction.y, 1)
+
+        relative_angle = self_angle / other_angle
+        other_angle *= Imaginary(-1, 0)
+        
+        return other_angle / relative_angle
+
     def draw(self, map_offset:Vector2, scaler:float, color:Color):
-        s_pos = [
-            map_offset.x + scaler * self.point.x,
-            map_offset.y + scaler * self.point.y
-        ]
-        e_pos = [
-            map_offset.x + scaler * (self.point.x + self.direction.x * self.limit_t.b),
-            map_offset.y + scaler * (self.point.y + self.direction.y * self.limit_t.b)
-        ]
-        draw_line_v(s_pos, e_pos, color)
+        s_pos = map_offset + (self.point + self.direction * self.limit_t.a) * scaler
+        e_pos = map_offset + (self.point + self.direction * self.limit_t.b) * scaler
+        draw_line_v(s_pos.to_list(), e_pos.to_list(), color)
 
 
 class ColLines:
@@ -99,11 +131,9 @@ class ColLines:
             return
         
         self.t_line_1 = (line_2.direction.y * (vec_points.x) -
-                         line_2.direction.x * (vec_points.y))
-        self.t_line_1 /= denominador
+                         line_2.direction.x * (vec_points.y)) / denominador
 
-        self.point.x = line_1.direction.x * self.t_line_1 + line_1.point.x
-        self.point.y = line_1.direction.y * self.t_line_1 + line_1.point.y
+        self.point = line_1.direction * self.t_line_1 + line_1.point
 
         if line_2.direction.x:
             self.t_line_2 = (self.point.x - line_2.point.x) / line_2.direction.x
