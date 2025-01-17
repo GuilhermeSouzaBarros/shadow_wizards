@@ -48,6 +48,14 @@ class Game:
             self.scaler = draw_tile_size.x / self.tile_size
 
     def update_players_col(self, delta_time:float) -> None:
+        for tile in self.map.collision_hitboxes:
+            for player in self.players:
+                if (player.character.skill_name == "Intangibility" and player.character.skill.is_activated):
+                    continue
+                info = CollisionInfo.collision(player.hitbox, tile, delta_time, calculate_distance=True)
+                if info.intersection:
+                    player.hitbox.speed -= info.distance / delta_time
+        """
         for row in self.map.tiles:
             for tile in row:
                 if (not tile.type):
@@ -59,7 +67,8 @@ class Game:
                             tile.type != 3 and tile.type != 4):
                             continue
                         if info.intersection:
-                            player.hitbox.speed -= info.distance * (1 / delta_time)
+                            player.hitbox.speed -= info.distance / delta_time
+        """
 
     def update_sword_col(self) -> None:
         for player_a in self.players:

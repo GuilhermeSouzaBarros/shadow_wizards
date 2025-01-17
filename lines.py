@@ -84,7 +84,7 @@ class Line:
 
         intersection = ColLines(self, above_line)
 
-        return ((intersection.did_intersect or not limit_t) and intersection.t_line_2 < 0.0)
+        return ((not limit_t or intersection.did_intersect) and intersection.t_line_2 < 0.0)
 
     def point_distance(self, point:Vector2) -> Vector2:
         perpendicular_line_dir = Vector2(self.direction.x, self.direction.y)

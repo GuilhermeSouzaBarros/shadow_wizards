@@ -154,6 +154,12 @@ class ColRectangleCircle(CollisionInfo):
         next_rec = CollisionInfo.shape_copy(rectangle, delta_time)
         next_cir = CollisionInfo.shape_copy(circle, delta_time)
 
+        position_inside = rectangle.is_point_inside(next_cir.position)
+        if position_inside:
+            self.intersection = True
+            if not self.calculate_distance:
+                return
+
         lines_col = []
         for line in next_rec.lines:
             col = ColCircleLine(next_cir, line, delta_time)
@@ -167,19 +173,19 @@ class ColRectangleCircle(CollisionInfo):
         if not self.intersection:
             return
 
-        if not self.border_intersection or rectangle.is_point_inside(next_cir.position):
-            ori_angle = circle.position - rectangle.position
-            ori_line = Line(ori_angle, rectangle.position.copy(), Domain(0, float("inf")))
-
+        if position_inside:
+            min_push = "NULL"
             for line in rectangle.lines:
-                col = ColLines(ori_line, line)
-                if col.did_intersect:
-                    push_line = line
-                    break
+                axis_line = Line(line.direction.copy(), circle.position, Domain(0, float('inf')))
+                axis_line.direction.rotate_90_anti()
+                axis_line.domain_update()
+                col = ColLines(axis_line, line)
 
-            distance = push_line.point_distance(next_cir.position)
-            distance.to_module(distance.module() + next_cir.radius)
-            self.distance = distance
+                push = col.point - circle.position
+                push.to_module(push.module() + circle.radius)
+                if min_push == "NULL" or push.module() < min_push.module():
+                    min_push = push
+            self.distance = min_push
             return
 
         num_col = len(lines_col)
@@ -209,8 +215,6 @@ class ColRectangleCircle(CollisionInfo):
             axis_col = [ColLines(axis[1], line_1), ColLines(axis[0], line_2)]
             if not (axis_col[0].did_intersect or axis_col[1].did_intersect):
                 diff = next_cir.position - corner
-            elif axis_col[0].did_intersect and axis_col[1].did_intersect:
-                return
             elif axis_col[0].did_intersect:
                 diff = next_cir.position - axis_col[0].point
             elif axis_col[1].did_intersect:
@@ -219,6 +223,9 @@ class ColRectangleCircle(CollisionInfo):
         radius = diff.copy()
         radius.to_module(next_cir.radius)
         self.distance = radius - diff
+
+        if position_inside:
+            self.distance *= -1
             
     def collision(self, rectangle:Rectangle, circle:Circle, delta_time:float) -> None:
         self.simple_col(rectangle, circle, delta_time)

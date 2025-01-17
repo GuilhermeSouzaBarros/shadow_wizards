@@ -224,6 +224,8 @@ class ColCircleLine:
         #equação de segundo grau para achar t em P = A + tV
         
         a = (line.direction.x) ** 2 + (line.direction.y) ** 2
+        if not a:
+            return
 
         b = 2 * (line.direction.x * (line.point.x - next_pos_circle.x) +
                  line.direction.y * (line.point.y - next_pos_circle.y))

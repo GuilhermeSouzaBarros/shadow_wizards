@@ -5,7 +5,7 @@ STATE_EXIT = 0
 
 GAME_TITLE = "Shadow Wizards"
 
-TICK = 0.0078125 #128 ticks por segundo
+TICK = 0.00390625 #256 ticks por segundo
 
 # Cores verdadeiras dos Shadow Wizards
 RED = (246, 39, 49, 255)

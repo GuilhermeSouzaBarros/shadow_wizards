@@ -3,11 +3,13 @@ from pyray import *
 from raylib import *
 
 import tiles
+from shapes import Rectangle
 from vectors import Vector2
 
 class Map:
     def __init__(self, map_id:int) -> None:
         self.tiles = []
+        self.collision_hitboxes = []
 
         self.map_id = map_id # Armazena o identificador do mapa
         self.map_info = self.load_map() # Armazena todas as características do mapa
@@ -18,14 +20,63 @@ class Map:
         self.tile_size = int(self.map_info['tile_size'])
 
         # Carrega todos os tiles do mapa
+        all_tiles = []
         for i in range(0, self.num_rows):
             row = []
             for j in range(0, self.num_columns):
                 tile_type = int(self.map_info['tiles'][i][j])
                 tile = self.build_tile(tile_type, i, j)
+                if (tile.has_collision):
+                    all_tiles.append([i, j])
                 row.append(tile)
             self.tiles.append(row)
+
+        blocks = []
+        before_after = [-1, 1]
+        remaining_tiles = all_tiles.copy()
+        while remaining_tiles:
+            block = [remaining_tiles[0]]
+            base_tile = block[0]
+
+            for i in before_after:
+                next_tile = [base_tile[0], base_tile[1] + i]
+                while next_tile in all_tiles:
+                    block.insert(len(block) * (i == 1), next_tile.copy())
+                    next_tile[1] += i
+
+            for i in before_after:
+                add_row = True
+                while add_row:
+                    row = []
+                    row_number = block[-1 + (i == -1)][0]
+                    for tile in block:
+                        if tile[0] != row_number:
+                            continue
+                        tile_above = [tile[0] + i, tile[1]]
+                        if not tile_above in all_tiles:
+                            add_row = False
+                            break
+                        row.insert(len(row) * (i == 1), tile_above)
+                    if add_row:
+                        for tile in row:
+                            block.insert(len(block) * (i == 1), tile)
+
+            blocks.append([block[0], block[-1]])
+            for tile in block:
+                if tile in remaining_tiles:
+                    remaining_tiles.remove(tile)
+
+        for block in blocks:
+            row = (block[0][0] + block[1][0]) / 2
+            column = (block[0][1] + block[1][1]) / 2
+            hitbox = Rectangle(
+            Vector2(self.tile_size * (column + 0.5),
+                    self.tile_size * (row + 0.5)),
+            Vector2(self.tile_size * (block[1][1] - block[0][1] + 1),
+                    self.tile_size * (block[1][0] - block[0][0] + 1)))
+            self.collision_hitboxes.append(hitbox)
     
+
     def draw(self, map_offset:Vector2, scaler:float, vision:int) -> None:
         """
         Função: draw
