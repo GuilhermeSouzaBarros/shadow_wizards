@@ -3,6 +3,8 @@ from pyray import *
 from raylib import *
 from shapes import *
 from imaginary import Imaginary
+from vectors import Vector2, Domain
+from lines import *
 
 class Skill(ABC):
     def __init__(self) -> None:
@@ -151,7 +153,7 @@ class Gun(Skill):
                     self.last_activation = get_time()
                     break
 
-    def update(self, player_pos, angle:Imaginary):
+    def update(self, player_pos, angle:Imaginary, *args):
         """
         Atualiza estado bas balas e desativa ou ativa dependendo do evento
         """
@@ -162,6 +164,11 @@ class Gun(Skill):
                     self.number_of_activated -= 1
         if is_key_pressed(KEY_E) and self.can_activate():
             self.activate(player_pos, angle)
+
+    def apply_effect(self, projectile):
+        projectile.deactivate()
+        projectile.is_activated = False
+        self.number_of_activated -= 1
 
     def draw(self, *args):
         """
@@ -198,7 +205,7 @@ class Fireball(Skill):
                     break
 
 
-    def update(self, player_pos:Vector2, angle:Imaginary):
+    def update(self, player_pos:Vector2, angle:Imaginary, args):
         for bullet in self.projectiles:
             if bullet.is_activated:
                 bullet.update()
@@ -206,6 +213,11 @@ class Fireball(Skill):
                     self.number_of_activated -= 1
         if(is_key_pressed(KEY_E)) and self.can_activate():
             self.activate(player_pos, angle)
+
+    def apply_effect(self, projectile):
+        projectile.deactivate()
+        projectile.is_activated = False
+        self.number_of_activated -= 1
 
     def draw(self, *args):
         """
@@ -280,7 +292,7 @@ class Traps(Skill):
                     break
 
 
-    def update(self, player_pos:Vector2, angle:Imaginary):
+    def update(self, player_pos:Vector2, angle:Imaginary, *args):
         current_time = get_time()
         for trap in self.traps:
             if trap.is_activated:
@@ -308,7 +320,7 @@ class Intangibility(Skill):
         self.in_wall = False
 
 
-    def update(self, player_pos:Vector2, angle:Imaginary):
+    def update(self, player_pos:Vector2, angle:Imaginary, *args):
         if is_key_pressed(KEY_E):
             self.activate()
 
@@ -326,44 +338,62 @@ class Laser(Skill):
         Habilidade de raios
         """
         super().__init__()
-        self._cooldown = 1
+        self._cooldown = 2
         self.duration = 3
-        self.speed = Vector2(3, 4)
         self.laser_size = Vector2(10, 10)
+        self.max_size = Vector2(1000, 10)
+        self.current_size = self.laser_size.copy()
         self.laser_size_cp = self.laser_size.copy()
-        self.hitbox = Rectangle(Vector2(player_pos.x + self.laser_size_cp.x/2, player_pos.y - self.laser_size_cp.y/2), 
-                                self.laser_size_cp)
+        self.reflections = 4
+        self.hitboxes = [Line(Vector2(0, 0), player_pos.copy(), Domain(0, float('inf')))]
         
     def deactivate(self):
         super().deactivate()
-        self.hitbox.size.x = self.laser_size.x
-        self.hitbox.size.y = self.laser_size.y
+        self.hitboxes = [Line(Vector2(0, 0), Vector2(0, 0), Domain(0, float('inf')))]
+  
+    def map_collision(self, laser:Line, map) -> ColLines:
+        """
+        Procura colisão do laser no mapa e retorna a colisão mais próxima
+        """
+        collisions = []
+        for row in map.tiles:
+            for tile in row:
+                if not tile.type:
+                    continue
+                if (tile.is_destructible and not tile.is_destroyed) or tile.has_collision:
+                    col = tile.hitbox.collision_line(laser)
+                    if col != "NULL":
+                        collisions.append(col)
 
-    def can_grow(self):
-        pass
-        
+        closest_col = min(collisions, key=lambda obj: obj['col'].t_line_1)
+        return closest_col
 
-    def update(self, player_pos:Vector2, angle:Imaginary):
+    def update(self, player_pos:Vector2, angle:Imaginary, map) -> None:
         if is_key_pressed(KEY_E):
             self.activate()
         if self.can_deactivate():
             self.deactivate()
         if self.is_activated:
-            player_pos = player_pos.copy()
-            self.hitbox.angle = angle.copy()
-            size_im_x = Imaginary(self.hitbox.size.x / 2.0, 0.0) * self.hitbox.angle
-            player_pos.x += size_im_x.real
-            player_pos.y += size_im_x.imaginary
-
-            if self.hitbox.size.x < 1000:
-                self.hitbox.size.x += 5
-            if self.hitbox.size.y < 10:
-                self.hitbox.size.y += 1
-            self.hitbox.position = player_pos
+            self.hitboxes = []
+            self.hitboxes.append(Line(Vector2(angle.real, angle.imaginary), player_pos.copy(), Domain(0, float('inf'))))
+            for i in range(0, self.reflections):
+                closest_col = self.map_collision(self.hitboxes[i], map)
+                collision_point = closest_col['col'].point
+                dir = collision_point - self.hitboxes[i].point
+                if dir.x == 0 and dir.y == 0:
+                    print("Erro, direção 0, parando loop")
+                    break
+                self.hitboxes[i] = Line(dir, self.hitboxes[i].point, Domain(0, 1))
+                
+                new_direction = self.hitboxes[i].reflection_angle(closest_col['rectangle_line'])
+                new_direction = Vector2(new_direction.real, new_direction.imaginary)
+                self.hitboxes.append(Line(new_direction, closest_col['col'].point, Domain(0, float('inf'))))
+                
 
     def draw(self, *args):
         if self.is_activated:
-            self.hitbox.draw(WHITE, *args)
+            for hitbox in self.hitboxes:
+                hitbox.draw(*args, PURPLE)
 
 class SuperSpeed(Skill):
     def __init__(self):
@@ -385,7 +415,7 @@ class Shield(Skill):
         self._cooldown = 1
         self.duration = 2
 
-    def update(self, player_pos:Vector2, angle:Imaginary):
+    def update(self, player_pos:Vector2, angle:Imaginary, *args):
         if is_key_pressed(KEY_E):
             self.activate()
         if self.can_deactivate():

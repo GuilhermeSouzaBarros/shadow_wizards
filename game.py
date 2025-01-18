@@ -99,9 +99,7 @@ class Game:
                         for projectile in player.character.skill.projectiles:
                             info = CollisionInfo.collision(projectile.hitbox, tile.hitbox, delta_time, calculate_distance=True)
                             if info.intersection:
-                                projectile.deactivate()
-                                projectile.is_activated = False
-                                player.character.skill.number_of_activated -= 1
+                                player.character.skill.apply_effect(projectile)
 
     def clear_vision(self) -> None:
         for player in self.players:
@@ -147,7 +145,7 @@ class Game:
         self.update_skill_col(delta_time)
         for player in self.players:
             player.hitbox.delta_position(delta_time)
-            player.character.skill.update(player.hitbox.position.copy(), player.angle.copy())
+            player.character.skill.update(player.hitbox.position.copy(), player.angle.copy(), self.map)
             player.sword.update(player.hitbox.position, player.angle, player.player_id)
 
         self.update_sword_col()

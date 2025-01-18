@@ -134,10 +134,10 @@ class Rectangle(Shape):
 
     def collision_line(self, line:Line) -> dict:
         """Dictionary has the keys: 'rectangle_line'(class Line) and 'col'(class ColLines)"""
-        min_t_col = None
+        min_t_col = "NULL"
         for r_line in self.lines:
             col = ColLines(line, r_line)
-            if col.did_intersect and (min_t_col != None or col.t_line_1 < min_t_col['col'].t_line_1):
+            if col.did_intersect and (min_t_col == "NULL" or col.t_line_1 < min_t_col['col'].t_line_1):
                 min_t_col = {'rectangle_line': r_line, 'col': col}
         return min_t_col
     
