@@ -362,7 +362,7 @@ class Laser(Skill):
                     continue
                 if (tile.is_destructible and not tile.is_destroyed) or tile.has_collision:
                     col = tile.hitbox.collision_line(laser)
-                    if col != "NULL":
+                    if col != "NULL" and col['col'].t_line_1 > 0:
                         collisions.append(col)
 
         closest_col = min(collisions, key=lambda obj: obj['col'].t_line_1)
@@ -379,14 +379,15 @@ class Laser(Skill):
             for i in range(0, self.reflections):
                 closest_col = self.map_collision(self.hitboxes[i], map)
                 collision_point = closest_col['col'].point
+                
                 dir = collision_point - self.hitboxes[i].point
-                if dir.x == 0 and dir.y == 0:
-                    print("Erro, direção 0, parando loop")
-                    break
+                
                 self.hitboxes[i] = Line(dir, self.hitboxes[i].point, Domain(0, 1))
                 
                 new_direction = self.hitboxes[i].reflection_angle(closest_col['rectangle_line'])
                 new_direction = Vector2(new_direction.real, new_direction.imaginary)
+                if i == self.reflections - 1:
+                    continue
                 self.hitboxes.append(Line(new_direction, closest_col['col'].point, Domain(0, float('inf'))))
                 
 
