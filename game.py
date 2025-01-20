@@ -7,6 +7,7 @@ from player import Player
 from map import Map
 from objectives import Objectives
 from score import Score
+from shapes import ColCircleLine
 
 class Game:
     def __init__(self, window_size, map_id:int, player_id:int) -> None:
@@ -99,20 +100,29 @@ class Game:
                 if player_a == player_b:
                     continue
                 
-                projectiles = ["Gun", "Fireball", "Traps"]
+                projectiles = ["Gun", "Fireball", "Traps", "Laser"]
                 skill_name = player_a.character.skill_name
                 if not skill_name in projectiles:
                     continue
 
                 for hitbox in player_a.character.skill.hitboxes:
-                    if not hitbox.is_activated:
-                        continue
-                    info = CollisionInfo.collision(player_b.hitbox, hitbox.hitbox, delta_time)
-
-                    if info.intersection:
-                        player_a.killed()
-                        player_b.died()
-                        player_a.character.skill.apply_effect(hitbox)
+                    if skill_name != "Laser":
+                        if not hitbox.is_activated:
+                            continue
+                        info = CollisionInfo.collision(player_b.hitbox, hitbox.hitbox, delta_time)
+                        if info.intersection:
+                            player_a.killed()
+                            player_b.died()
+                            player_a.character.skill.apply_effect(hitbox)
+                    else:
+                        if not player_a.character.skill.is_activated:
+                            continue
+                        info = ColCircleLine(player_b.hitbox, hitbox, delta_time)
+                        if info.did_intersect and player_b.is_alive:
+                            player_a.killed()
+                            player_b.died()
+                            player_a.character.skill.apply_effect(hitbox)
+                    
 
     def update_skill_col(self, delta_time:float) -> None:
         for tile in self.map.collision_hitboxes:
