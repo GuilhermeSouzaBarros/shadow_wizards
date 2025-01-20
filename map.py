@@ -10,6 +10,7 @@ class Map:
     def __init__(self, map_id:int) -> None:
         self.tiles = []
         self.collision_hitboxes = []
+        self.borders = []
 
         self.map_id = map_id # Armazena o identificador do mapa
         self.map_info = self.load_map() # Armazena todas as características do mapa
@@ -26,6 +27,8 @@ class Map:
             for j in range(0, self.num_columns):
                 tile_type = int(self.map_info['tiles'][i][j])
                 tile = self.build_tile(tile_type, i, j)
+                if tile_type == 3 or tile_type == 4:
+                    self.borders.append(tile)
                 if (tile.has_collision):
                     all_tiles.append([i, j])
                 row.append(tile)

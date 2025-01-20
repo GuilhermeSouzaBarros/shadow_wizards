@@ -63,7 +63,7 @@ class Dash(Skill):
         self.duration = 0.1
 
 
-    def update(self, *args):
+    def update(self, *args) -> None:
         current_time = get_time()
         if (is_key_pressed(KEY_E) and 
             current_time - self.last_activation > self._cooldown):
@@ -71,13 +71,13 @@ class Dash(Skill):
         if current_time - self.last_activation > self.duration:
             self.deactivate() 
 
-    def draw(self, *args):
+    def draw(self, *args) -> None:
         pass
             
 
 class Projectile(Skill):
     def __init__(self, pos:Vector2, tile_size:float, duration:float, cooldown:float, 
-                 speed: float):
+                 speed: float) -> None:
         """
         Herda classe Skill
         """
@@ -89,7 +89,7 @@ class Projectile(Skill):
         self._cooldown = cooldown
         self.angle = Imaginary(1, -1)
 
-    def activate(self, player_pos:Vector2, angle:Imaginary):
+    def activate(self, player_pos:Vector2, angle:Imaginary) -> None:
         """
         Ativa bala de acordo com a posição do player e sua direção
         """
@@ -99,7 +99,7 @@ class Projectile(Skill):
 
 
 
-    def update(self, *args):
+    def update(self, *args) -> None:
         """
         Atualiza posição da bala
         """
@@ -114,7 +114,7 @@ class Projectile(Skill):
             self.hitbox.position.x += speed * self.angle.real * delta_time
             self.hitbox.position.y += speed * self.angle.imaginary * delta_time
 
-    def draw(self, *args):
+    def draw(self, *args) -> None:
         """
         Desenha bala se ativa
         """
@@ -124,7 +124,7 @@ class Projectile(Skill):
 
 
 class Gun(Skill):
-    def __init__(self, pos:Vector2):
+    def __init__(self, pos:Vector2) -> None:
         """
         Herda classe Skill e adiciona os atributos numero de balas e quantidade
         de balas ativadas, além de uma lista de objeto balas
@@ -134,30 +134,30 @@ class Gun(Skill):
         self.number_of_bullets = 3
         self.number_of_activated = 0
         self.duration = 2
-        self._cooldown = 0.001
+        self._cooldown = 0.5
         self.speed_multiplier = 1
-        self.projectiles = [Projectile(pos, self.tile_size, self.duration, self._cooldown, 
+        self.hitboxes = [Projectile(pos, self.tile_size, self.duration, self._cooldown, 
                         self.speed_multiplier) 
                         for _ in range(self.number_of_bullets)]
 
-    def activate(self, player_pos:Vector2, angle:Imaginary):
+    def activate(self, player_pos:Vector2, angle:Imaginary) -> None:
         """
         Se houver balas disponiveis e o tempo de ativação ser cumprido,
         percorre o vetor de balas até achar uma disponivel e atira
         """
         if (self.number_of_activated < self.number_of_bullets):
-            for bullet in self.projectiles:
-                if not bullet.is_activated:
+            for bullet in self.hitboxes:
+                if not bullet.is_activated and self.can_activate:
                     bullet.activate(player_pos, angle)
                     self.number_of_activated += 1
                     self.last_activation = get_time()
                     break
 
-    def update(self, player_pos, angle:Imaginary, *args):
+    def update(self, player_pos, angle:Imaginary, *args) -> None:
         """
         Atualiza estado bas balas e desativa ou ativa dependendo do evento
         """
-        for bullet in self.projectiles:
+        for bullet in self.hitboxes:
             if bullet.is_activated:
                 bullet.update()
                 if not bullet.is_activated:
@@ -165,24 +165,24 @@ class Gun(Skill):
         if is_key_pressed(KEY_E) and self.can_activate():
             self.activate(player_pos, angle)
 
-    def apply_effect(self, projectile):
+    def apply_effect(self, projectile) -> None:
         projectile.deactivate()
         projectile.is_activated = False
         self.number_of_activated -= 1
 
-    def draw(self, *args):
+    def draw(self, *args) -> None:
         """
         Desenha todas as balas ativas
         """
-        for bullet in self.projectiles:
+        for bullet in self.hitboxes:
             if bullet.is_activated:
                 bullet.draw(PINK, *args)
 
 class Fireball(Skill):
-    def __init__(self, pos:Vector2):
+    def __init__(self, pos:Vector2) -> None:
         """
         Herda classe skill. Inicia o tamanho do projétil e 
-        inicia um objeto projétil
+        inicia um objeto projétilself.projectiles
         """
         super().__init__()
         self.tile_size = 20
@@ -191,13 +191,13 @@ class Fireball(Skill):
         self.number_of_bullets = 1
         self.number_of_activated = 0
         self.speed_multiplier = 0.5
-        self.projectiles = [Projectile(pos, self.tile_size, self.duration, self._cooldown, 
+        self.hitboxes = [Projectile(pos, self.tile_size, self.duration, self._cooldown, 
                         self.speed_multiplier) 
                         for _ in range(self.number_of_bullets)]
 
-    def activate(self, player_pos:Vector2, angle:Imaginary):
+    def activate(self, player_pos:Vector2, angle:Imaginary) -> None:
         if (self.number_of_activated < self.number_of_bullets):
-            for bullet in self.projectiles:
+            for bullet in self.hitboxes:
                 if not bullet.is_activated:
                     bullet.activate(player_pos, angle)
                     self.number_of_activated += 1
@@ -205,8 +205,8 @@ class Fireball(Skill):
                     break
 
 
-    def update(self, player_pos:Vector2, angle:Imaginary, args):
-        for bullet in self.projectiles:
+    def update(self, player_pos:Vector2, angle:Imaginary, args) -> None:
+        for bullet in self.hitboxes:
             if bullet.is_activated:
                 bullet.update()
                 if not bullet.is_activated:
@@ -214,28 +214,28 @@ class Fireball(Skill):
         if(is_key_pressed(KEY_E)) and self.can_activate():
             self.activate(player_pos, angle)
 
-    def apply_effect(self, projectile):
+    def apply_effect(self, projectile) -> None:
         projectile.deactivate()
         projectile.is_activated = False
         self.number_of_activated -= 1
 
-    def draw(self, *args):
+    def draw(self, *args) -> None:
         """
         Se ativa, desenha bola de fogo
         """
-        for bullet in self.projectiles:
+        for bullet in self.hitboxes:
             if bullet.is_activated:
                 bullet.draw(RED, *args)
 
 class Trap(Skill):
-    def __init__(self, pos:Vector2, tile_size:Vector2, duration:float, cooldown:float):
+    def __init__(self, pos:Vector2, tile_size:Vector2, duration:float, cooldown:float) -> None:
         super().__init__()
         self._cooldown = cooldown
         self.hitbox = Rectangle(pos, tile_size)
         self.duration = duration
         self.tile_size = tile_size
 
-    def activate(self, player_pos = None, angle = None):
+    def activate(self, player_pos = None, angle = None) -> None:
         """
         Ativa armadilha de acordo com a posição do player
         """
@@ -246,13 +246,13 @@ class Trap(Skill):
             self.is_activated = True
     
     
-    def update(self):
+    def update(self) -> None:
         current_time = get_time()
 
         if current_time - self.last_activation > self.duration:
             self.deactivate()
     
-    def draw(self, *args):
+    def draw(self, *args) -> None:
         """
         Desenha armadilha se ativa
         """
@@ -260,7 +260,7 @@ class Trap(Skill):
             self.hitbox.draw(YELLOW, *args)
 
 class Traps(Skill):
-    def __init__(self, pos:Vector2):
+    def __init__(self, pos:Vector2) -> None:
         """
         Herda classe Skill, define o número de armadilhas que 
         o personagem pode colocar, define tempo até ativar a armadilha. 
@@ -268,59 +268,64 @@ class Traps(Skill):
         """
         super().__init__()
         self.number_of_traps = 5
-        self.traps_activated = 0
+        self.number_of_activated = 0
         self.time_to_activate = 1
         self._cooldown = 1
         self.tile_size = Vector2(32, 32)
         self.duration = 5
-        self.traps = [Trap(pos, self.tile_size, self.duration, self._cooldown) 
+        self.hitboxes = [Trap(pos, self.tile_size, self.duration, self._cooldown) 
                       for _ in range(self.number_of_traps)]
 
-    def activate(self, player_pos:Vector2):
+    def activate(self, player_pos:Vector2) -> None:
         """
         Se houver armadilhas disponíveis, coloca uma na posição 
         que o player está
         """
         current_time = get_time()
-        if (self.traps_activated < self.number_of_traps and 
+        if (self.number_of_activated < self.number_of_traps and 
             current_time - self.last_activation > self._cooldown):
-            for trap in self.traps:
+            for trap in self.hitboxes:
                 if not trap.is_activated:
                     trap.activate(player_pos)
-                    self.traps_activated += 1
+                    self.number_of_activated += 1
                     self.last_activation = current_time
                     break
 
+    def apply_effect(self, projectile) -> None:
+        projectile.deactivate()
+        projectile.is_activated = False
+        self.number_of_activated -= 1
 
-    def update(self, player_pos:Vector2, angle:Imaginary, *args):
+
+    def update(self, player_pos:Vector2, angle:Imaginary, *args) -> None:
         current_time = get_time()
-        for trap in self.traps:
+        for trap in self.hitboxes:
             if trap.is_activated:
                 trap.update()
                 if current_time - trap.last_activation > trap.duration:
-                    self.traps_activated -= 1
+                    self.number_of_activated -= 1
 
         if is_key_pressed(KEY_E):
             self.activate(player_pos)
                     
 
-    def draw(self, *args):
+    def draw(self, *args) -> None:
         """
         Desenha armadilhas
         """
-        for trap in self.traps:
+        for trap in self.hitboxes:
             if trap.is_activated:
                 trap.draw(*args)
 
 class Intangibility(Skill):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._cooldown = 5
         self.duration = 3
         self.in_wall = False
 
 
-    def update(self, player_pos:Vector2, angle:Imaginary, *args):
+    def update(self, player_pos:Vector2, angle:Imaginary, *args) -> None:
         if is_key_pressed(KEY_E):
             self.activate()
 
@@ -329,11 +334,11 @@ class Intangibility(Skill):
             self.deactivate()
 
 
-    def draw(self, *args):
+    def draw(self, *args) -> None:
         pass
 
 class Laser(Skill):
-    def __init__(self, player_pos:Vector2):
+    def __init__(self, player_pos:Vector2) -> None:
         """
         Habilidade de raios
         """
@@ -347,7 +352,7 @@ class Laser(Skill):
         self.reflections = 4
         self.hitboxes = [Line(Vector2(0, 0), player_pos.copy(), Domain(0, float('inf')))]
         
-    def deactivate(self):
+    def deactivate(self) -> None:
         super().deactivate()
         self.hitboxes = [Line(Vector2(0, 0), Vector2(0, 0), Domain(0, float('inf')))]
   
@@ -389,23 +394,25 @@ class Laser(Skill):
                 if i == self.reflections - 1:
                     continue
                 self.hitboxes.append(Line(new_direction, closest_col['col'].point, Domain(0, float('inf'))))
-                
+        
+    def apply_effect(self, projectile) -> None:
+        pass
 
-    def draw(self, *args):
+    def draw(self, *args) -> None:
         if self.is_activated:
             for hitbox in self.hitboxes:
                 hitbox.draw(*args, PURPLE)
 
 class SuperSpeed(Skill):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.speed_multiplier = 6.0
         self.is_activated = True
 
-    def update(self, *args):
+    def update(self, *args) -> None:
         pass
 
-    def draw(self, *args):
+    def draw(self, *args) -> None:
         pass
 
 
@@ -416,11 +423,11 @@ class Shield(Skill):
         self._cooldown = 1
         self.duration = 2
 
-    def update(self, player_pos:Vector2, angle:Imaginary, *args):
+    def update(self, player_pos:Vector2, angle:Imaginary, *args) -> None:
         if is_key_pressed(KEY_E):
             self.activate()
         if self.can_deactivate():
             self.deactivate()
 
-    def draw(self, *args):
+    def draw(self, *args) -> None:
         pass

@@ -78,6 +78,10 @@ class Player:
                 self.angle.x += 1.0
 
     def update_player_pos(self, speed_multiplier) -> None:
+        if speed_multiplier == 0:
+            self.hitbox.speed = Vector2(0, 0)
+            return
+
         speed = self.tile_size * speed_multiplier
         if (is_key_down(KEY_LEFT_CONTROL)):
             speed *= 0.1
@@ -103,9 +107,12 @@ class Player:
 
     def update(self) -> None:
         if self.is_alive:
-            if (self.character.skill_name == "Speed" or 
-                (self.character.skill_name == "Dash" and self.character.skill.is_activated)):
+            if ((self.character.skill_name == "Speed" or 
+                self.character.skill_name == "Dash") and self.character.skill.is_activated):
                 self.update_player_pos(self.character.skill.speed_multiplier)
+
+            elif(self.character.skill_name == "Laser" and self.character.skill.is_activated):
+                self.update_player_pos(0)
                 
             else:
                 self.update_player_pos(self.speed_multiplier)
