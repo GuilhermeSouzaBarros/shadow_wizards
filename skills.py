@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from pyray import *
 from raylib import *
-from shapes import *
+from shapes import Circle, Rectangle as Rec
 from imaginary import Imaginary
 from vectors import Vector2, Domain
 from lines import *
@@ -231,7 +231,7 @@ class Trap(Skill):
     def __init__(self, pos:Vector2, tile_size:Vector2, duration:float, cooldown:float) -> None:
         super().__init__()
         self._cooldown = cooldown
-        self.hitbox = Rectangle(pos, tile_size)
+        self.hitbox = Rec(pos, tile_size)
         self.duration = duration
         self.tile_size = tile_size
 
