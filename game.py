@@ -51,7 +51,7 @@ class Game:
     def update_players_col(self, delta_time:float) -> None:
         for tile in self.map.collision_hitboxes:
             for player in self.players:
-                if (player.character.skill_name == "Intangibility" and player.character.skill.is_activated):
+                if (player.skill_name == "Intangibility" and player.skill.is_activated):
                     for border in self.map.borders:
                         info = CollisionInfo.collision(player.hitbox, border.hitbox, delta_time, calculate_distance=True)
                         if info.intersection:
@@ -69,7 +69,7 @@ class Game:
                 if (tile.is_destructible and not tile.is_destroyed) or tile.has_collision:
                     for player in self.players:
                         info = CollisionInfo.collision(player.hitbox, tile.hitbox, delta_time, calculate_distance=True)
-                        if (player.character.skill_name == "Intangibility" and player.character.skill.is_activated and
+                        if (player.skill_name == "Intangibility" and player.skill.is_activated and
                             tile.type != 3 and tile.type != 4):
                             continue
                         if info.intersection:
@@ -87,7 +87,7 @@ class Game:
                 if player_a == player_b or not player_b.is_alive:
                     continue
                 
-                if player_b.character.skill_name == "Shield" and player_b.character.skill.is_activated:
+                if player_b.skill_name == "Shield" and player_b.skill.is_activated:
                     continue
                 info = CollisionInfo.collision(player_a.sword.hitbox, player_b.hitbox)
                 if info.intersection:
@@ -101,11 +101,11 @@ class Game:
                     continue
                 
                 projectiles = ["Gun", "Fireball", "Traps", "Laser"]
-                skill_name = player_a.character.skill_name
+                skill_name = player_a.skill_name
                 if not skill_name in projectiles:
                     continue
 
-                for hitbox in player_a.character.skill.hitboxes:
+                for hitbox in player_a.skill.hitboxes:
                     if skill_name != "Laser":
                         if not hitbox.is_activated:
                             continue
@@ -113,27 +113,27 @@ class Game:
                         if info.intersection:
                             player_a.killed()
                             player_b.died()
-                            player_a.character.skill.apply_effect(hitbox)
+                            player_a.skill.apply_effect(hitbox)
                     else:
-                        if not player_a.character.skill.is_activated:
+                        if not player_a.skill.is_activated:
                             continue
                         info = ColCircleLine(player_b.hitbox, hitbox, delta_time)
                         if info.did_intersect and player_b.is_alive:
                             player_a.killed()
                             player_b.died()
-                            player_a.character.skill.apply_effect(hitbox)
+                            player_a.skill.apply_effect(hitbox)
                     
 
     def update_skill_col(self, delta_time:float) -> None:
         for tile in self.map.collision_hitboxes:
             for player in self.players:
                 projectiles = ["Gun", "Fireball"]
-                if not (player.character.skill_name in projectiles):
+                if not (player.skill_name in projectiles):
                     continue
-                for projectile in player.character.skill.hitboxes:
+                for projectile in player.skill.hitboxes:
                     info = CollisionInfo.collision(projectile.hitbox, tile, delta_time, calculate_distance=True)
                     if info.intersection:
-                        player.character.skill.apply_effect(projectile)
+                        player.skill.apply_effect(projectile)
         
 
     def clear_vision(self) -> None:
@@ -181,7 +181,7 @@ class Game:
         self.update_skill_col(delta_time)
         for player in self.players:
             player.hitbox.delta_position(delta_time)
-            player.character.skill.update(player.hitbox.position.copy(), player.angle.copy(), self.map)
+            player.skill.update(player.hitbox.position.copy(), player.angle.copy(), self.map)
             player.sword.update(player.hitbox.position, player.angle, player.player_id)
 
         self.update_sword_col()

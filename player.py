@@ -9,7 +9,14 @@ from vectors import Vector2
 from collisions import CollisionInfo
 from shapes import Shape, Circle
 from sword import Sword
-from character import Character
+
+from skills.fireball import Fireball
+from skills.gun import Gun
+from skills.traps import Traps
+from skills.speedy_skills import Dash, SuperSpeed
+from skills.shield import Shield
+from skills.intangibility import Intangibility
+from skills.laser import Laser
 
 class Player:
     def __init__(self, tile_size:float,
@@ -40,7 +47,7 @@ class Player:
         self.speed_multiplier = 4.0
 
         self.sword = Sword(pos)
-        self.character = Character(character_id, pos.copy())
+        self.skill = self.choose_character(character_id, pos.copy())
         
         self.kills  = 0
         self.deaths = 0
@@ -55,6 +62,37 @@ class Player:
 
         self.in_vision = [self.team]
         self.vision_range = 128
+
+    def choose_character(self, character_id, pos):
+        """
+        Recebe um id correspondendo ao personagem escolhido e retorna a Habilidade dele
+        """
+        if character_id == CHARACTER_RED["id"]:
+            skill = Fireball(pos)
+            self.skill_name = "Fireball"
+        elif character_id == CHARACTER_BLUE["id"]:
+            skill = Dash()
+            self.skill_name = "Dash"
+        elif character_id == CHARACTER_PINK["id"]:
+            skill = Gun(pos)
+            self.skill_name = "Gun"
+        elif character_id == CHARACTER_LIME["id"]:
+            skill = Traps(pos)
+            self.skill_name = "Traps"
+        elif character_id == CHARACTER_GOLD["id"]:
+            skill = SuperSpeed()
+            self.skill_name = "Speed"
+        elif character_id == CHARACTER_YELLOW["id"]:
+            skill = Intangibility()
+            self.skill_name = "Intangibility"
+        elif character_id == CHARACTER_DARKGREEN["id"]:
+            skill = Shield()
+            self.skill_name = "Shield"
+        elif character_id == CHARACTER_PURPLE["id"]:
+            skill = Laser(pos)
+            self.skill_name = "Laser"
+
+        return skill
 
     def update_angle(self) -> None:
         if (self.player_id == 1):
@@ -107,11 +145,11 @@ class Player:
 
     def update(self) -> None:
         if self.is_alive:
-            if ((self.character.skill_name == "Speed" or 
-                self.character.skill_name == "Dash") and self.character.skill.is_activated):
-                self.update_player_pos(self.character.skill.speed_multiplier)
+            if ((self.skill_name == "Speed" or 
+                self.skill_name == "Dash") and self.skill.is_activated):
+                self.update_player_pos(self.skill.speed_multiplier)
 
-            elif(self.character.skill_name == "Laser" and self.character.skill.is_activated):
+            elif(self.skill_name == "Laser" and self.skill.is_activated):
                 self.update_player_pos(0)
                 
             else:
@@ -148,8 +186,8 @@ class Player:
             tint = WHITE
             pos_x += 32
 
-        color = (color[0], color[1], color[2], int(color[3] / (2 - ((not self.has_flag and self.is_alive and not self.character.skill.is_activated)))))
-        tint = (tint[0], tint[1], tint[2], int(tint[3] / (2 - ((not self.has_flag and self.is_alive and not self.character.skill.is_activated)))))
+        color = (color[0], color[1], color[2], int(color[3] / (2 - ((not self.has_flag and self.is_alive and not self.skill.is_activated)))))
+        tint = (tint[0], tint[1], tint[2], int(tint[3] / (2 - ((not self.has_flag and self.is_alive and not self.skill.is_activated)))))
         if (hitbox):
             self.hitbox.draw(color, map_offset, scaler)
         else:
@@ -168,5 +206,5 @@ class Player:
             draw_texture_pro(self.sprite, [pos_x, angle * 32, 32, 32], rectangle_dest, [offset * scaler, 2 * offset * scaler], 0, tint)
 
         self.sword.draw(map_offset, scaler, color)
-        self.character.skill.draw(map_offset, scaler)
+        self.skill.draw(map_offset, scaler)
     
