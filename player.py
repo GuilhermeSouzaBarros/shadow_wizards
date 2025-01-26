@@ -178,16 +178,12 @@ class Player:
         
         color = self.color
         tint = self.color
-        if self.character_id == CHARACTER_RED['id']:
+        if (self.character_id == CHARACTER_RED['id'] or
+            self.character_id == CHARACTER_BLUE['id']):
             tint = WHITE
 
-        pos_x = 0
-        if self.character_id == CHARACTER_BLUE['id']:
-            tint = WHITE
-            pos_x += 32
-
-        color = (color[0], color[1], color[2], int(color[3] / (2 - ((not self.has_flag and self.is_alive and not self.skill.is_activated)))))
-        tint = (tint[0], tint[1], tint[2], int(tint[3] / (2 - ((not self.has_flag and self.is_alive and not self.skill.is_activated)))))
+        color = (color[0], color[1], color[2], int(color[3] / (2 - ((not self.has_flag and self.is_alive and not self.character.skill.is_activated)))))
+        tint = (tint[0], tint[1], tint[2], int(tint[3] / (2 - ((not self.has_flag and self.is_alive and not self.character.skill.is_activated)))))
         if (hitbox):
             self.hitbox.draw(color, map_offset, scaler)
         else:
@@ -199,11 +195,11 @@ class Player:
 
             pos = [map_offset.x + ((self.hitbox.position.x - self.hitbox.radius) * scaler),
                    map_offset.y + ((self.hitbox.position.y - self.hitbox.radius) * scaler)]
-            rectangle_dest = [pos[0], pos[1],
-                            scaler * (self.hitbox.radius + offset) * 2,
-                            scaler * (self.hitbox.radius + offset) * 2]
+            rectangle_dest = [round(pos[0]), round(pos[1]),
+                            round(scaler * (self.hitbox.radius + offset) * 2),
+                            round(scaler * (self.hitbox.radius + offset) * 2)]
 
-            draw_texture_pro(self.sprite, [pos_x, angle * 32, 32, 32], rectangle_dest, [offset * scaler, 2 * offset * scaler], 0, tint)
+            draw_texture_pro(self.sprite, [0, angle * 32, 32, 32], rectangle_dest, [round(offset * scaler), round(2 * offset * scaler)], 0, tint)
 
         self.sword.draw(map_offset, scaler, color)
         self.skill.draw(map_offset, scaler)

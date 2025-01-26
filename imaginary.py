@@ -39,7 +39,9 @@ class Imaginary():
         return f"{self.real:.2f} + {self.imaginary:.2f}i / {self.to_degree()}"
 
     def to_degree(self) -> float:
-        return degrees(atan2(self.imaginary, self.real))
+        angle = degrees(atan2(self.imaginary, self.real))
+        angle += 360 * (angle < 0.0)
+        return angle
 
     def copy(self):
         return Imaginary(self.real, self.imaginary)
