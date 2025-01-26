@@ -1,0 +1,130 @@
+{
+    "id" : 1,
+    "background": [215, 190, 175, 255],
+    "esc_page": 0,
+    "text_boxes": [
+        {
+            "string": "Join Lobby",
+            "font_size": 1,
+            "position": [0.5, 0.175],
+            "size": [0.9, 0.27],
+            "color": [20, 20, 20, 255]
+        }
+    ],
+    "text_buttons": [
+        {
+            "string": "Ready?",
+            "font_size": 0.8,
+            "position": [0.25, 0.8],
+            "size": [0.4, 0.1],
+            "text_color": [20, 20, 20, 255],
+            "button_color": [255, 100, 100, 255],
+            "type": "game_start",
+            "target": 1
+        }
+    ],
+    "selected_groups": [
+        {
+            "type": "caracter",
+            "render_buttons": [
+            {
+                "sprite":
+                {
+                    "path": "sprites/red_wizard.png",
+                    "size": [32, 32],
+                    "offset": [-8, -8],
+                    "tint": [255, 255, 255, 255]
+                },
+                "position": [0.55, 0.5],
+                "size": [0.1, 0.2],
+                "target": 1
+            },
+            {
+                "sprite": 
+                {
+                    "path": "sprites/blue_wizard.png",
+                    "size": [32, 32],
+                    "offset": [-8, -8],
+                    "tint": [255, 255, 255, 255]
+                },
+                "position": [0.675, 0.5],
+                "size": [0.1, 0.2],
+                "target": 2
+            },
+            {
+                "sprite": 
+                {
+                    "path": "sprites/wizard.png",
+                    "size": [32, 32],
+                    "offset": [-8, -8],
+                    "tint": [255, 201, 227, 255]
+                },
+                "position": [0.8, 0.5],
+                "size": [0.1, 0.2],
+                "target": 3
+            },
+            {
+                "sprite": 
+                {
+                    "path": "sprites/wizard.png",
+                    "size": [32, 32],
+                    "offset": [-8, -8],
+                    "tint": [201, 242, 39, 255]
+                },
+                "position": [0.925, 0.5],
+                "size": [0.1, 0.2],
+                "target": 4
+            },
+            {
+                "sprite": 
+                {
+                    "path": "sprites/wizard.png",
+                    "size": [32, 32],
+                    "offset": [-8, -8],
+                    "tint": [239, 163, 3, 255]
+                },
+                "position": [0.55, 0.75],
+                "size": [0.1, 0.2],
+                "target": 5
+            },
+            {
+                "sprite": 
+                {
+                    "path": "sprites/wizard.png",
+                    "size": [32, 32],
+                    "offset": [-8, -8],
+                    "tint": [254, 248, 4, 255]
+                },
+                "position": [0.675, 0.75],
+                "size": [0.1, 0.2],
+                "target": 6
+            },
+            {
+                "sprite": 
+                {
+                    "path": "sprites/wizard.png",
+                    "size": [32, 32],
+                    "offset": [-8, -8],
+                    "tint": [29, 145, 63, 255]
+                },
+                "position": [0.8, 0.75],
+                "size": [0.1, 0.2],
+                "target": 7
+            },
+            {
+                "sprite": 
+                {
+                    "path": "sprites/wizard.png",
+                    "size": [32, 32],
+                    "offset": [-8, -8],
+                    "tint": [178, 82, 179, 255]
+                },
+                "position": [0.925, 0.75],
+                "size": [0.1, 0.2],
+                "target": 8
+            }
+            ]
+        }
+    ],
+    "random_renders": []
+}

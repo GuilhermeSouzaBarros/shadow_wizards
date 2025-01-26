@@ -80,8 +80,12 @@ class Rectangle(Shape):
     @size.setter
     def size(self, new_size:Vector2):
         self._size = new_size
-        self.to_lines()
+        self.lines = self.to_lines()
         self.att_radius()
+
+    @property
+    def radius(self) -> float:
+        return self.inner_radius
 
     @property
     def __str__(self) -> None:

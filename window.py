@@ -37,5 +37,5 @@ class Window:
     def update(self) -> None:
         if (is_key_pressed(KEY_F11)):
             ToggleFullscreen()
-        self.close_window = window_should_close()
+        self.close_window = self.close_window or window_should_close()
         
