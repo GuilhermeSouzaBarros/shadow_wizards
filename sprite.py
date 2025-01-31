@@ -28,4 +28,48 @@ class CaracterSprite(Sprite):
         rectangle_dest = [round(offset.x + hitbox.position.x * scaler - size[0]),
                           round(offset.y + hitbox.position.y * scaler - size[1]),
                           round(2 * size[0]), round(2 * size[1])]
-        draw_texture_pro(self.texture, [0, angle * 32, 32, 32], rectangle_dest, (self.offset * scaler).to_list(), 0, self.tint)
+        draw_texture_pro(self.texture, [0, angle * self.size.y, self.size.x, self.size.y], rectangle_dest, (self.offset * scaler).to_list(), 0, self.tint)
+
+class MapSprite(Sprite):
+    def __init__(self, path, size=Vector2(0,0), offset=0, tint = RAYWHITE):
+        super().__init__(path, size, offset, tint)
+        
+
+    def draw(self, offset:Vector2=Vector2(0,0), scaler:float=1.0):
+        map_pos = [round(offset.x), round(offset.y)]
+        draw_texture_ex(self.texture, map_pos, 0.0, scaler, self.tint)
+
+class DestructibleTileSprite(Sprite):
+    def __init__(self, path: str, sprite_id:int=1, size=Vector2(0,0), offset=0, tint:Color=RAYWHITE):
+        super().__init__(path, size, offset, tint)
+        self.sprite_id = sprite_id
+
+    def draw(self, hitbox:Rectangle, offset:Vector2=Vector2(0,0), scaler:float=1.0):
+        size = [round(hitbox.radius * scaler), round(hitbox.radius * scaler)]
+        rectangle_dest = [round(offset.x + hitbox.position.x * scaler - size[0]),
+                          round(offset.y + hitbox.position.y * scaler - size[1]),
+                          round(2 * size[0]), round(2 * size[1])]
+        img_source = [self.sprite_id * self.size.x, 32 * self.size.y, self.size.x, self.size.y]
+
+        draw_texture_pro(self.texture, img_source, rectangle_dest, [round(offset.x * scaler), round(offset.y * scaler)], 0, self.tint)
+
+class FlagSprite(Sprite):
+    def __init__(self, path:str, sprite_id:int, size=Vector2(0,0), offset:Vector2=Vector2(0,0), tint:Color=RAYWHITE):
+        super().__init__(path, size, offset, tint)
+        self.sprite_id = sprite_id
+    
+    def draw(self, hitbox:Shape, map_offset:Vector2=Vector2(0,0), scaler:float=1.0):
+        sprite_pos = hitbox.position * scaler + map_offset
+        sprite_pos = Vector2(round(sprite_pos.x - hitbox.radius * scaler), round(sprite_pos.y - hitbox.radius * scaler))
+        sprite_pos = sprite_pos.to_list()
+        
+        # Adiciona os tamanhos do sprite
+        sprite_pos.append(round(2 * hitbox.radius * scaler))
+        sprite_pos.append(round(2 * hitbox.radius * scaler))
+
+        # Calcula a porção da imagem que deve ser utilizada
+        img_source = [self.sprite_id * self.size.x, 0, self.size.x, self.size.y]
+
+        draw_texture_pro(self.texture, img_source, sprite_pos, [round(map_offset.x * scaler), round(map_offset.y * scaler)], 0, self.tint)
+    
+

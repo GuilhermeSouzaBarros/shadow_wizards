@@ -37,7 +37,9 @@ class Objective(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def draw(self, map_offset:Vector2, scaler:float, vision:int) -> None:
+    def draw(self, map_offset:Vector2, scaler:float, vision:int, show_hitboxes:bool=False) -> None:
         """ Este método é um método abstrato. """
         raise NotImplementedError
     
+    def unload(self):
+        raise NotImplementedError

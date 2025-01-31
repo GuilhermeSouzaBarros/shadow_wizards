@@ -211,8 +211,8 @@ class Game:
         begin_drawing()
         
         clear_background(GRAY)
-        self.map.draw        (self.map_offset, self.scaler, self.curr_team_vision)
-        self.objectives.draw (self.map_offset, self.scaler, self.curr_team_vision)
+        self.map.draw        (self.map_offset, self.scaler, self.curr_team_vision, self.show_hitboxes)
+        self.objectives.draw (self.map_offset, self.scaler, self.curr_team_vision, self.show_hitboxes)
         self.score.draw      (self.scaler)
         for player in self.players:
             player.draw  (self.map_offset, self.scaler, self.curr_team_vision, self.show_hitboxes)
@@ -250,4 +250,6 @@ class Game:
     def unload(self) -> None:
         for player in self.players:
             unload_texture(player.sprite)
+        unload_texture(self.map.map_sprite.texture)
+        self.objectives.unload()
         print("Game unloaded")

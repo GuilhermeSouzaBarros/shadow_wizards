@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
 from pyray import *
 from raylib import *
+from random import randint
 
+import sprite
 from vectors import Vector2
 from shapes import Rectangle
 
@@ -13,9 +15,9 @@ class Tile(ABC):
         self.type = type
 
         # Controla se o tile é destrutível ou não
-        self.is_destructible = self.type == 1
+        self.is_destructible = self.type >= 3 and self.type <= 6
 
-        self.has_collision = not(self.type == 7 or self.type == 8 or (not self.type % 5))
+        self.has_collision = not(self.type == 7 or self.type == 8 or (not self.type))
 
         self.hitbox = Rectangle(
             Vector2(tile_size * (column + 0.5), tile_size * (row + 0.5)),
@@ -25,7 +27,7 @@ class Tile(ABC):
         self.in_vision = []
 
     @abstractmethod    
-    def draw(self, map_offset:list, scaler:float, vision:int) -> None:
+    def draw(self, map_offset:list, scaler:float, draw_hitbox:bool, vision:int) -> None:
         """ Este método é um método abstrato. """            
         raise NotImplementedError
 
@@ -35,7 +37,7 @@ class Floor(Tile):
         """ Inicializa o objeto Floor. """
         super().__init__(tile_size, type, row, column)
     
-    def draw(self, map_offset:Vector2, scaler:float, vision:int) -> None:
+    def draw(self, map_offset:Vector2, scaler:float, draw_hitbox:bool, vision:int) -> None:
         """ 
         Função: draw
         Descrição:
@@ -60,7 +62,7 @@ class Rails(Tile):
         super().__init__(tile_size, type, row, column)
         self.is_end = (row == 6 and column == 2) or (row == 8 and column == 22)
 
-    def draw(self, map_offset:Vector2, scaler:float, vision:int) -> None:
+    def draw(self, map_offset:Vector2, scaler:float, draw_hitbox:bool, vision:int) -> None:
         """ 
         Função: draw
         Descrição:
@@ -84,7 +86,7 @@ class Border(Tile):
         """ Inicializa o objeto Border. """
         super().__init__(tile_size, type, row, column)
 
-    def draw(self, map_offset:Vector2, scaler:float, vision:int) -> None:
+    def draw(self, map_offset:Vector2, scaler:float, draw_hitbox:bool, vision:int) -> None:
         """ 
         Função: draw
         Descrição:
@@ -96,11 +98,7 @@ class Border(Tile):
             Nenhum.     
         """
         # Caso a borda seja a mesma para ambos, remover as condições
-        
-        if self.type == 4:
-            color = BLACK
-        else:
-            color = BLUE
+        color = BLACK
         self.hitbox.draw(color, map_offset, scaler, outlines=False)
 
 
@@ -109,8 +107,10 @@ class Barrier(Tile):
         """ Inicializa o objeto barreira. """
         super().__init__(tile_size, type, row, column)
         self.is_destroyed = False 
+        if self.is_destructible:
+            self.sprite = self.build_destructible_barrier()
 
-    def draw(self, map_offset:Vector2, scaler:float, vision:int) -> None:
+    def draw(self, map_offset:Vector2, scaler:float, draw_hitbox:bool, vision:int) -> None:
         """ 
         Função: draw
         Descrição:
@@ -126,30 +126,35 @@ class Barrier(Tile):
         
         if self.is_destructible:
             # Desenha os tiles destrutíveis
-            color = BROWN
-        else:
+            if draw_hitbox:
+                color = BROWN
+                self.hitbox.draw(color, map_offset, scaler, outlines=False)
+            else:
+                self.sprite.draw(self.hitbox, map_offset, scaler)
+        elif draw_hitbox:
             # Desenha os obstáculos permanentes do mapa
             color = GREEN
+            self.hitbox.draw(color, map_offset, scaler, outlines=False)
 
-        self.hitbox.draw(color, map_offset, scaler, outlines=False)
-
-
-class SpawnPoint(Tile):
-    def __init__(self, tile_size: Vector2, type:int, i:int, j:int):
-        super().__init__(tile_size, type, i, j)
-        
-        # Controla qual a qual player o spawn point corresponde
-        self.player_spawn_id = type/5  
-
-    def draw(self, map_offset:Vector2, scaler:float, vision:int):
-        """ 
-        Função: draw
-        Descrição:
-            Desenha o spawn point do player correspondente.
-        Parâmetros:
-            map_offset:Vector2 - posição do pixel do canto superior esquerdo do mapa.
-            scaler:float - transforma as coordenadas do jogo para as de desenho.
-        Retorno:
-            Nenhum.    
+    def build_destructible_barrier(self):
         """
-        self.hitbox.draw(ORANGE, map_offset, scaler)
+        Método: build_destructible_barrier
+        Descrição: 
+            Constrói os sprites dos tiles destrutíveis do mapa.
+        Parâmetros:
+            Nenhum.
+        Retorno: Nenhum.
+        """
+        
+        # Sprite de cone
+        if self.type == 3:
+            return sprite.DestructibleTileSprite('sprites/cones.png', 0, self.hitbox.size)
+        # Sprite de containers
+        if self.type == 4:
+            return sprite.DestructibleTileSprite('sprites/containers.png', randint(0, 15), self.hitbox.size)
+        # Sprite de veículos
+        if self.type == 5:
+            return sprite.DestructibleTileSprite('sprites/vehicules.png', randint(0, 19), self.hitbox.size)
+        # Sprite de veículos no mesmo sentido
+        if self.type == 6:
+            return sprite.DestructibleTileSprite('sprites/same_way_vehicules.png', randint(0, 9), self.hitbox.size)   
