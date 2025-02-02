@@ -25,8 +25,7 @@ async def main():
             await asyncio.sleep(0)
 
         if not window.close_window:
-            print(f"map_id: {menu.selected_map}\ncaracter_id: {menu.selected_caracter}")
-            game = Game(window.size, menu.selected_map, menu.selected_caracter)
+            game = Game(menu.server, menu.client, window.size, menu.selected_map, menu.server_addr_ip, menu.selected_characters)
             menu.unload()
 
         while not (window.close_window or game.end):
@@ -35,10 +34,14 @@ async def main():
                 window.update_size()    
                 game.update_draw_scale(window.size)
 
-            game.tick += get_frame_time()
-            while game.tick >= GAME_TICK:
-                game.update_tick(GAME_TICK)
-                game.tick -= GAME_TICK
+            if game.server:
+                game.tick += get_frame_time()
+                while game.tick >= GAME_TICK:
+                    game.update_tick(GAME_TICK)
+                    game.tick -= GAME_TICK
+
+            if game.client:
+                game.update_client()
 
             game.update_frame()
             game.draw()

@@ -60,8 +60,6 @@ class Player:
 
         self.has_flag = False
 
-        self.in_vision = [self.team]
-        self.vision_range = 128
 
     def choose_character(self, character_id, pos):
         """
@@ -139,10 +137,6 @@ class Player:
             self.angle = previous_angle
             self.hitbox.speed = Vector2(0, 0)
     
-    def is_in_vision(self, other_hitbox:Shape) -> None:
-        player_vision = Circle(self.hitbox.position.copy(), self.vision_range)
-        return CollisionInfo.collision(player_vision, other_hitbox).intersection
-
     def update(self) -> None:
         if self.is_alive:
             if ((self.skill_name == "Speed" or 
@@ -172,10 +166,7 @@ class Player:
 
         self.sword.deactivate()
 
-    def draw(self, map_offset:Vector2, scaler:float, vision:int, hitbox:bool) -> None:
-        if not self.has_flag and (vision or not len(self.in_vision)) and not vision in self.in_vision:
-            return
-        
+    def draw(self, map_offset:Vector2, scaler:float, hitbox:bool) -> None:
         color = self.color
         tint = self.color
         if (self.character_id == CHARACTER_RED['id'] or

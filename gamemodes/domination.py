@@ -70,7 +70,7 @@ class Domination(Objective):
                 self.last_increment = now
         return pts_increase
 
-    def draw(self, map_offset:Vector2, scaler:float, vision:int) -> None:
+    def draw(self, map_offset:Vector2, scaler:float) -> None:
         """
         Função: draw
         Descrição:

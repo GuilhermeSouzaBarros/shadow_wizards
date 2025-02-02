@@ -15,8 +15,6 @@ class Objective(ABC):
         self.hitbox = Circle(Vector2(tile_size * (column + 0.5), tile_size * (row + 0.5)), radius)
 
         self.pts_gain = pts_gain # Acréscimo de pontos do time com a conquista do objetivo
-    
-        self.in_vision = []
 
     def update_region(self) -> None:
         """
@@ -37,7 +35,7 @@ class Objective(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def draw(self, map_offset:Vector2, scaler:float, vision:int) -> None:
+    def draw(self, map_offset:Vector2, scaler:float) -> None:
         """ Este método é um método abstrato. """
         raise NotImplementedError
     

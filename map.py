@@ -80,7 +80,7 @@ class Map:
             self.collision_hitboxes.append(hitbox)
     
 
-    def draw(self, map_offset:Vector2, scaler:float, vision:int) -> None:
+    def draw(self, map_offset:Vector2, scaler:float) -> None:
         """
         Função: draw
         Descrição:
@@ -94,7 +94,7 @@ class Map:
         for row in range(0, self.num_rows):
             for column in range(0, self.num_columns):
                 tile = self.tiles[row][column]
-                tile.draw(map_offset, scaler, vision)
+                tile.draw(map_offset, scaler)
 
     def load_map(self) -> dict:
         """ 

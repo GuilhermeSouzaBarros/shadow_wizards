@@ -50,7 +50,7 @@ class Objectives:
                     final_score_inc = objective.update(players=players, delta_time=delta_time, flags=self.objectives['flags'])
         return final_score_inc
 
-    def draw(self, map_offset:Vector2, scaler:float, vision:int) -> None:
+    def draw(self, map_offset:Vector2, scaler:float) -> None:
         """
         Função: draw
         Descrição:
@@ -62,7 +62,7 @@ class Objectives:
         """
         for objective_type in self.objectives:
             for objective in self.objectives[objective_type]:
-                objective.draw(map_offset, scaler, vision)
+                objective.draw(map_offset, scaler)
 
     def load_cart(self) -> None:
         # load payload path

@@ -18,7 +18,7 @@ class Sprite(ABC):
     def draw(self, shape:Shape, offset:Vector2=Vector2(0, 0), scaler:float=1):
         raise NotImplementedError
     
-class CaracterSprite(Sprite):
+class CharacterSprite(Sprite):
     def __init__(self, path:str, size:Vector2, offset:Vector2, tint:Color):
         Sprite.__init__(self, path, size, offset, tint)
 

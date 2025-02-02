@@ -63,7 +63,7 @@ class Flag(Objective):
                 self.hitbox.position = player.hitbox.position.copy()
         return []
     
-    def draw(self, map_offset:Vector2, scaler:float, vision:int) -> None:
+    def draw(self, map_offset:Vector2, scaler:float) -> None:
         """ 
         Função:
             draw
@@ -145,7 +145,7 @@ class CapturePoint(Objective):
             return [0, self.pts_gain]
         return []
 
-    def draw(self, map_offset:Vector2, scaler:float, vision:int) -> None:
+    def draw(self, map_offset:Vector2, scaler:float) -> None:
         """ 
         Função: draw
         Descrição:

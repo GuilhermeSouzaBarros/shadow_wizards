@@ -130,14 +130,14 @@ class Cart:
                 
                 player.hitbox.position += (repulsion_dir * penetration)
 
-    def draw(self, map_offset:Vector2, scaler:float, vision:int) -> None:
-        self.draw_cart   (map_offset, scaler, vision)
-        self.draw_region (map_offset, scaler, vision)
+    def draw(self, map_offset:Vector2, scaler:float) -> None:
+        self.draw_cart   (map_offset, scaler)
+        self.draw_region (map_offset, scaler)
 
-    def draw_cart(self, map_offset:Vector2, scaler:float, vision:int) -> None:
+    def draw_cart(self, map_offset:Vector2, scaler:float) -> None:
         self.hitbox.draw(self.color, map_offset, scaler)
 
-    def draw_region(self, map_offset:Vector2, scaler:float, vision:int) -> None:
+    def draw_region(self, map_offset:Vector2, scaler:float) -> None:
         """
         Função: draw
         Descrição:
