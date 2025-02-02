@@ -92,41 +92,22 @@ class Player:
 
         return skill
 
-    def update_angle(self) -> None:
-        if (self.player_id == 1):
-            if (is_key_down(KEY_W)):
-                self.angle.y -= 1.0
-            if (is_key_down(KEY_A)):
-                self.angle.x -= 1.0
-            if (is_key_down(KEY_S)):
-                self.angle.y += 1.0
-            if (is_key_down(KEY_D)):
-                self.angle.x += 1.0
+    def update_angle(self, player_input:dict) -> None:
+        if (player_input["up"]):    self.angle.y -= 1.0
+        if (player_input["left"]):  self.angle.x -= 1.0
+        if (player_input["down"]):  self.angle.y += 1.0
+        if (player_input["right"]): self.angle.x += 1.0
 
-        elif (self.player_id == 2):
-            if (is_key_down(KEY_I) or is_key_down(KEY_UP)):
-                self.angle.y -= 1.0
-            if (is_key_down(KEY_J) or is_key_down(KEY_LEFT)):
-                self.angle.x -= 1.0
-            if (is_key_down(KEY_K) or is_key_down(KEY_DOWN)):
-                self.angle.y += 1.0
-            if (is_key_down(KEY_L) or is_key_down(KEY_RIGHT)):
-                self.angle.x += 1.0
-
-    def update_player_pos(self, speed_multiplier) -> None:
+    def update_player_pos(self, speed_multiplier, player_input:dict) -> None:
         if speed_multiplier == 0:
             self.hitbox.speed = Vector2(0, 0)
             return
 
         speed = self.tile_size * speed_multiplier
-        if (is_key_down(KEY_LEFT_CONTROL)):
-            speed *= 0.1
-        elif (is_key_down(KEY_LEFT_SHIFT)):
-            speed *= 5
         previous_angle = self.angle
 
         self.angle = Vector2(0.0, 0.0)
-        self.update_angle()
+        self.update_angle(player_input)
         
         if (self.angle.module()):
             self.angle.to_module(1.0)
@@ -137,17 +118,17 @@ class Player:
             self.angle = previous_angle
             self.hitbox.speed = Vector2(0, 0)
     
-    def update(self) -> None:
+    def update(self, player_input:dict) -> None:
         if self.is_alive:
             if ((self.skill_name == "Speed" or 
                 self.skill_name == "Dash") and self.skill.is_activated):
-                self.update_player_pos(self.skill.speed_multiplier)
+                self.update_player_pos(self.skill.speed_multiplier, player_input)
 
             elif(self.skill_name == "Laser" and self.skill.is_activated):
-                self.update_player_pos(0)
+                self.update_player_pos(0, player_input)
                 
             else:
-                self.update_player_pos(self.speed_multiplier)
+                self.update_player_pos(self.speed_multiplier, player_input)
                         
         elif (get_time() - self.start_time >= self.respawn):
             self.is_alive = True

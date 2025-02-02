@@ -22,8 +22,8 @@ class Game:
         self.players_input = {}
         for addr in self.server_addr_id:
             self.players_input.update(
-                {self.server_addr_id[addr]: {"up": False, "left": False, "down": False, "right": False,
-                                             "ability": False, "sword": False}})
+                {addr: {"up": False, "left": False, "down": False, "right": False,
+                        "ability": False, "sword": False}})
     
         # *** Serão atualizados na função load_map quando o mapa for escolhido ***
         self.map_id = map_id
@@ -73,12 +73,17 @@ class Game:
         message = "i".encode()
         keys = [KEY_UP, KEY_LEFT, KEY_DOWN, KEY_RIGHT, KEY_X, KEY_C]
         for key in keys:
+            if(is_key_down(key)):
+                print("input is working")
             message += (is_key_down(key)).to_bytes(1)
+        print(message)
         return message
 
-    def decode_input(self, player:tuple, input:bytes):
+    def decode_input(self, player:tuple, input:bytes) -> None:
         for i, key in enumerate(self.players_input[player]):
+            print(self.players_input[player][key])
             self.players_input[player][key] = bool(input[i])
+            print("new input", player, self.players_input[player])
 
     def update_players_col(self, delta_time:float) -> None:
         for tile in self.map.collision_hitboxes:
@@ -139,7 +144,6 @@ class Game:
                             player_b.died()
                             player_a.skill.apply_effect(hitbox)
                     
-
     def update_skill_col(self, delta_time:float) -> None:
         for tile in self.map.collision_hitboxes:
             for player in self.players:
@@ -152,8 +156,19 @@ class Game:
                         player.skill.apply_effect(projectile)
         
     def update_tick(self, delta_time) -> None:
+        self.server.update(loop=True)
+        while True:
+            try:
+                input_bytes = self.server.get_queue.get_nowait()
+            except:
+                break
+            self.decode_input(input_bytes[0], input_bytes[1][1:])
+
         for player in self.players:
-            player.update()
+            for player_addr in self.server_addr_id:
+                if self.server_addr_id[player_addr] == player.player_id:
+                    player.update(self.players_input[player_addr])
+                    break
 
         self.update_players_col(delta_time)
         self.update_skill_player_col(delta_time)
@@ -170,6 +185,10 @@ class Game:
 
         self.end = self.score.countdown_over
     
+    def update_client(self) -> None:
+        self.client.send_queue.put(self.encode_input())
+        self.client.update(loop=True)
+
     def update_frame(self) -> None:
         if (is_key_pressed(KEY_H)):
             self.show_hitboxes = not self.show_hitboxes

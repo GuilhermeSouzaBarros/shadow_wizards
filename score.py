@@ -80,8 +80,11 @@ class Score():
         
         # Calcula a pontuação obtida através de objetivos do jogo
         for team in range(0, len(score_increase)):
-            self.objejctives_score[team] += score_increase[team]
-        
+            try:
+                self.objejctives_score[team] += score_increase[team]
+            except:
+                print("Score still broken bro")
+
         # Calcula a pontuação dinal dos times
         for team in range(0, self.num_teams):
             self.final_score[team] = self.kills_score[team] + self.objejctives_score[team]
