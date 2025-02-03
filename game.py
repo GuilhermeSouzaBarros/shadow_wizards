@@ -250,6 +250,10 @@ class Game:
     def unload(self) -> None:
         for player in self.players:
             unload_texture(player.sprite)
+            unload_texture(player.sword.sprite)
+            skill_sprites = ["Fireball", "Traps"]
+            if(player.skill_name in skill_sprites):
+                unload_texture(player.skill.sprite)
         unload_texture(self.map.map_sprite.texture)
         self.objectives.unload()
         print("Game unloaded")

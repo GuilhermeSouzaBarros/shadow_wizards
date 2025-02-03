@@ -13,11 +13,9 @@ class Dash(Skill):
 
 
     def update(self, *args) -> None:
-        current_time = get_time()
-        if (is_key_pressed(KEY_E) and 
-            current_time - self.last_activation > self._cooldown):
-            self.activate(*args)
-        if current_time - self.last_activation > self.duration:
+        activate = self.skill_key(args[0], args[1], 1)
+        
+        if self.can_deactivate():
             self.deactivate() 
 
     def draw(self, *args) -> None:

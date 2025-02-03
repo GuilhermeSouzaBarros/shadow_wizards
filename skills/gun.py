@@ -40,8 +40,7 @@ class Gun(Skill):
                 bullet.update()
                 if not bullet.is_activated:
                     self.number_of_activated -= 1
-        if is_key_pressed(KEY_E) and self.can_activate():
-            self.activate(player_pos, angle)
+        activate = self.skill_key(player_pos, angle, 1)
 
     def apply_effect(self, projectile) -> None:
         projectile.deactivate()
@@ -54,4 +53,4 @@ class Gun(Skill):
         """
         for bullet in self.hitboxes:
             if bullet.is_activated:
-                bullet.draw(PINK, *args)
+                bullet.draw(PINK, *args, 0)
