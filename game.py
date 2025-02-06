@@ -91,7 +91,6 @@ class Game:
         pointer = 0
         for player in self.players:
             pointer += player.decode(game[pointer:])
-        print()
 
     def update_players_col(self, delta_time:float) -> None:
         for tile in self.map.collision_hitboxes:
@@ -201,7 +200,7 @@ class Game:
     def update_client(self) -> None:
         self.client.send_queue.put(self.encode_input())
         self.client.update(loop=True)
-
+        if self.server: return
         while True:
             try:
                 game_state = self.client.get_queue.get_nowait()

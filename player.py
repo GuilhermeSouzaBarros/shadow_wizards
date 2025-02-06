@@ -179,13 +179,20 @@ class Player:
     
     def encode(self) -> bytes:
         message = "p".encode()
-        message += bytes(struct.pack("dd", self.hitbox.position.x, self.hitbox.position.y))
-        print(self.player_id, ":",message)
+        message += bytes(struct.pack("dddd??", self.hitbox.position.x, self.hitbox.position.y,
+                                     self.angle.real, self.angle.imaginary, self.is_alive,
+                                     self.sword.active))
         return message
     
     def decode(self, byte_string:bytes) -> int:
-        print(self.player_id, byte_string[1:17])
-        floats = struct.unpack("dd", byte_string[1:17])
-        self.hitbox.position = Vector2(floats[0], floats[1])
-        return 17
+        datas = struct.unpack("dddd??", byte_string[1:35])
+        self.hitbox.position = Vector2(datas[0], datas[1])
+        self.angle.real = datas[2]
+        self.angle.imaginary = datas[3]
+        self.is_alive = datas[4]
+        if (datas[5]):
+            self.sword.update(self.hitbox.position, self.angle, {"sword": True})
+        else:
+            self.sword.deactivate()
+        return 35
     

@@ -20,7 +20,7 @@ class Server(BaseSocket):
 
     def get_data(self, loop:bool):
         while True:
-            data, addr = self.socket.recvfrom(1024)
+            data, addr = self.socket.recvfrom(128)
             if addr in self.clients_addresses or len(self.clients_addresses) < 4:
                 self.get_queue.put([addr, data])
             if not loop: break
