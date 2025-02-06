@@ -221,8 +221,8 @@ class Game:
         begin_drawing()
         
         clear_background(GRAY)
-        self.map.draw        (self.map_offset, self.scaler)
-        self.objectives.draw (self.map_offset, self.scaler)
+        self.map.draw        (self.map_offset, self.scaler, self.show_hitboxes)
+        self.objectives.draw (self.map_offset, self.scaler, self.show_hitboxes)
         self.score.draw      (self.scaler)
         for player in self.players:
             player.draw  (self.map_offset, self.scaler, self.show_hitboxes)

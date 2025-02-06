@@ -31,7 +31,7 @@ class CharacterSprite(Sprite):
         draw_texture_pro(self.texture, [0, angle * self.size.y, self.size.x, self.size.y], rectangle_dest, (self.offset * scaler).to_list(), 0, self.tint)
 
 class MapSprite(Sprite):
-    def __init__(self, path, size=Vector2(0,0), offset=0, tint = RAYWHITE):
+    def __init__(self, path, size=Vector2(0,0), offset=Vector2(0, 0), tint = RAYWHITE):
         super().__init__(path, size, offset, tint)
         
 
@@ -40,18 +40,18 @@ class MapSprite(Sprite):
         draw_texture_ex(self.texture, map_pos, 0.0, scaler, self.tint)
 
 class DestructibleTileSprite(Sprite):
-    def __init__(self, path: str, sprite_id:int=1, size=Vector2(0,0), offset=0, tint:Color=RAYWHITE):
+    def __init__(self, path: str, sprite_id:int=1, size=Vector2(0,0), offset=Vector2(0, 0), tint:Color=RAYWHITE):
         super().__init__(path, size, offset, tint)
         self.sprite_id = sprite_id
 
     def draw(self, hitbox:Rectangle, offset:Vector2=Vector2(0,0), scaler:float=1.0):
         size = [round(hitbox.radius * scaler), round(hitbox.radius * scaler)]
-        rectangle_dest = [round(offset.x + hitbox.position.x * scaler - size[0]),
-                          round(offset.y + hitbox.position.y * scaler - size[1]),
-                          round(2 * size[0]), round(2 * size[1])]
+        rectangle_dest = [round(offset.x + (hitbox.position.x - hitbox.size.x * 0.5) * scaler),
+                          round(offset.y + (hitbox.position.y - hitbox.size.y * 0.5) * scaler),
+                          round(hitbox.size.x * scaler), round(hitbox.size.y * scaler)]
         img_source = [self.sprite_id * self.size.x, 32 * self.size.y, self.size.x, self.size.y]
 
-        draw_texture_pro(self.texture, img_source, rectangle_dest, [round(offset.x * scaler), round(offset.y * scaler)], 0, self.tint)
+        draw_texture_pro(self.texture, img_source, rectangle_dest, [round(self.offset.x * scaler), round(self.offset.y * scaler)], 0, self.tint)
 
 class FlagSprite(Sprite):
     def __init__(self, path:str, sprite_id:int, size=Vector2(0,0), offset:Vector2=Vector2(0,0), tint:Color=RAYWHITE):
