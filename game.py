@@ -1,5 +1,6 @@
 from pyray import *
 from raylib import *
+import struct
 
 from sockets.server import Server
 from sockets.client import Client
@@ -73,17 +74,24 @@ class Game:
         message = "i".encode()
         keys = [KEY_UP, KEY_LEFT, KEY_DOWN, KEY_RIGHT, KEY_X, KEY_C]
         for key in keys:
-            if(is_key_down(key)):
-                print("input is working")
             message += (is_key_down(key)).to_bytes(1)
-        print(message)
         return message
 
     def decode_input(self, player:tuple, input:bytes) -> None:
         for i, key in enumerate(self.players_input[player]):
-            print(self.players_input[player][key])
             self.players_input[player][key] = bool(input[i])
-            print("new input", player, self.players_input[player])
+
+    def encode_game(self) -> bytes:
+        message = "g".encode()
+        for player in self.players:
+            message += player.encode()
+        return message
+
+    def decode_game(self, game:bytes):
+        pointer = 0
+        for player in self.players:
+            pointer += player.decode(game[pointer:])
+        print()
 
     def update_players_col(self, delta_time:float) -> None:
         for tile in self.map.collision_hitboxes:
@@ -175,8 +183,11 @@ class Game:
         self.update_skill_col(delta_time)
         for player in self.players:
             player.hitbox.delta_position(delta_time)
-            player.skill.update(player.hitbox.position.copy(), player.angle.copy(), self.map)
-            player.sword.update(player.hitbox.position, player.angle, player.player_id)
+            for player_addr in self.server_addr_id:
+                if self.server_addr_id[player_addr] == player.player_id:
+                    player.skill.update(player.hitbox.position.copy(), player.angle.copy(), self.map)
+                    player.sword.update(player.hitbox.position, player.angle, self.players_input[player_addr])
+                    break
 
         self.update_sword_col()
         
@@ -184,10 +195,20 @@ class Game:
         self.score.update(delta_time, self.players, score_increase)
 
         self.end = self.score.countdown_over
+
+        self.server.send_queue.put(self.encode_game())
     
     def update_client(self) -> None:
         self.client.send_queue.put(self.encode_input())
         self.client.update(loop=True)
+
+        while True:
+            try:
+                game_state = self.client.get_queue.get_nowait()
+            except:
+                break
+            if (chr(game_state[0]) == "g"):
+                self.decode_game(game_state[1:])
 
     def update_frame(self) -> None:
         if (is_key_pressed(KEY_H)):

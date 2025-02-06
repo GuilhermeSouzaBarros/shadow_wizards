@@ -1,7 +1,8 @@
 from pyray import *
 from raylib import *
-
+import struct
 from math import atan2, degrees
+
 from config import *
 
 from imaginary import Imaginary
@@ -175,4 +176,16 @@ class Player:
 
         self.sword.draw(map_offset, scaler, color)
         self.skill.draw(map_offset, scaler)
+    
+    def encode(self) -> bytes:
+        message = "p".encode()
+        message += bytes(struct.pack("dd", self.hitbox.position.x, self.hitbox.position.y))
+        print(self.player_id, ":",message)
+        return message
+    
+    def decode(self, byte_string:bytes) -> int:
+        print(self.player_id, byte_string[1:17])
+        floats = struct.unpack("dd", byte_string[1:17])
+        self.hitbox.position = Vector2(floats[0], floats[1])
+        return 17
     
