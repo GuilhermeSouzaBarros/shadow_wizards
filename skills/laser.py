@@ -27,7 +27,7 @@ class Laser(Skill):
 
         for tile in map.collision_hitboxes:
             col = tile.collision_line(laser)
-            if col != "NULL" and col['col'].t_line_1 != 0:
+            if col and col['col'].t_line_1:
                 collisions.append(col)
 
         if collisions:
@@ -62,7 +62,7 @@ class Laser(Skill):
         return True
 
     def update(self, player_pos:Vector2, angle:Imaginary, map) -> None:
-        if is_key_pressed(KEY_E):
+        if self.skill_key(player_pos, angle, 0):
             activate = self.define_laser(player_pos, angle, map)
             if activate:
                 self.activate()

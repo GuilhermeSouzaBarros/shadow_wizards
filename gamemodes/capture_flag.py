@@ -1,14 +1,18 @@
 from pyray import *
 from raylib import *
 
+from vectors import Vector2
 from collisions import CollisionInfo
 from gamemodes.obj import Objective
+from sprite import FlagSprite
 
 class Flag(Objective):
     def __init__(self, tile_size:int, row:int,column:int, radius:float, team:int):
         super().__init__(tile_size, row, column, radius)
         self.taken = False
         self.team = team
+
+        self.sprite = FlagSprite('sprites/bag.png', self.team-1, Vector2(radius * 2, radius * 2))
   
     def update_region(self) -> None:
         """
@@ -63,12 +67,12 @@ class Flag(Objective):
                 self.hitbox.position = player.hitbox.position.copy()
         return []
     
-    def draw(self, map_offset:Vector2, scaler:float) -> None:
+    def draw(self, map_offset:Vector2, scaler:float, show_hitboxes:bool) -> None:
         """ 
         Função:
             draw
         Descrição:
-            Desenha a bandeira no centro do mapa caso nenhum jogador estiver com ela em mãos.
+            Desenha a bandeira de cada time. 
         Parâmetros:
             Nenhum.
         Retorno:
@@ -79,9 +83,13 @@ class Flag(Objective):
         elif self.team == 2:
             color = BLUE
 
-        # Calcula a posição da bandeira
-        self.hitbox.draw(color, map_offset, scaler)
-
+        if show_hitboxes:
+            self.hitbox.draw(color, map_offset, scaler)
+        else:
+            self.sprite.draw(self.hitbox, map_offset, scaler)
+    
+    def unload(self):
+        unload_texture(self.sprite.texture)
 
 class CapturePoint(Objective):
     def __init__(self, tile_size:int, row:int, column:int, radius:float, team:int):
@@ -145,7 +153,7 @@ class CapturePoint(Objective):
             return [0, self.pts_gain]
         return []
 
-    def draw(self, map_offset:Vector2, scaler:float) -> None:
+    def draw(self, map_offset:Vector2, scaler:float, show_hitboxes:bool) -> None:
         """ 
         Função: draw
         Descrição:
@@ -157,11 +165,14 @@ class CapturePoint(Objective):
         """
         if self.team == 1:    
             # Desenha o ponto de captura do time 1 
-            color = BLUE
+            color = RED
         else:
             # Desenha o ponto de captura do time 2
-            color = RED
+            color = BLUE
 
         # Calcula a posição em que a região de captura deverá ser desenhada.
         pos = [map_offset.x + (self.hitbox.position.x * scaler), map_offset.y + (self.hitbox.position.y * scaler)]
         draw_circle_lines_v(pos, self.hitbox.radius * scaler, color)
+
+    def unload(self):
+        pass

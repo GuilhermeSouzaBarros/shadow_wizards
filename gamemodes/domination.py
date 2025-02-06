@@ -70,7 +70,7 @@ class Domination(Objective):
                 self.last_increment = now
         return pts_increase
 
-    def draw(self, map_offset:Vector2, scaler:float) -> None:
+    def draw(self, map_offset:Vector2, scaler:float, show_hitboxes:bool) -> None:
         """
         Função: draw
         Descrição:
@@ -93,3 +93,6 @@ class Domination(Objective):
 
         pos = [map_offset.x + (self.hitbox.position.x * scaler), map_offset.y + (self.hitbox.position.y * scaler)]
         draw_circle_lines_v(pos, self.hitbox.radius * scaler, color)    
+
+    def unload(self):
+        pass

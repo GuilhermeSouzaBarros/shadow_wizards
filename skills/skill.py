@@ -25,6 +25,13 @@ class Skill(ABC):
             self.last_activation = get_time()
             self.is_activated = True
 
+    def skill_key(self, player_pos:Vector2, angle:Imaginary, not_laser:int) -> bool:
+        if (is_key_pressed(KEY_E) and self.can_activate()):
+            if not_laser:
+                self.activate(player_pos, angle)      
+            return True
+        return False   
+
     def can_deactivate(self) -> bool:
         if self.duration is None:
             return False

@@ -14,6 +14,7 @@ class Fireball(Skill):
         self.number_of_bullets = 1
         self.number_of_activated = 0
         self.speed_multiplier = 0.5
+        self.sprite = load_texture("sprites/fireball.png")
         self.hitboxes = [Projectile(pos, self.tile_size, self.duration, self._cooldown, 
                         self.speed_multiplier) 
                         for _ in range(self.number_of_bullets)]
@@ -34,8 +35,7 @@ class Fireball(Skill):
                 bullet.update()
                 if not bullet.is_activated:
                     self.number_of_activated -= 1
-        if(is_key_pressed(KEY_E)) and self.can_activate():
-            self.activate(player_pos, angle)
+        activate = self.skill_key(player_pos, angle, 1)
 
     def apply_effect(self, projectile) -> None:
         projectile.deactivate()
@@ -48,4 +48,4 @@ class Fireball(Skill):
         """
         for bullet in self.hitboxes:
             if bullet.is_activated:
-                bullet.draw(RED, *args)
+                bullet.draw(RED, *args, self.sprite, 1)

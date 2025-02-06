@@ -9,8 +9,7 @@ class Intangibility(Skill):
 
 
     def update(self, player_pos:Vector2, angle:Imaginary, *args) -> None:
-        if is_key_pressed(KEY_E):
-            self.activate()
+        activate = self.skill_key(player_pos, angle, 1)
 
         current_time = get_time()
         if current_time - self.last_activation > self.duration:

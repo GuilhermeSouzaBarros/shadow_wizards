@@ -3,6 +3,7 @@ from pyray import *
 from raylib import *
 
 import tiles
+import sprite
 from shapes import Rectangle
 from vectors import Vector2
 
@@ -20,6 +21,11 @@ class Map:
 
         self.tile_size = int(self.map_info['tile_size'])
 
+        self.map_size = Vector2(self.num_rows * self.tile_size,
+                                self.num_columns * self.tile_size)
+
+        self.map_sprite = self.build_map_sprite()
+
         # Carrega todos os tiles do mapa
         all_tiles = []
         for i in range(0, self.num_rows):
@@ -27,7 +33,7 @@ class Map:
             for j in range(0, self.num_columns):
                 tile_type = int(self.map_info['tiles'][i][j])
                 tile = self.build_tile(tile_type, i, j)
-                if tile_type == 3 or tile_type == 4:
+                if tile_type == 1:
                     self.borders.append(tile)
                 if (tile.has_collision):
                     all_tiles.append([i, j])
@@ -80,7 +86,7 @@ class Map:
             self.collision_hitboxes.append(hitbox)
     
 
-    def draw(self, map_offset:Vector2, scaler:float) -> None:
+    def draw(self, map_offset:Vector2, scaler:float, hitbox:bool) -> None:
         """
         Função: draw
         Descrição:
@@ -90,11 +96,14 @@ class Map:
         Retorno:
             Nenhum.
         """
-        # Itera sobre todos os tiles do mapa
+        self.map_sprite.draw(map_offset, scaler)
+
+        # Constrói todos os retângulos dos tiles do mapa
         for row in range(0, self.num_rows):
             for column in range(0, self.num_columns):
                 tile = self.tiles[row][column]
-                tile.draw(map_offset, scaler)
+                if hitbox or tile.type >= 3 and tile.type <= 6:
+                    tile.draw(map_offset, scaler, hitbox)
 
     def load_map(self) -> dict:
         """ 
@@ -129,14 +138,30 @@ class Map:
         Retorno:
             Tile correspondente ao id fornecido.
         """
-        if not tile_type or tile_type == 6:
+        if not tile_type:
             return tiles.Floor(self.tile_size, tile_type, row, column)
-        elif tile_type == 1 or tile_type == 2:
+        elif tile_type >= 2 and tile_type <= 6:
             return tiles.Barrier(self.tile_size, tile_type, row, column)
-        elif tile_type == 3 or tile_type == 4:
+        elif tile_type == 1:
             return tiles.Border(self.tile_size, tile_type, row, column)
-        elif not tile_type % 5:
-            return tiles.SpawnPoint(self.tile_size, tile_type, row, column)
-        elif tile_type == 7 or tile_type == 8:
+        elif tile_type == 7 :
             return tiles.Rails(self.tile_size, tile_type, row, column)
-        
+    
+    def build_map_sprite(self):
+        """
+        Função: build_map_sprite
+        Descrição:
+            Cria e retorna um objeto sprite com o sprite do mapa escolhido.
+        Parâmetros:
+            Nenhum.
+        Retorno:
+            Um MapSprite correspondente ao mapa escolhido.
+        """
+        if self.map_id == 1:
+            return sprite.MapSprite('sprites/map_ffa.png')
+        elif self.map_id == 2:
+            return sprite.MapSprite('sprites/map_payload.png')
+        elif self.map_id == 3:
+            return sprite.MapSprite('sprites/map_flag.png')
+        elif self.map_id == 4:
+            return sprite.MapSprite('sprites/map_domination.png')

@@ -50,7 +50,7 @@ class Objectives:
                     final_score_inc = objective.update(players=players, delta_time=delta_time, flags=self.objectives['flags'])
         return final_score_inc
 
-    def draw(self, map_offset:Vector2, scaler:float) -> None:
+    def draw(self, map_offset:Vector2, scaler:float, show_hitboxes:bool=False) -> None:
         """
         Função: draw
         Descrição:
@@ -62,10 +62,15 @@ class Objectives:
         """
         for objective_type in self.objectives:
             for objective in self.objectives[objective_type]:
-                objective.draw(map_offset, scaler)
+                objective.draw(map_offset, scaler, show_hitboxes)
+
+    def unload(self):
+        for objective_type in self.objectives:
+            for objective in self.objectives[objective_type]:
+                objective.unload()
 
     def load_cart(self) -> None:
-        # load payload path
+        # Carrega o caminho do carrinho
         path          = self.map_objectives['cart']['path']
         path_start    = self.map_objectives['cart']['start']
         region_radius = self.map_objectives['cart']['region_radius']
@@ -92,7 +97,6 @@ class Objectives:
         row = self.map_objectives['flags']['team_2']['row']
         radius = self.map_objectives['flags']['team_2']['radius']
         self.objectives['flags'].append(Flag(self.tile_size, row, column, radius, 2))
-
 
     def load_capture_points(self) -> None:
         """

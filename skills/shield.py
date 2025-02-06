@@ -7,8 +7,7 @@ class Shield(Skill):
         self.duration = 2
 
     def update(self, player_pos:Vector2, angle:Imaginary, *args) -> None:
-        if is_key_pressed(KEY_E):
-            self.activate()
+        activate = self.skill_key(player_pos, angle, 1)
         if self.can_deactivate():
             self.deactivate()
 

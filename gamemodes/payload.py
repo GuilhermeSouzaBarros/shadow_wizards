@@ -130,7 +130,7 @@ class Cart:
                 
                 player.hitbox.position += (repulsion_dir * penetration)
 
-    def draw(self, map_offset:Vector2, scaler:float) -> None:
+    def draw(self, map_offset:Vector2, scaler:float, show_hitboxes:bool) -> None:
         self.draw_cart   (map_offset, scaler)
         self.draw_region (map_offset, scaler)
 
@@ -176,3 +176,6 @@ class Cart:
         if len(teams_inside) == 1:
             return teams_inside[0]
         return 0
+    
+    def unload(self):
+        pass
