@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 
 from imaginary import Imaginary
 from vectors import Vector2
-from shapes import Shape
+from shapes import Shape, Rectangle, Circle
 
 class Sprite(ABC):
     def __init__(self, path:str, size:Vector2, offset:Vector2, tint:Color):
@@ -58,9 +58,9 @@ class FlagSprite(Sprite):
         super().__init__(path, size, offset, tint)
         self.sprite_id = sprite_id
     
-    def draw(self, hitbox:Shape, map_offset:Vector2=Vector2(0,0), scaler:float=1.0):
-        sprite_pos = hitbox.position * scaler + map_offset
-        sprite_pos = Vector2(round(sprite_pos.x - hitbox.radius * scaler), round(sprite_pos.y - hitbox.radius * scaler))
+    def draw(self, hitbox:Circle, map_offset:Vector2=Vector2(0,0), scaler:float=1.0):
+        radius = Vector2(hitbox.radius, hitbox.radius)
+        sprite_pos = (hitbox.position - radius) * scaler + map_offset
         sprite_pos = sprite_pos.to_list()
         
         # Adiciona os tamanhos do sprite
@@ -70,6 +70,6 @@ class FlagSprite(Sprite):
         # Calcula a porção da imagem que deve ser utilizada
         img_source = [self.sprite_id * self.size.x, 0, self.size.x, self.size.y]
 
-        draw_texture_pro(self.texture, img_source, sprite_pos, [round(map_offset.x * scaler), round(map_offset.y * scaler)], 0, self.tint)
+        draw_texture_pro(self.texture, img_source, sprite_pos, self.offset.to_list(), 0, self.tint)
     
 

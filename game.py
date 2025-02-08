@@ -184,7 +184,7 @@ class Game:
             player.hitbox.delta_position(delta_time)
             for player_addr in self.server_addr_id:
                 if self.server_addr_id[player_addr] == player.player_id:
-                    player.skill.update(player.hitbox.position.copy(), player.angle.copy(), self.map)
+                    player.skill.update(player.hitbox.position.copy(), player.angle.copy(), self.players_input[player_addr], self.map)
                     player.sword.update(player.hitbox.position, player.angle, self.players_input[player_addr])
                     break
 

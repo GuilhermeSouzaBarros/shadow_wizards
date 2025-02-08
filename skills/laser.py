@@ -61,8 +61,8 @@ class Laser(Skill):
             self.hitboxes.append(Line(new_direction, closest_col['col'].point, Domain(0, float('inf'))))
         return True
 
-    def update(self, player_pos:Vector2, angle:Imaginary, map) -> None:
-        if self.skill_key(player_pos, angle, 0):
+    def update(self, player_pos:Vector2, angle:Imaginary, player_input:dict, map) -> None:
+        if self.skill_key(player_pos, angle, 0, player_input):
             activate = self.define_laser(player_pos, angle, map)
             if activate:
                 self.activate()

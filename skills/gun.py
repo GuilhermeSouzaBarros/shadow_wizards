@@ -31,7 +31,7 @@ class Gun(Skill):
                     self.last_activation = get_time()
                     break
 
-    def update(self, player_pos, angle:Imaginary, *args) -> None:
+    def update(self, player_pos, angle:Imaginary, player_input:dict, *args) -> None:
         """
         Atualiza estado bas balas e desativa ou ativa dependendo do evento
         """
@@ -40,7 +40,7 @@ class Gun(Skill):
                 bullet.update()
                 if not bullet.is_activated:
                     self.number_of_activated -= 1
-        activate = self.skill_key(player_pos, angle, 1)
+        activate = self.skill_key(player_pos, angle, 1, player_input)
 
     def apply_effect(self, projectile) -> None:
         projectile.deactivate()

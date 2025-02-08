@@ -12,7 +12,7 @@ class Flag(Objective):
         self.taken = False
         self.team = team
 
-        self.sprite = FlagSprite('sprites/bag.png', self.team-1, Vector2(radius * 2, radius * 2))
+        self.sprite = FlagSprite('sprites/bag.png', self.team-1, Vector2(12, 12))
   
     def update_region(self) -> None:
         """

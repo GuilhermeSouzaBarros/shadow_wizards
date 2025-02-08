@@ -13,7 +13,7 @@ class Dash(Skill):
 
 
     def update(self, *args) -> None:
-        activate = self.skill_key(args[0], args[1], 1)
+        activate = self.skill_key(args[0], args[1], 1, args[2])
         
         if self.can_deactivate():
             self.deactivate() 

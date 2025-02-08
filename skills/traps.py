@@ -94,7 +94,7 @@ class Traps(Skill):
         self.number_of_activated -= 1
 
 
-    def update(self, player_pos:Vector2, angle:Imaginary, *args) -> None:
+    def update(self, player_pos:Vector2, angle:Imaginary, player_input:dict, *args) -> None:
         current_time = get_time()
         for trap in self.hitboxes:
             if trap.is_activated:
@@ -102,7 +102,7 @@ class Traps(Skill):
                 if current_time - trap.last_activation > trap.duration:
                     self.number_of_activated -= 1
 
-        activate = self.skill_key(player_pos, angle, 1)
+        activate = self.skill_key(player_pos, angle, 1, player_input)
                     
 
     def draw(self, *args) -> None:
