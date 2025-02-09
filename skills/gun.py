@@ -18,6 +18,27 @@ class Gun(Skill):
                         self.speed_multiplier) 
                         for _ in range(self.number_of_bullets)]
 
+    def encode(self) -> bytes:
+        actives = 0
+        for projectile in self.hitboxes:
+            actives += projectile.is_activated
+        
+        message = actives.to_bytes(1)
+        for projectile in self.hitboxes:
+            if projectile.is_activated:
+                message += projectile.encode()
+        return message
+
+    def decode(self, byte_string:bytes) -> int:
+        i = int(byte_string[0])
+        
+        pointer_offset = 1
+        for projectile in self.hitboxes:
+            pointer_offset += projectile.decode(byte_string[pointer_offset:], i > 0)
+            i -= 1
+            
+        return pointer_offset
+    
     def activate(self, player_pos:Vector2, angle:Imaginary) -> None:
         """
         Se houver balas disponiveis e o tempo de ativação ser cumprido,

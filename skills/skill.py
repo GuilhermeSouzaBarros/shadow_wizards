@@ -1,3 +1,4 @@
+from struct import pack, unpack
 from abc import ABC, abstractmethod
 from pyray import *
 from raylib import *
@@ -16,7 +17,6 @@ class Skill(ABC):
         self.duration = None
         self._cooldown = 0.3
         
-
     def can_activate(self) -> bool:
         return get_time() - self.last_activation > self._cooldown
 
@@ -40,6 +40,13 @@ class Skill(ABC):
     def deactivate(self) -> None:
         self.is_activated = False
 
+    @abstractmethod
+    def encode(self) -> bytes:
+        raise NotImplementedError
+    
+    @abstractmethod
+    def decode(self, bytes_string:bytes) -> int:
+        raise NotImplementedError
 
     @abstractmethod
     def update(self, *args) -> None:
@@ -47,11 +54,11 @@ class Skill(ABC):
         Atualiza estado da habilidade de acordo 
         com suas características
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def draw(self, *args) -> None:
         """
         Desenha a habilidade correspondente
         """
-        pass
+        raise NotImplementedError

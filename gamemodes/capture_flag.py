@@ -13,7 +13,13 @@ class Flag(Objective):
         self.team = team
 
         self.sprite = FlagSprite('sprites/bag.png', self.team-1, Vector2(12, 12))
-  
+
+    def encode(self) -> bytes:
+        return "".encode()
+    
+    def decode(self, bytes_string:bytes) -> int:
+        return 0
+    
     def update_region(self) -> None:
         """
         Função: update_region
@@ -96,9 +102,16 @@ class CapturePoint(Objective):
         super().__init__(tile_size, row, column, radius, 25)
         self.team = team
 
+    def encode(self) -> bytes:
+        return "".encode()
+    
+    def decode(self, bytes_string:bytes) -> int:
+        return 0
+    
     def check_flag_capture(self, players:list, flag:Flag) -> int:
         """ 
-        Função: check_flag_capture
+        Função:
+            check_flag_capture
         Descrição: 
             Verifica se a bandeira foi capturada por algum time.
         Parâmetros:
@@ -113,7 +126,6 @@ class CapturePoint(Objective):
                 continue
             info = CollisionInfo.collision(player.hitbox, self.hitbox)
             if info.intersection:
-                print(f"{player.nick} captured the flag!")
                 player.has_flag = False
                 flag.update_region()
                 return player.team
@@ -121,7 +133,8 @@ class CapturePoint(Objective):
 
     def update_region(self) -> None:
         """
-        Função: update_region
+        Função:
+            update_region
         Descrição:
             Atualiza a região de captura de bandeira.
         Parâmetros:
@@ -133,7 +146,8 @@ class CapturePoint(Objective):
 
     def update(self, **kwargs) -> list:
         """
-        Função: update
+        Função:
+            update
         Descrição:
             Atualiza a região de captura do time, desenha a região de captura e verifica se o time devolveu uma bandeira para a região de captura.
         Parâmetros:
@@ -155,7 +169,8 @@ class CapturePoint(Objective):
 
     def draw(self, map_offset:Vector2, scaler:float, show_hitboxes:bool) -> None:
         """ 
-        Função: draw
+        Função:
+            draw
         Descrição:
             Desenha o ponto de captura da equipe.
         Parâmetros:

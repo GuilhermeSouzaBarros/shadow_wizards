@@ -11,6 +11,11 @@ class Dash(Skill):
         self._cooldown = 1
         self.duration = 0.1
 
+    def encode(self) -> bytes:
+        return "".encode()
+    
+    def decode(self, bytes_string:bytes) -> int:
+        return 0
 
     def update(self, *args) -> None:
         activate = self.skill_key(args[0], args[1], 1, args[2])
@@ -27,6 +32,12 @@ class SuperSpeed(Skill):
         self.speed_multiplier = 6.0
         self.is_activated = True
 
+    def encode(self) -> bytes:
+        return "".encode()
+    
+    def decode(self, bytes_string:bytes) -> int:
+        return 0
+    
     def update(self, *args) -> None:
         pass
 

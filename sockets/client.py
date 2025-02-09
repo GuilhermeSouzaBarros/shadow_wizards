@@ -11,7 +11,7 @@ class Client(BaseSocket):
         
         self.server_handshake = False
 
-    def get_data(self, loop:bool):
+    def get_data(self, loop:bool) -> None:
         while True:
             data, addr = self.socket.recvfrom(1024)
             while addr != self.server_addr:
@@ -19,7 +19,7 @@ class Client(BaseSocket):
             self.get_queue.put(data)
             if not loop: break
 
-    def send_data(self, loop:bool):
+    def send_data(self, loop:bool) -> None:
         while True:
             data = self.send_queue.get()
             self.socket.sendto(data, self.server_addr)

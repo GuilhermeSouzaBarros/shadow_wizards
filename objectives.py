@@ -13,6 +13,20 @@ class Objectives:
         self.map_objectives = map_objectives
         self.map_id = map_id
 
+    def encode(self) -> bytes:
+        message = "".encode()
+        for objectives in self.objectives:
+            for objective in self.objectives[objectives]:
+                message += objective.encode()
+        return message
+    
+    def decode(self, bytes_string:bytes) -> int:
+        pointer = 0
+        for objectives in self.objectives:
+            for objective in self.objectives[objectives]:
+                pointer += objective.decode(bytes_string[pointer:])
+        return pointer
+
     def load(self) -> None:
         """
         Função: load

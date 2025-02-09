@@ -1,5 +1,6 @@
 from skills.skill import *
 from math import atan2, degrees
+from struct import pack, unpack
 
 class Projectile(Skill):
     def __init__(self, pos:Vector2, tile_size:float, duration:float, cooldown:float, 
@@ -28,7 +29,25 @@ class Projectile(Skill):
         self.current_frame_frame = 0
         self.last_animation = get_time()
 
+    def encode(self) -> bytes:
+        message = "".encode()
+        if self.is_activated:
+            message += pack("dddd", self.hitbox.position.x, self.hitbox.position.y,
+                        self.angle.real, self.angle.imaginary)
+        return message
 
+    def decode(self, byte_string:bytes, activated:bool) -> int:
+        pointer_offset = 0
+        self.is_activated = activated
+        if activated:
+            data = unpack("dddd", byte_string[pointer_offset:pointer_offset+32])
+            self.hitbox.position.x = data[0]
+            self.hitbox.position.y = data[1]
+            self.angle.real = data[2]
+            self.angle.imaginary = data[3]
+            pointer_offset += 32
+
+        return pointer_offset
 
     def update(self, *args) -> None:
         """

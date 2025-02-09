@@ -174,6 +174,7 @@ class Menu:
             message = "s".encode() + len(self.selected_characters).to_bytes(1)
             for character in self.selected_characters.values():
                 message += character.to_bytes(1)
+            message += self.selected_map.to_bytes(1)
             return message
     
     def decode(self, addr:tuple, data:bytes) -> None:
@@ -184,6 +185,7 @@ class Menu:
                     self.server.clients_addresses.append(addr)
                     self.server_addr_ip.update({addr: len(self.server_addr_ip) + 1})
                 self.server.send_queue.put(self.encode("ping"))
+                self.server.send_queue.put(self.encode("map"))
             else:
                 self.client.server_handshake = True
                 self.client.send_queue.put(self.encode("character"))
@@ -202,4 +204,5 @@ class Menu:
             character_count = data[1]
             for i in range(2, 2 + character_count):
                 self.selected_characters.update({i - 1: data[i]})
+            self.selected_map = data[2+character_count]
             self.start_game = True

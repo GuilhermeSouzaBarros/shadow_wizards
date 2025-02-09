@@ -1,14 +1,13 @@
 from pyray import *
 from raylib import *
-import struct
+from struct import pack, unpack
 from math import atan2, degrees
 
 from config import *
 
 from imaginary import Imaginary
 from vectors import Vector2
-from collisions import CollisionInfo
-from shapes import Shape, Circle
+from shapes import Circle
 from sword import Sword
 
 from skills.fireball import Fireball
@@ -60,7 +59,6 @@ class Player:
         self.team = player_id if map_id == 1 else (player_id == 2 or player_id == 4) + 1
 
         self.has_flag = False
-
 
     def choose_character(self, character_id, pos):
         """
@@ -178,14 +176,15 @@ class Player:
         self.skill.draw(map_offset, scaler)
     
     def encode(self) -> bytes:
-        message = "p".encode()
-        message += bytes(struct.pack("dddd??", self.hitbox.position.x, self.hitbox.position.y,
-                                     self.angle.real, self.angle.imaginary, self.is_alive,
-                                     self.sword.active))
+        message = pack("dddd???", self.hitbox.position.x, self.hitbox.position.y,
+                                  self.angle.real, self.angle.imaginary,
+                                  self.is_alive, self.sword.active, self.has_flag)
+        message += self.skill.encode()
         return message
     
     def decode(self, byte_string:bytes) -> int:
-        datas = struct.unpack("dddd??", byte_string[1:35])
+        pointer_offset = 35
+        datas = unpack("dddd???", byte_string[0:35])
         self.hitbox.position = Vector2(datas[0], datas[1])
         self.angle.real = datas[2]
         self.angle.imaginary = datas[3]
@@ -194,5 +193,7 @@ class Player:
             self.sword.update(self.hitbox.position, self.angle, {"sword": True})
         else:
             self.sword.deactivate()
-        return 35
+        self.has_flag = datas[6]
+        pointer_offset += self.skill.decode(byte_string[35:])
+        return pointer_offset
     

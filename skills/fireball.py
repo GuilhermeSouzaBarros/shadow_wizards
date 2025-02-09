@@ -5,7 +5,7 @@ class Fireball(Skill):
     def __init__(self, pos:Vector2) -> None:
         """
         Herda classe skill. Inicia o tamanho do projétil e 
-        inicia um objeto projétilself.projectiles
+        inicia um objeto projétil self.projectiles
         """
         super().__init__()
         self.tile_size = 20
@@ -19,6 +19,26 @@ class Fireball(Skill):
                         self.speed_multiplier) 
                         for _ in range(self.number_of_bullets)]
 
+    def encode(self) -> bytes:
+        actives = 0
+        for projectile in self.hitboxes:
+            actives += projectile.is_activated
+        
+        message = actives.to_bytes(1)
+        for projectile in self.hitboxes:
+            if projectile.is_activated:
+                message += projectile.encode()
+        return message
+
+    def decode(self, byte_string:bytes) -> int:
+        i = int(byte_string[0])
+        pointer_offset = 1
+        for projectile in self.hitboxes:
+            pointer_offset += projectile.decode(byte_string[pointer_offset:], i > 0)
+            i -= 1
+
+        return pointer_offset
+
     def activate(self, player_pos:Vector2, angle:Imaginary) -> None:
         if (self.number_of_activated < self.number_of_bullets):
             for bullet in self.hitboxes:
@@ -27,7 +47,6 @@ class Fireball(Skill):
                     self.number_of_activated += 1
                     self.last_activation = get_time()
                     break
-
 
     def update(self, player_pos:Vector2, angle:Imaginary, player_input:dict, *args) -> None:
         for bullet in self.hitboxes:

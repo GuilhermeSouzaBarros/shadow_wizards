@@ -30,6 +30,14 @@ class Objective(ABC):
         self.hitbox = Circle(position, self.radius)
 
     @abstractmethod
+    def encode(self) -> bytes:
+        raise NotImplementedError
+    
+    @abstractmethod
+    def decode(self, bytes_string:bytes) -> int:
+        raise NotImplementedError
+    
+    @abstractmethod
     def update(self, **kwargs) -> list:
         """ Este método é um método abstrato. """
         raise NotImplementedError

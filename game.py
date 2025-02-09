@@ -72,9 +72,9 @@ class Game:
 
     def encode_input(self) -> bytes:
         message = "i".encode()
-        keys = [KEY_UP, KEY_LEFT, KEY_DOWN, KEY_RIGHT, KEY_X, KEY_C]
+        keys = [[KEY_UP, KEY_W], [KEY_LEFT, KEY_A], [KEY_DOWN, KEY_S], [KEY_RIGHT, KEY_D], [KEY_X, KEY_L], [KEY_C, KEY_K]]
         for key in keys:
-            message += (is_key_down(key)).to_bytes(1)
+            message += (is_key_down(key[0]) or is_key_down(key[1])).to_bytes(1)
         return message
 
     def decode_input(self, player:tuple, input:bytes) -> None:
@@ -85,12 +85,23 @@ class Game:
         message = "g".encode()
         for player in self.players:
             message += player.encode()
+        message += self.objectives.encode()
+        message += self.score.encode()
         return message
 
-    def decode_game(self, game:bytes):
+    def decode_game(self, game:bytes) -> None:
+        if "flags" in self.objectives.objectives:
+            for flag in self.objectives.objectives['flags']:
+                flag.update_region()
         pointer = 0
         for player in self.players:
             pointer += player.decode(game[pointer:])
+            if player.has_flag:
+                for flag in self.objectives.objectives['flags']:
+                    if flag.team != player.team:
+                        flag.hitbox.position = player.hitbox.position.copy()
+        pointer += self.objectives.decode(game[pointer:])
+        pointer += self.score.decode(game[pointer:])
 
     def update_players_col(self, delta_time:float) -> None:
         for tile in self.map.collision_hitboxes:
@@ -169,7 +180,8 @@ class Game:
                 input_bytes = self.server.get_queue.get_nowait()
             except:
                 break
-            self.decode_input(input_bytes[0], input_bytes[1][1:])
+            if input_bytes[0] in self.server.clients_addresses:
+                self.decode_input(input_bytes[0], input_bytes[1][1:])
 
         for player in self.players:
             for player_addr in self.server_addr_id:
