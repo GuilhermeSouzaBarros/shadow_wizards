@@ -1,13 +1,13 @@
 from pyray import *
 from raylib import *
-
+from struct import pack, unpack
 from math import atan2, degrees
+
 from config import *
 
 from imaginary import Imaginary
 from vectors import Vector2
-from collisions import CollisionInfo
-from shapes import Shape, Circle
+from shapes import Circle
 from sword import Sword
 
 from skills.fireball import Fireball
@@ -60,9 +60,6 @@ class Player:
 
         self.has_flag = False
 
-        self.in_vision = [self.team]
-        self.vision_range = 128
-
     def choose_character(self, character_id, pos):
         """
         Recebe um id correspondendo ao personagem escolhido e retorna a Habilidade dele
@@ -94,41 +91,22 @@ class Player:
 
         return skill
 
-    def update_angle(self) -> None:
-        if (self.player_id == 1):
-            if (is_key_down(KEY_W)):
-                self.angle.y -= 1.0
-            if (is_key_down(KEY_A)):
-                self.angle.x -= 1.0
-            if (is_key_down(KEY_S)):
-                self.angle.y += 1.0
-            if (is_key_down(KEY_D)):
-                self.angle.x += 1.0
+    def update_angle(self, player_input:dict) -> None:
+        if (player_input["up"]):    self.angle.y -= 1.0
+        if (player_input["left"]):  self.angle.x -= 1.0
+        if (player_input["down"]):  self.angle.y += 1.0
+        if (player_input["right"]): self.angle.x += 1.0
 
-        elif (self.player_id == 2):
-            if (is_key_down(KEY_I) or is_key_down(KEY_UP)):
-                self.angle.y -= 1.0
-            if (is_key_down(KEY_J) or is_key_down(KEY_LEFT)):
-                self.angle.x -= 1.0
-            if (is_key_down(KEY_K) or is_key_down(KEY_DOWN)):
-                self.angle.y += 1.0
-            if (is_key_down(KEY_L) or is_key_down(KEY_RIGHT)):
-                self.angle.x += 1.0
-
-    def update_player_pos(self, speed_multiplier) -> None:
+    def update_player_pos(self, speed_multiplier, player_input:dict) -> None:
         if speed_multiplier == 0:
             self.hitbox.speed = Vector2(0, 0)
             return
 
         speed = self.tile_size * speed_multiplier
-        if (is_key_down(KEY_LEFT_CONTROL)):
-            speed *= 0.1
-        elif (is_key_down(KEY_LEFT_SHIFT)):
-            speed *= 5
         previous_angle = self.angle
 
         self.angle = Vector2(0.0, 0.0)
-        self.update_angle()
+        self.update_angle(player_input)
         
         if (self.angle.module()):
             self.angle.to_module(1.0)
@@ -139,21 +117,17 @@ class Player:
             self.angle = previous_angle
             self.hitbox.speed = Vector2(0, 0)
     
-    def is_in_vision(self, other_hitbox:Shape) -> None:
-        player_vision = Circle(self.hitbox.position.copy(), self.vision_range)
-        return CollisionInfo.collision(player_vision, other_hitbox).intersection
-
-    def update(self) -> None:
+    def update(self, player_input:dict) -> None:
         if self.is_alive:
             if ((self.skill_name == "Speed" or 
                 self.skill_name == "Dash") and self.skill.is_activated):
-                self.update_player_pos(self.skill.speed_multiplier)
+                self.update_player_pos(self.skill.speed_multiplier, player_input)
 
             elif(self.skill_name == "Laser" and self.skill.is_activated):
-                self.update_player_pos(0)
+                self.update_player_pos(0, player_input)
                 
             else:
-                self.update_player_pos(self.speed_multiplier)
+                self.update_player_pos(self.speed_multiplier, player_input)
                         
         elif (get_time() - self.start_time >= self.respawn):
             self.is_alive = True
@@ -172,10 +146,7 @@ class Player:
 
         self.sword.deactivate()
 
-    def draw(self, map_offset:Vector2, scaler:float, vision:int, hitbox:bool) -> None:
-        if not self.has_flag and (vision or not len(self.in_vision)) and not vision in self.in_vision:
-            return
-        
+    def draw(self, map_offset:Vector2, scaler:float, hitbox:bool) -> None:
         color = self.color
         tint = self.color
         if (self.character_id == CHARACTER_RED['id'] or
@@ -203,4 +174,26 @@ class Player:
 
         self.sword.draw(map_offset, scaler, color)
         self.skill.draw(map_offset, scaler)
+    
+    def encode(self) -> bytes:
+        message = pack("dddd???", self.hitbox.position.x, self.hitbox.position.y,
+                                  self.angle.real, self.angle.imaginary,
+                                  self.is_alive, self.sword.active, self.has_flag)
+        message += self.skill.encode()
+        return message
+    
+    def decode(self, byte_string:bytes) -> int:
+        pointer_offset = 35
+        datas = unpack("dddd???", byte_string[0:35])
+        self.hitbox.position = Vector2(datas[0], datas[1])
+        self.angle.real = datas[2]
+        self.angle.imaginary = datas[3]
+        self.is_alive = datas[4]
+        if (datas[5]):
+            self.sword.update(self.hitbox.position, self.angle, {"sword": True})
+        else:
+            self.sword.deactivate()
+        self.has_flag = datas[6]
+        pointer_offset += self.skill.decode(byte_string[35:])
+        return pointer_offset
     

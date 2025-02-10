@@ -86,7 +86,7 @@ class Map:
             self.collision_hitboxes.append(hitbox)
     
 
-    def draw(self, map_offset:Vector2, scaler:float, vision:int, hitbox:bool) -> None:
+    def draw(self, map_offset:Vector2, scaler:float, hitbox:bool) -> None:
         """
         Função: draw
         Descrição:
@@ -103,7 +103,7 @@ class Map:
             for column in range(0, self.num_columns):
                 tile = self.tiles[row][column]
                 if hitbox or tile.type >= 3 and tile.type <= 6:
-                    tile.draw(map_offset, scaler, hitbox, vision)
+                    tile.draw(map_offset, scaler, hitbox)
 
     def load_map(self) -> dict:
         """ 

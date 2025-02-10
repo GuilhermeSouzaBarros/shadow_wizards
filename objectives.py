@@ -13,6 +13,20 @@ class Objectives:
         self.map_objectives = map_objectives
         self.map_id = map_id
 
+    def encode(self) -> bytes:
+        message = "".encode()
+        for objectives in self.objectives:
+            for objective in self.objectives[objectives]:
+                message += objective.encode()
+        return message
+    
+    def decode(self, bytes_string:bytes) -> int:
+        pointer = 0
+        for objectives in self.objectives:
+            for objective in self.objectives[objectives]:
+                pointer += objective.decode(bytes_string[pointer:])
+        return pointer
+
     def load(self) -> None:
         """
         Função: load
@@ -50,7 +64,7 @@ class Objectives:
                     final_score_inc = objective.update(players=players, delta_time=delta_time, flags=self.objectives['flags'])
         return final_score_inc
 
-    def draw(self, map_offset:Vector2, scaler:float, vision:int, show_hitboxes:bool=False) -> None:
+    def draw(self, map_offset:Vector2, scaler:float, show_hitboxes:bool=False) -> None:
         """
         Função: draw
         Descrição:
@@ -62,7 +76,7 @@ class Objectives:
         """
         for objective_type in self.objectives:
             for objective in self.objectives[objective_type]:
-                objective.draw(map_offset, scaler, vision, show_hitboxes)
+                objective.draw(map_offset, scaler, show_hitboxes)
 
     def unload(self):
         for objective_type in self.objectives:

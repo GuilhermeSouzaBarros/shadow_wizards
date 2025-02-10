@@ -2,13 +2,13 @@ from pyray import *
 from raylib import *
 from json import load
 
-from random import choice
-
 from config import *
 from vectors import Vector2
 
-from sprite import CaracterSprite
 from menu_info.boxes import *
+
+from sockets.server import Server
+from sockets.client import Client
 
 class MenuScreen():
     def __init__(self, json_path:str, font:Font, window_size:Vector2):
@@ -19,7 +19,6 @@ class MenuScreen():
         self.background_color = self.info['background']
 
         self.boxes = load_boxes(font, window_size, self.info)
-
 
     def update_scale(self, window_size:Vector2):
         for box in self.boxes:
@@ -38,6 +37,7 @@ class MenuScreen():
 
         end_drawing()
 
+
 class Menu:
     def __init__(self, window_size:list):
         self.window_size = Vector2(window_size[0], window_size[1])
@@ -50,9 +50,14 @@ class Menu:
                 self.current_screen = new_screen
             self.screens.append(new_screen)
 
-        self.selected_caracter = 1
+        self.selected_character = 1
+        self.selected_characters = {}
+        self.server_addr_ip = {}
         self.selected_map = 1
         self.start_game = False
+
+        self.server = None
+        self.client = None
 
         self.close_window = False
 
@@ -65,19 +70,68 @@ class Menu:
             for button in self.current_screen.boxes:
                 if not issubclass(button.__class__, Button) or not button.pressed:
                     continue
+                button.pressed_time = None
                 if button.type == "screen":
                     self.current_screen = self.screens[button.target]
+
+                elif button.type == "open_lobby":
+                    if not self.server:
+                        self.server = Server()
+
+                elif button.type == "find_lobby":
+                    if not self.client:
+                        self.client = Client()
+                        button.change_text("Searching...")
+
                 elif button.type == "game_start":
+                    self.server.send_queue.put(self.encode("start"))
                     self.start_game = True
-                    for group in self.current_screen.boxes:
-                        if group.__class__ != SelectedGroup:
-                            continue
-                        if group.type == "caracter":
-                            self.selected_caracter = group.button_selected.target
-                        elif group.type == "map":
-                            self.selected_map = group.button_selected.target
+
                 elif button.type == "exit":
                     self.close_window = True
+
+            for group in self.current_screen.boxes:
+                if group.__class__ != SelectedGroup or not group.button_selected.pressed:
+                    continue
+                if group.type == "character":
+                    self.selected_character = group.button_selected.target
+                    if self.client and self.client.server_handshake:
+                        self.client.send_queue.put(self.encode("character"))
+
+                elif group.type == "map":
+                    self.selected_map = group.button_selected.target
+                    if self.server:
+                        self.server.send_queue.put(self.encode("map"))
+
+        if self.server:
+            self.server.update()
+            while True:
+                try:
+                    data = self.server.get_queue.get_nowait()
+                except:
+                    break
+                self.decode(data[0], data[1])
+            for box in self.screens[2].boxes:
+                if issubclass(box.__class__, TextButton) and box.type == "open_lobby":
+                    box.change_text(f"Lobby: {len(self.server.clients_addresses)}/4 players")
+
+        if self.client:
+            self.client.update()
+            while True:
+                try:
+                    data = self.client.get_queue.get_nowait()
+                except:
+                    break
+                self.decode(self.client.server_addr, data)
+
+            if self.client.server_handshake:
+                for button in self.screens[1].boxes:
+                    if not issubclass(button.__class__, Button) or button.type != "find_lobby":
+                        continue
+                    button.change_text("Lobby found!")
+            else:
+                if self.client.send_queue.empty():
+                    self.client.send_queue.put(self.encode("ping"))
 
         self.current_screen.update()
         
@@ -105,4 +159,50 @@ class Menu:
                         if issubclass(button.__class__, Render):
                             unload_texture(button.sprite.texture)
         print("Menu unloaded")
+    
+    def encode(self, data:str) -> bytes:
+        if data == "ping":
+            return "p".encode()
         
+        if data == "map":
+            return "m".encode() + self.selected_map.to_bytes(1)
+        
+        if data == "character":
+            return "c".encode() + self.selected_character.to_bytes(1)
+        
+        if data == "start":
+            message = "s".encode() + len(self.selected_characters).to_bytes(1)
+            for character in self.selected_characters.values():
+                message += character.to_bytes(1)
+            message += self.selected_map.to_bytes(1)
+            return message
+    
+    def decode(self, addr:tuple, data:bytes) -> None:
+        data_dec = chr(data[0])
+        if data_dec == "p":
+            if self.server and (self.server.ip, self.server.port) != addr:
+                if not addr in self.server.clients_addresses:
+                    self.server.clients_addresses.append(addr)
+                    self.server_addr_ip.update({addr: len(self.server_addr_ip) + 1})
+                self.server.send_queue.put(self.encode("ping"))
+                self.server.send_queue.put(self.encode("map"))
+            else:
+                self.client.server_handshake = True
+                self.client.send_queue.put(self.encode("character"))
+
+        elif data_dec == "m":
+            self.selected_map = data[1]
+            for group in self.screens[2].boxes:
+                if group.__class__ != SelectedGroup and group.type != "map":
+                    continue
+                group.new_target(self.selected_map)
+        
+        elif data_dec == "c":
+            self.selected_characters[self.server_addr_ip[addr]] = data[1]
+
+        elif data_dec == "s":
+            character_count = data[1]
+            for i in range(2, 2 + character_count):
+                self.selected_characters.update({i - 1: data[i]})
+            self.selected_map = data[2+character_count]
+            self.start_game = True

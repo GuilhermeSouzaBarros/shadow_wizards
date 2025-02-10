@@ -27,8 +27,8 @@
     },
     "objectives": {
         "flags": {
-            "team_1": {"row": 7, "column":  2, "radius": 6},
-            "team_2": {"row": 7, "column": 22, "radius": 6}
+            "team_1": {"row": 7, "column":  2, "radius": 10},
+            "team_2": {"row": 7, "column": 22, "radius": 10}
         },
         "capture_points": {
             "team_1": {"row": 7, "column":  2, "radius": 72},

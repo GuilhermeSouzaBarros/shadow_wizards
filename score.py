@@ -1,11 +1,12 @@
 from pyray import *
 from raylib import *
 
+from struct import pack, unpack
 from config import *
 
 class Score():
     def __init__(self, num_teams=2):
-        self.objejctives_score = [0] * num_teams
+        self.objectives_score = [0] * num_teams
         self.kills_score = [0] * num_teams
         self.final_score = [0] * num_teams
         self.num_teams = num_teams
@@ -14,7 +15,23 @@ class Score():
         self.colors = [RED, BLUE, GREEN, GOLD]
 
         self.time_remaining:float = MATCH_DURATION
-
+    
+    def encode(self) -> bytes:
+        message = pack("d", self.time_remaining)
+        for score in self.final_score:
+            message += score.to_bytes(1)
+        return message
+    
+    def decode(self, bytes_string:bytes) -> int:
+        pointer = 8
+        self.time_remaining = unpack("d", bytes_string[0:8])[0]
+        i = 0
+        while i < len(self.final_score):
+            self.final_score[i] = bytes_string[pointer]
+            i += 1
+            pointer += 1
+        return pointer
+    
     @property
     def countdown_over(self) -> bool:
         return self.time_remaining <= 0.0
@@ -73,15 +90,14 @@ class Score():
         """
         self.countdown(delta_time)
 
-
         # Calcula a pontuação obtida através de kills
         for player in players:
             self.kills_score[player.team-1] = player.kills * 5
         
         # Calcula a pontuação obtida através de objetivos do jogo
         for team in range(0, len(score_increase)):
-            self.objejctives_score[team] += score_increase[team]
-        
+            self.objectives_score[team - 1] += score_increase[team]
+
         # Calcula a pontuação dinal dos times
         for team in range(0, self.num_teams):
-            self.final_score[team] = self.kills_score[team] + self.objejctives_score[team]
+            self.final_score[team] = self.kills_score[team] + self.objectives_score[team]

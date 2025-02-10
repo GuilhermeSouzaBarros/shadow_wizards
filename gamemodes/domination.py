@@ -12,6 +12,14 @@ class Domination(Objective):
         self.curr_team = 0        
         self.last_increment:float = 0.0
 
+    def encode(self) -> bytes:
+        message = self.curr_team.to_bytes(1)
+        return message
+    
+    def decode(self, bytes_string:bytes) -> int:
+        self.curr_team = bytes_string[0]
+        return 1
+
     def update_region(self) -> None:
         """
         Função: update_region
@@ -70,7 +78,7 @@ class Domination(Objective):
                 self.last_increment = now
         return pts_increase
 
-    def draw(self, map_offset:Vector2, scaler:float, vision:int, show_hitboxes:bool=False) -> None:
+    def draw(self, map_offset:Vector2, scaler:float, show_hitboxes:bool) -> None:
         """
         Função: draw
         Descrição:

@@ -1,6 +1,8 @@
 from pyray import *
 from raylib import *
 
+from struct import pack, unpack
+
 from utils import sign_of
 from imaginary import Imaginary
 from vectors import Vector2
@@ -14,15 +16,14 @@ class Cart:
 
         row    = path[path_start][0]
         column = path[path_start][1]
+        position = Vector2(tile_size * (column + 0.5), tile_size * (row + 0.5))
         self.hitbox = Rectangle(
-                            Vector2(tile_size * (column + 0.5),
-                                    tile_size * (row + 0.5)),
-                                    Vector2(tile_size, tile_size),
-                                    Imaginary())
+                                position,
+                                Vector2(tile_size, tile_size),
+                                Imaginary())
         self.region = Circle(
-                            Vector2(tile_size * (column + 0.5), 
-                                    tile_size * (row + 0.5)), 
-                                    tile_size * region_radius)
+                                position.copy(), 
+                                tile_size * region_radius)
         
         self.path         = path
         self.path_start   = path_start
@@ -34,26 +35,41 @@ class Cart:
         self.end_push  = 0
         self.winning_team = 0
     
+    def encode(self) -> bytes:
+        return pack("?dd", self.curr_team, self.hitbox.position.x, self.hitbox.position.y)
+    
+    def decode(self, bytes_string:bytes) -> int:
+        data = unpack("?dd", bytes_string[0:24])
+        self.curr_team = data[0]
+        position = Vector2(data[1], data[2])
+        self.hitbox.position = position
+        self.region.position = position.copy()
+        self.update_color() 
+        return 24
+
+    def update_color(self) -> None:
+        if not self.curr_team:
+            self.color = WHITE
+
+        elif self.curr_team == 1:
+            self.color = RED
+
+        elif self.curr_team == 2:
+            self.color = BLUE
+
     def update(self, players:list, delta_time:float) -> list:
         self.hitbox.speed = Vector2(0, 0)
         self.update_players_col(players, delta_time)
-        if self.end_push:
-            return [0, 0]
-        team_push = self.check_domination(players)
-        if self.curr_team != team_push:
-            print(f"Current team pushing: {team_push}\n")
-            self.curr_team = team_push
+        if self.end_push: return [0, 0]
 
-        if not team_push:
-            self.color = WHITE
-            return [0, 0]
+        self.curr_team = self.check_domination(players)
+        self.update_color()
+        if not self.curr_team: return [0, 0]
 
-        elif team_push == 1:
-            self.color = RED
+        elif self.curr_team == 1:
             to_point_in_line = 1
 
-        elif team_push == 2:
-            self.color = BLUE
+        elif self.curr_team == 2:
             to_point_in_line = 0
         
         next_point_pos = Vector2((self.path[self.current_line[to_point_in_line]][1] + 0.5) * self.tile_size,
@@ -78,12 +94,10 @@ class Cart:
             if self.current_line[0] == -1 or self.current_line[1] == len(self.path):
                 self.end_push = 1
                 self.winning_team = self.curr_team
-                print(f"Push ended, team {self.curr_team} won")
                 final_result[self.curr_team-1] = 100
     
         self.hitbox.delta_position(delta_time)
         self.region.position = self.hitbox.position.copy()
-        
 
         return final_result
     
@@ -130,14 +144,14 @@ class Cart:
                 
                 player.hitbox.position += (repulsion_dir * penetration)
 
-    def draw(self, map_offset:Vector2, scaler:float, vision:int, show_hitboxes:bool=False) -> None:
-        self.draw_cart   (map_offset, scaler, vision)
-        self.draw_region (map_offset, scaler, vision)
+    def draw(self, map_offset:Vector2, scaler:float, show_hitboxes:bool) -> None:
+        self.draw_cart   (map_offset, scaler)
+        self.draw_region (map_offset, scaler)
 
-    def draw_cart(self, map_offset:Vector2, scaler:float, vision:int) -> None:
+    def draw_cart(self, map_offset:Vector2, scaler:float) -> None:
         self.hitbox.draw(self.color, map_offset, scaler)
 
-    def draw_region(self, map_offset:Vector2, scaler:float, vision:int) -> None:
+    def draw_region(self, map_offset:Vector2, scaler:float) -> None:
         """
         Função: draw
         Descrição:

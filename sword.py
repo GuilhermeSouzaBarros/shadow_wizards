@@ -16,23 +16,20 @@ class Sword:
 
         player_pos = player_pos.copy()
         sword_size = Vector2(40.0, 10.0)
-        self.hitbox = Rectangle(Vector2(player_pos.x + sword_size.x/2, player_pos.y - sword_size.y/2), sword_size)
+        self.hitbox = Rectangle(Vector2(player_pos.x + sword_size.x/2, player_pos.y - sword_size.y/2), sword_size)        
 
-        self.color = BLUE
-        
-
-    def activate(self, player_pos:Vector2, angle:Imaginary, player_id:int) -> None:
+    def activate(self, player_pos:Vector2, angle:Imaginary, player_input:dict) -> None:
         current_time = get_time()
         
         if current_time - self.last_activation >= self.cooldown:
             self.active = True
             self.last_activation = current_time
-            self.update(player_pos, angle, player_id)
+            self.update(player_pos, angle, player_input)
     
     def deactivate(self) -> None:
         self.active = False
 
-    def update(self, player_pos:Vector2, angle:Imaginary, player_id:int) -> None:
+    def update(self, player_pos:Vector2, angle:Imaginary, player_input:dict) -> None:
         if self.active:
             current_time = get_time()
 
@@ -47,9 +44,7 @@ class Sword:
             if current_time - self.last_activation >= self.time_activated:
                 self.deactivate()
         else:
-            if ((player_id == 1 and is_key_pressed(KEY_SPACE)) or
-                (player_id == 2 and is_key_pressed(KEY_ENTER))):
-                self.activate(player_pos, angle, player_id)
+            if (player_input["sword"]): self.activate(player_pos, angle, player_input)
 
     def draw(self, map_offset:Vector2, scaler:float, color:Color) -> None:
         if not self.active:

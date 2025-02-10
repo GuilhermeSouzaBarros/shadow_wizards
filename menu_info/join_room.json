@@ -13,6 +13,16 @@
     ],
     "text_buttons": [
         {
+            "string": "Find lobby",
+            "font_size": 0.8,
+            "position": [0.25, 0.65],
+            "size": [0.4, 0.1],
+            "text_color": [20, 20, 20, 255],
+            "button_color": [255, 100, 100, 255],
+            "type": "find_lobby",
+            "target": 1
+        },
+        {
             "string": "Ready?",
             "font_size": 0.8,
             "position": [0.25, 0.8],
@@ -25,7 +35,7 @@
     ],
     "selected_groups": [
         {
-            "type": "caracter",
+            "type": "character",
             "render_buttons": [
             {
                 "sprite":
