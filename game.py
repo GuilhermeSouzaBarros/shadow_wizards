@@ -82,24 +82,20 @@ class Game:
             self.players_input[player][key] = bool(input[i])
 
     def encode_game(self) -> bytes:
-        message = "g".encode()
-        for player in self.players:
-            message += player.encode()
-        message += self.objectives.encode()
-        message += self.score.encode()
+        if not self.end:
+            message = "g".encode()
+            for player in self.players:
+                message += player.encode()
+            message += self.objectives.encode()
+            message += self.score.encode()
+        else:
+            message = "e".encode()
         return message
 
     def decode_game(self, game:bytes) -> None:
-        if "flags" in self.objectives.objectives:
-            for flag in self.objectives.objectives['flags']:
-                flag.update_region()
         pointer = 0
         for player in self.players:
             pointer += player.decode(game[pointer:])
-            if player.has_flag:
-                for flag in self.objectives.objectives['flags']:
-                    if flag.team != player.team:
-                        flag.hitbox.position = player.hitbox.position.copy()
         pointer += self.objectives.decode(game[pointer:])
         pointer += self.score.decode(game[pointer:])
 
@@ -220,6 +216,8 @@ class Game:
                 break
             if (chr(game_state[0]) == "g"):
                 self.decode_game(game_state[1:])
+            else:
+                self.end = True
 
     def update_frame(self) -> None:
         if (is_key_pressed(KEY_H)):

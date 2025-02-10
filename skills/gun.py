@@ -19,11 +19,7 @@ class Gun(Skill):
                         for _ in range(self.number_of_bullets)]
 
     def encode(self) -> bytes:
-        actives = 0
-        for projectile in self.hitboxes:
-            actives += projectile.is_activated
-        
-        message = actives.to_bytes(1)
+        message = self.number_of_activated.to_bytes(1)
         for projectile in self.hitboxes:
             if projectile.is_activated:
                 message += projectile.encode()

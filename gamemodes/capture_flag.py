@@ -1,6 +1,8 @@
 from pyray import *
 from raylib import *
 
+from struct import pack, unpack
+
 from vectors import Vector2
 from collisions import CollisionInfo
 from gamemodes.obj import Objective
@@ -15,10 +17,14 @@ class Flag(Objective):
         self.sprite = FlagSprite('sprites/bag.png', self.team-1, Vector2(12, 12))
 
     def encode(self) -> bytes:
-        return "".encode()
+        return pack("dd?", self.hitbox.position.x, self.hitbox.position.y, self.taken)
     
     def decode(self, bytes_string:bytes) -> int:
-        return 0
+        data = unpack("dd?", bytes_string[0:17])
+        self.taken = data[2]
+        pos = Vector2(data[0], data[1])
+        self.hitbox.position = pos
+        return 17
     
     def update_region(self) -> None:
         """
