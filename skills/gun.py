@@ -14,6 +14,7 @@ class Gun(Skill):
         self.duration = 2
         self._cooldown = 0.5
         self.speed_multiplier = 1
+        self.sprite = load_texture("sprites/bullet.png")
         self.hitboxes = [Projectile(pos, self.tile_size, self.duration, self._cooldown, 
                         self.speed_multiplier) 
                         for _ in range(self.number_of_bullets)]
@@ -42,11 +43,12 @@ class Gun(Skill):
         """
         if (self.number_of_activated < self.number_of_bullets):
             for bullet in self.hitboxes:
-                if not bullet.is_activated and self.can_activate:
+                if not bullet.is_activated:
                     bullet.activate(player_pos, angle)
                     self.number_of_activated += 1
                     self.last_activation = get_time()
                     break
+
 
     def update(self, player_pos, angle:Imaginary, player_input:dict, *args) -> None:
         """
@@ -59,10 +61,6 @@ class Gun(Skill):
                     self.number_of_activated -= 1
         activate = self.skill_key(player_pos, angle, 1, player_input)
 
-    def apply_effect(self, projectile) -> None:
-        projectile.deactivate()
-        projectile.is_activated = False
-        self.number_of_activated -= 1
 
     def draw(self, *args) -> None:
         """
@@ -70,4 +68,4 @@ class Gun(Skill):
         """
         for bullet in self.hitboxes:
             if bullet.is_activated:
-                bullet.draw(PINK, *args, 0)
+                bullet.draw(RED, *args, self.sprite, 1)

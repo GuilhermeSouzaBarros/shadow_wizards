@@ -52,7 +52,7 @@ class Sword:
          
         angle = degrees(atan2(self.hitbox.angle.imaginary, self.hitbox.angle.real))
 
-        size_im_x = Imaginary(self.hitbox.size.x/2.0 - 10, 0)*self.hitbox.angle
+        size_im_x = Imaginary(self.hitbox.size.x/2.0 - 30, 0)*self.hitbox.angle
         size_im_y = Imaginary(0.0, self.hitbox.size.y/2.0 - 2.5)*self.hitbox.angle
         up_left_corner = [self.hitbox.position.x - size_im_x.real - size_im_y.real,
                               self.hitbox.position.y - size_im_x.imaginary - size_im_y.imaginary]

@@ -56,10 +56,6 @@ class Fireball(Skill):
                     self.number_of_activated -= 1
         activate = self.skill_key(player_pos, angle, 1, player_input)
 
-    def apply_effect(self, projectile) -> None:
-        projectile.deactivate()
-        projectile.is_activated = False
-        self.number_of_activated -= 1
 
     def draw(self, *args) -> None:
         """

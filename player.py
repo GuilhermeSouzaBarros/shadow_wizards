@@ -153,10 +153,18 @@ class Player:
             self.character_id == CHARACTER_BLUE['id']):
             tint = WHITE
 
-        color = (color[0], color[1], color[2], int(color[3] / (2 - ((not self.has_flag and self.is_alive and not self.skill.is_activated)))))
-        tint = (tint[0], tint[1], tint[2], int(tint[3] / (2 - ((not self.has_flag and self.is_alive and not self.skill.is_activated)))))
+        color = (color[0], color[1], color[2], int(color[3] / (2 - ((not self.has_flag and self.is_alive)))))
+        tint = (tint[0], tint[1], tint[2], int(tint[3] / (2 - ((not self.has_flag and self.is_alive)))))
         if (hitbox):
             self.hitbox.draw(color, map_offset, scaler)
+            if self.sword.active:
+                self.sword.hitbox.draw(color, map_offset, scaler)
+
+            with_hitbox = ["Gun", "Fireball", "Traps"]
+            if self.skill_name in with_hitbox:
+                for skill_hitbox in self.skill.hitboxes:
+                    if skill_hitbox.is_activated:
+                        skill_hitbox.hitbox.draw(color, map_offset, scaler)
         else:
             angle = degrees(atan2(self.angle.imaginary, self.angle.real))
             angle += 360 * (angle < 0.0)
@@ -170,10 +178,17 @@ class Player:
                             round(scaler * (self.hitbox.radius + offset) * 2),
                             round(scaler * (self.hitbox.radius + offset) * 2)]
 
+            if self.angle.to_degree() > 180:
+                self.sword.draw(map_offset, scaler, color)
+            
             draw_texture_pro(self.sprite, [0, angle * 32, 32, 32], rectangle_dest, [round(offset * scaler), round(2 * offset * scaler)], 0, tint)
 
-        self.sword.draw(map_offset, scaler, color)
-        self.skill.draw(map_offset, scaler)
+            if self.angle.to_degree() <= 180:
+                self.sword.draw(map_offset, scaler, color)
+            self.skill.draw(map_offset, scaler)
+
+
+                
     
     def encode(self) -> bytes:
         message = pack("dddd???", self.hitbox.position.x, self.hitbox.position.y,

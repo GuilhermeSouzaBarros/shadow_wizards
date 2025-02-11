@@ -145,10 +145,12 @@ class Game:
                         if not hitbox.is_activated:
                             continue
                         info = CollisionInfo.collision(player_b.hitbox, hitbox.hitbox, delta_time)
-                        if info.intersection:
+                        if info.intersection and hitbox.is_activated:
                             player_a.killed()
                             player_b.died()
-                            player_a.skill.apply_effect(hitbox)
+                            hitbox.deactivate()
+                            player_a.skill.number_of_activated -= 1
+                            
                     else:
                         if not player_a.skill.is_activated:
                             continue
@@ -166,8 +168,9 @@ class Game:
                     continue
                 for projectile in player.skill.hitboxes:
                     info = CollisionInfo.collision(projectile.hitbox, tile, delta_time, calculate_distance=True)
-                    if info.intersection:
-                        player.skill.apply_effect(projectile)
+                    if info.intersection and projectile.is_activated:
+                        projectile.deactivate()
+                        player.skill.number_of_activated -= 1
         
     def update_tick(self, delta_time) -> None:
         self.server.update(loop=True)
