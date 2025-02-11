@@ -2,13 +2,14 @@ from skills.skill import *
 from math import atan2, degrees
 from struct import pack, unpack
 
-class Projectile(Skill):
+class Projectile():
     def __init__(self, pos:Vector2, tile_size:float, duration:float, cooldown:float, 
                  speed: float) -> None:
         """
         Herda classe Skill
         """
-        super().__init__()
+        self.last_activation = 0
+        self.is_activated = False
         self.tile_size = tile_size
         self.speed_multiplier = speed
         self.hitbox = Circle(pos, tile_size*0.4)
@@ -23,11 +24,16 @@ class Projectile(Skill):
         """
         Ativa bala de acordo com a posição do player e sua direção
         """
-        super().activate()
+        current_time = get_time()
+        self.last_activation = current_time
+        self.is_activated = True
         self.angle = angle
         self.hitbox.position = player_pos
         self.current_frame_frame = 0
-        self.last_animation = get_time()
+        self.last_animation = current_time
+
+    def deactivate(self):
+        self.is_activated = False
 
     def encode(self) -> bytes:
         message = "".encode()
@@ -54,7 +60,7 @@ class Projectile(Skill):
         Atualiza posição da bala
         """
         
-        if self.can_deactivate():
+        if get_time() - self.last_activation > self.duration:
             self.deactivate()
         if self.is_activated:
             if get_time() - self.last_animation >= self.animation_time:

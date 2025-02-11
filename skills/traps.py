@@ -1,8 +1,8 @@
 from skills.skill import *
 
-class Trap(Skill):
+class Trap():
     def __init__(self, pos:Vector2, tile_size:Vector2, duration:float, cooldown:float) -> None:
-        super().__init__()
+        self.is_activated = False
         self._cooldown = cooldown
         self.hitbox = Rec(pos, tile_size)
         self.duration = duration
@@ -22,6 +22,9 @@ class Trap(Skill):
             self.is_activated = True
             self.current_frame = 0
             self.last_animation = current_time
+
+    def deactivate(self):
+        self.is_activated = False
     
     
     def update(self) -> None:
@@ -87,11 +90,6 @@ class Traps(Skill):
                     self.number_of_activated += 1
                     self.last_activation = current_time
                     break
-
-    def apply_effect(self, projectile) -> None:
-        projectile.deactivate()
-        projectile.is_activated = False
-        self.number_of_activated -= 1
 
 
     def update(self, player_pos:Vector2, angle:Imaginary, player_input:dict, *args) -> None:
