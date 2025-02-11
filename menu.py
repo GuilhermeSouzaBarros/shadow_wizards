@@ -88,7 +88,7 @@ class Menu:
                     self.client.server_addr = get_address()
 
                 elif button.type == "game_start":
-                    if len(self.selected_characters) > 2:
+                    if len(self.selected_characters) > 1:
                         self.server.send_queue.put(self.encode("start"))
                         self.start_game = True
 

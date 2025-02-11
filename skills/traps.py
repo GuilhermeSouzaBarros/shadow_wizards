@@ -10,7 +10,17 @@ class Trap():
         self.current_frame = 0
         self.animation_time = 0.5
         self.last_animation = 0
+        self.last_activation = 0
 
+    def encode(self) -> bytes:
+        return self.is_activated.to_bytes(1) + pack("dd", self.hitbox.position.x, self.hitbox.position.y)
+    
+    def decode(self, bytes_string:bytes) -> int:
+        data = unpack("dd", bytes_string[1:17])
+        self.is_activated = bytes_string[0]
+        self.hitbox.position = Vector2(data[0], data[1])
+        return 17
+    
     def activate(self, player_pos = None, angle = None) -> None:
         """
         Ativa armadilha de acordo com a posição do player
@@ -33,8 +43,7 @@ class Trap():
                     self.last_animation = get_time()
                     self.current_frame += 1
 
-
-        if self.can_deactivate():
+        if get_time() - self.last_activation > self.duration:
             self.deactivate()
     
     def draw(self, *args) -> None:
@@ -76,6 +85,19 @@ class Traps(Skill):
         self.hitboxes = [Trap(pos, self.tile_size, self.duration, self._cooldown) 
                       for _ in range(self.number_of_traps)]
 
+    def encode(self) -> bytes:
+        message = "".encode()
+        for trap in self.hitboxes:
+            message += trap.encode()
+        return message
+    
+    def decode(self, bytes_string:bytes) -> int:
+        pointer = 0
+        for trap in self.hitboxes:
+            pointer += trap.decode(bytes_string[pointer:])
+        
+        return pointer
+    
     def activate(self, player_pos:Vector2, *args) -> None:
         """
         Se houver armadilhas disponíveis, coloca uma na posição 
