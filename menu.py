@@ -7,6 +7,7 @@ from vectors import Vector2
 
 from menu_info.boxes import *
 
+from sockets.address import get_address
 from sockets.server import Server
 from sockets.client import Client
 
@@ -83,9 +84,13 @@ class Menu:
                         self.client = Client()
                         button.change_text("Searching...")
 
+                elif button.type == "change_ip":
+                    self.client.server_addr = get_address()
+
                 elif button.type == "game_start":
-                    self.server.send_queue.put(self.encode("start"))
-                    self.start_game = True
+                    if len(self.selected_characters) > 2:
+                        self.server.send_queue.put(self.encode("start"))
+                        self.start_game = True
 
                 elif button.type == "exit":
                     self.close_window = True

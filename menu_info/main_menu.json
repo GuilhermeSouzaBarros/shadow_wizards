@@ -40,7 +40,7 @@
             "text_color": [20, 20, 20, 255],
             "button_color": [125, 225, 225, 255],
             "type": "screen",
-            "target": 3
+            "target": 0
         },
         {
             "string": "Quit",
