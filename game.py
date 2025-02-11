@@ -67,7 +67,7 @@ class Game:
         # Carrega todos os objetivos de acordo com o id do mapa
         self.objectives.load()
 
-        num_teams = len(self.players) if self.map_id == 1 else 2
+        num_teams = 4 if self.map_id == 1 else 2
         self.score = Score(num_teams)
 
     def encode_input(self) -> bytes:

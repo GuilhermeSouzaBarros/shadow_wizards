@@ -171,7 +171,7 @@ class CapturePoint(Objective):
             return [self.pts_gain, 0]
         elif capture == 2:
             return [0, self.pts_gain]
-        return []
+        return [0, 0]
 
     def draw(self, map_offset:Vector2, scaler:float, show_hitboxes:bool) -> None:
         """ 
