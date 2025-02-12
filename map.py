@@ -9,12 +9,14 @@ from vectors import Vector2
 
 class Map:
     def __init__(self, map_id:int) -> None:
+        self.map_id = map_id # Armazena o identificador do mapa
+        self.map_info = self.load_map() # Armazena todas as características do mapa
+        self.num_teams = 4 if self.map_id == 1 else 2
+       
         self.tiles = []
         self.collision_hitboxes = []
         self.borders = []
-
-        self.map_id = map_id # Armazena o identificador do mapa
-        self.map_info = self.load_map() # Armazena todas as características do mapa
+        self.spawn_collision_hitboxes = [[] for _ in range(self.num_teams)]
 
         self.num_rows = self.map_info['height']
         self.num_columns = self.map_info['width']
@@ -28,18 +30,39 @@ class Map:
 
         # Carrega todos os tiles do mapa
         all_tiles = []
+        team_collision_tiles = [[] for _ in range(self.num_teams)]
+        border_tiles = []
+
         for i in range(0, self.num_rows):
             row = []
             for j in range(0, self.num_columns):
                 tile_type = int(self.map_info['tiles'][i][j])
                 tile = self.build_tile(tile_type, i, j)
                 if tile_type == 1:
-                    self.borders.append(tile)
+                    border_tiles.append([i, j])
                 if (tile.has_collision):
                     all_tiles.append([i, j])
+                if tile_type >= 8 and tile_type <= 11:
+                    for team in range(0, self.num_teams):
+                        # Adiciona o tile à lista de colisão caso 
+                        # o tile seja do spawn de outro time
+                        if team != tile_type - 8:
+                            print(f'*** {team} *** ')
+                            team_collision_tiles[team].append([i, j])
+                if tile_type >= 12 and tile_type <= 13:
+                    for team in range(0, self.num_teams):
+                        if team != tile_type - 12:
+                            team_collision_tiles[team].append([i, j])
+                
                 row.append(tile)
             self.tiles.append(row)
 
+        self.collision_hitboxes = self.build_connected_barriers(all_tiles)
+        for team in range(0, self.num_teams):
+            self.spawn_collision_hitboxes[team].append(self.build_connected_barriers(team_collision_tiles[team]))
+        self.borders = self.build_connected_barriers(border_tiles)
+
+    def build_connected_barriers(self, all_tiles : list) -> list:
         blocks = []
         before_after = [-1, 1]
         remaining_tiles = all_tiles.copy()
@@ -74,7 +97,7 @@ class Map:
             for tile in block:
                 if tile in remaining_tiles:
                     remaining_tiles.remove(tile)
-
+        hitboxes = []
         for block in blocks:
             row = (block[0][0] + block[1][0]) / 2
             column = (block[0][1] + block[1][1]) / 2
@@ -83,8 +106,9 @@ class Map:
                     self.tile_size * (row + 0.5)),
             Vector2(self.tile_size * (block[1][1] - block[0][1] + 1),
                     self.tile_size * (block[1][0] - block[0][0] + 1)))
-            self.collision_hitboxes.append(hitbox)
-    
+            hitboxes.append(hitbox)
+        return hitboxes
+
 
     def draw(self, map_offset:Vector2, scaler:float, hitbox:bool) -> None:
         """
@@ -140,13 +164,15 @@ class Map:
         """
         if not tile_type:
             return tiles.Floor(self.tile_size, tile_type, row, column)
-        elif tile_type >= 2 and tile_type <= 6:
+        elif tile_type >= 2 and tile_type <= 6 or tile_type >= 12 and tile_type <= 13:
             return tiles.Barrier(self.tile_size, tile_type, row, column)
         elif tile_type == 1:
             return tiles.Border(self.tile_size, tile_type, row, column)
         elif tile_type == 7 :
             return tiles.Rails(self.tile_size, tile_type, row, column)
-    
+        elif tile_type >= 8 and tile_type <= 11:
+            return tiles.SpawnPoint(self.tile_size, tile_type, row, column)
+     
     def build_map_sprite(self):
         """
         Função: build_map_sprite

@@ -95,9 +95,9 @@ class Score():
             self.kills_score[player.team-1] = player.kills * 5
         
         # Calcula a pontuação obtida através de objetivos do jogo
-        for team in range(0, len(score_increase)):
-            self.objectives_score[team - 1] += score_increase[team]
+        for team in range(0, self.num_teams):
+            self.objectives_score[team] += score_increase[team % 2]
 
-        # Calcula a pontuação dinal dos times
+        # Calcula a pontuação final dos times
         for team in range(0, self.num_teams):
             self.final_score[team] = self.kills_score[team] + self.objectives_score[team]

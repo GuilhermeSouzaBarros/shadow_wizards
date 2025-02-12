@@ -15,7 +15,7 @@ class Tile(ABC):
         self.type = type
 
         # Controla se o tile é destrutível ou não
-        self.is_destructible = self.type >= 3 and self.type <= 6
+        self.is_destructible = self.type >= 3 and self.type <= 6 or self.type >=11 and self.type <= 12
 
         self.has_collision = not(self.type == 7 or self.type == 8 or (not self.type))
 
@@ -91,10 +91,27 @@ class Border(Tile):
         Retorno:
             Nenhum.     
         """
-        # Caso a borda seja a mesma para ambos, remover as condições
         color = BLACK
         self.hitbox.draw(color, map_offset, scaler, outlines=False)
 
+class SpawnPoint(Tile):
+    def __init__(self, tile_size: Vector2, type:int, row:int, column:int) -> None:
+        """ Inicializa o objeto Border. """
+        super().__init__(tile_size, type, row, column)
+
+    def draw(self, map_offset:Vector2, scaler:float, draw_hitbox:bool) -> None:
+        """ 
+        Função: draw
+        Descrição:
+            Desenha os tiles de spawn point.
+        Parâmetros:
+            map_offset:Vector2 - posição do pixel do canto superior esquerdo do mapa.
+            scaler:float - transforma as coordenadas do jogo para as de desenho.
+        Retorno:
+            Nenhum.     
+        """
+        color = DARKBLUE
+        self.hitbox.draw(color, map_offset, scaler, outlines=False)
 
 class Barrier(Tile):
     def __init__(self, tile_size: Vector2, type:int, row:int, column:int) -> None:
@@ -144,7 +161,7 @@ class Barrier(Tile):
         if self.type == 3:
             return sprite.DestructibleTileSprite('sprites/cones.png', 0, self.hitbox.size)
         # Sprite de containers
-        if self.type == 4:
+        if self.type == 4 or self.type >= 12 and self.type <= 13:
             return sprite.DestructibleTileSprite('sprites/containers.png', randint(0, 15), self.hitbox.size)
         # Sprite de veículos
         if self.type == 5:

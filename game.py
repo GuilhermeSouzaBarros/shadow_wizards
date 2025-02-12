@@ -12,6 +12,7 @@ from map import Map
 from objectives import Objectives
 from score import Score
 from shapes import ColCircleLine
+from sounds import Music
 
 class Game:
     def __init__(self, server:Server, client:Client, window_size, map_id:int, server_addr_id:dict, characters_id:dict) -> None:
@@ -40,6 +41,9 @@ class Game:
         # lista de habilidades que afetam outros players
         self.active_skills = ["Fireball", "Gun", "Trap"]
 
+        init_audio_device()
+        self.music = Music()
+
         self.load_map(characters_id)   
         self.update_draw_scale(window_size) 
 
@@ -67,7 +71,7 @@ class Game:
         # Carrega todos os objetivos de acordo com o id do mapa
         self.objectives.load()
 
-        num_teams = len(self.players) if self.map_id == 1 else 2
+        num_teams = 4 if self.map_id == 1 else 2
         self.score = Score(num_teams)
 
     def encode_input(self) -> bytes:
@@ -104,7 +108,7 @@ class Game:
             for player in self.players:
                 if (player.skill_name == "Intangibility" and player.skill.is_activated):
                     for border in self.map.borders:
-                        info = CollisionInfo.collision(player.hitbox, border.hitbox, delta_time, calculate_distance=True)
+                        info = CollisionInfo.collision(player.hitbox, border, delta_time, calculate_distance=True)
                         if info.intersection:
                             player.hitbox.speed -= info.distance / delta_time
                     continue
@@ -204,7 +208,7 @@ class Game:
         score_increase = self.objectives.update(self.players, delta_time)
         self.score.update(delta_time, self.players, score_increase)
 
-        self.end = self.score.countdown_over
+        self.end = self.score.countdown_over or (100 in score_increase)
 
         self.server.send_queue.put(self.encode_game())
     
@@ -223,6 +227,7 @@ class Game:
                 self.end = True
 
     def update_frame(self) -> None:
+        self.music.update()
         if (is_key_pressed(KEY_H)):
             self.show_hitboxes = not self.show_hitboxes
             print(f"Hiboxes {self.show_hitboxes}")
@@ -251,4 +256,6 @@ class Game:
                 unload_texture(player.skill.sprite)
         unload_texture(self.map.map_sprite.texture)
         self.objectives.unload()
+        self.music.unload()
+        close_audio_device()
         print("Game unloaded")
