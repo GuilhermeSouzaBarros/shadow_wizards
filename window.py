@@ -14,13 +14,11 @@ class Window:
         self.size = [int(full_size[0] * 0.8), int(full_size[1] * 0.8)]
         self.pos = (int(full_size[0] * 0.1), int(full_size[1] * 0.1))
 
-
         set_window_min_size(int(self.size[0] * 0.5), int(self.size[1] * 0.5))
         set_window_size(self.size[0], self.size[1])
         set_window_position(self.pos[0], self.pos[1])
         set_target_fps(get_monitor_refresh_rate(get_current_monitor()))
         set_exit_key(KEY_DELETE)
-
 
         self.close_window = False
 

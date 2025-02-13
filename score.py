@@ -2,10 +2,13 @@ from pyray import *
 from raylib import *
 
 from struct import pack, unpack
+
 from config import *
+from player import Player
 
 class Score():
-    def __init__(self, num_teams=2):
+    def __init__(self, players:list, num_teams=2):
+        self.players = players
         self.objectives_score = [0] * num_teams
         self.kills_score = [0] * num_teams
         self.final_score = [0] * num_teams
@@ -36,47 +39,6 @@ class Score():
     def countdown_over(self) -> bool:
         return self.time_remaining <= 0.0
 
-    def draw(self, scaler:float) -> None:
-        """
-        Função: draw
-        Descrição:
-            Desenha o placar do jogo com a pontuação de cada um dos times.
-        Parâmetros:
-            Nenhum.
-        Retorno:
-            Nenhum.
-        """
-        self.draw_score(scaler) 
-
-    def draw_score(self, scaler:float) -> None:
-        """
-        Função: draw_score
-        Descrição:
-            Desenha a pontuação de cada um dos times.
-        Parâmetros:
-            Nenhum.
-        Retorno:
-            Nenhum.
-        """
-        text_pos = Vector2(10 * scaler, 0)
-        for team in range(1, self.num_teams+1):
-            score_txt = f"Team {team}: {self.final_score[team-1]}"
-            draw_text_ex(get_font_default(), score_txt, text_pos, self._font_size * scaler, 1.0, self.colors[team-1])
-            text_pos.x += 160 * scaler
-        
-
-        self.draw_countdown(text_pos, scaler)
-
-    def countdown(self, delta_time:float) -> None:
-        self.time_remaining -= delta_time
-
-    def draw_countdown(self, text_pos:Vector2, scaler:float) -> None:
-        minutes = int(self.time_remaining / 60)
-        seconds = int(self.time_remaining) % 60
-        countdown_txt = f"{minutes}:{seconds:02d}"
-        draw_text_ex(get_font_default(), countdown_txt, text_pos, self._font_size * scaler, 1.0, RAYWHITE)
-
-
     def update(self, delta_time:float, players:list, score_increase:list=[]) -> None:
         """
         Função: update
@@ -88,7 +50,7 @@ class Score():
         Retorno:
             Nenhum.
         """
-        self.countdown(delta_time)
+        self.time_remaining -= delta_time
 
         # Calcula a pontuação obtida através de kills
         for player in players:
@@ -101,3 +63,30 @@ class Score():
         # Calcula a pontuação final dos times
         for team in range(0, self.num_teams):
             self.final_score[team] = self.kills_score[team] + self.objectives_score[team]
+
+    def draw_countdown(self, text_pos:Vector2, scaler:float) -> None:
+        minutes = int(self.time_remaining / 60)
+        seconds = int(self.time_remaining) % 60
+        countdown_txt = f"{minutes}:{seconds:02d}"
+        draw_text_ex(get_font_default(), countdown_txt, text_pos, self._font_size * scaler, 1.0, RAYWHITE)
+
+    def draw(self, scaler:float) -> None:
+        """
+        Função: draw
+        Descrição:
+            Desenha o placar do jogo com a pontuação de cada um dos times.
+        Parâmetros:
+            Nenhum.
+        Retorno:
+            Nenhum.
+        """
+        if not (is_key_down(KEY_TAB)):
+            return
+        text_pos = Vector2(10 * scaler, 0)
+        for team in range(1, self.num_teams+1):
+            score_txt = f"Team {team}: {self.final_score[team-1]}"
+            draw_text_ex(get_font_default(), score_txt, text_pos, self._font_size * scaler, 1.0, self.colors[team-1])
+            text_pos.x += 160 * scaler
+        
+
+        self.draw_countdown(text_pos, scaler)

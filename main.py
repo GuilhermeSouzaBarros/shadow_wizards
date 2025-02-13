@@ -8,14 +8,13 @@ from game import Game
 
 async def main():
     window = Window()
-
+    menu = Menu(window.size)
+    init_audio_device()
+    
     while not window.close_window:
-
-        menu = Menu(window.size)
-        while not (menu.start_game or window.close_window):
+        while not (menu.start_game or window.close_window or menu.close_window):
             menu.update()
             
-            window.close_window = menu.close_window
             window.update()
             if is_window_resized():
                 window.update_size()
@@ -38,7 +37,6 @@ async def main():
                 game.tick += get_frame_time()
                 while game.tick >= GAME_TICK:
                     game.update_tick(GAME_TICK)
-                    game.tick -= GAME_TICK
 
             if game.client:
                 game.update_client()
@@ -51,8 +49,8 @@ async def main():
         if not window.close_window:
             game.unload()
 
+    close_audio_device()
     close_window()
-
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -1,10 +1,10 @@
 from pyray import *
 from raylib import *
-import struct
 
 from sockets.server import Server
 from sockets.client import Client
 
+from config import GAME_TICK
 from vectors import Vector2
 from collisions import CollisionInfo
 from player import Player
@@ -28,11 +28,17 @@ class Game:
                         "ability": False, "sword": False}})
     
         # *** Serão atualizados na função load_map quando o mapa for escolhido ***
-        self.map_id = map_id
-        self.map = None
+        self.map = Map(map_id)
+        self.num_teams = 4 if map_id == 1 else 2
         self.players = []
-        self.objectives = None
-        self.score = None
+        for player_id in characters_id:
+            self.players.append(Player(self.map.tile_size,
+                                self.map.map_info['spawn_points'][f'player_{player_id}'][0],
+                                self.map.map_info['spawn_points'][f'player_{player_id}'][1],
+                                self.map.map_info['spawn_points'][f'player_{player_id}'][2],
+                                player_id, characters_id[player_id], map_id, f"player {player_id}"))
+        self.objectives = Objectives(self.map.tile_size, self.map.map_info['objectives'], map_id)
+        self.score = Score(self.players, self.num_teams)
         self.map_offset = None
         self.scaler = None
         self.show_hitboxes = False
@@ -41,11 +47,9 @@ class Game:
         # lista de habilidades que afetam outros players
         self.active_skills = ["Fireball", "Gun", "Trap"]
 
-        init_audio_device()
         self.music = Music()
 
-        self.load_map(characters_id)   
-        self.update_draw_scale(window_size) 
+        self.update_draw_scale(window_size)
 
     def update_draw_scale(self, window_size:list) -> None:
         draw_tile_size = Vector2(window_size[0] / self.map.num_columns,
@@ -56,23 +60,6 @@ class Game:
         else:
             self.scaler = draw_tile_size.x / self.map.tile_size
             self.map_offset = Vector2(0, (window_size[1] - self.map.num_rows * draw_tile_size.x) / 2)
-
-    def load_map(self, players_id:list) -> None:
-        self.map = Map(self.map_id)
-        
-        for player_id in players_id:
-            self.players.append(Player(self.map.tile_size,
-                                self.map.map_info['spawn_points'][f'player_{player_id}'][0],
-                                self.map.map_info['spawn_points'][f'player_{player_id}'][1],
-                                self.map.map_info['spawn_points'][f'player_{player_id}'][2],
-                                player_id, players_id[player_id], self.map_id, f"player {player_id}"))
-
-        self.objectives = Objectives(self.map.tile_size, self.map.map_info['objectives'], self.map_id)
-        # Carrega todos os objetivos de acordo com o id do mapa
-        self.objectives.load()
-
-        num_teams = 4 if self.map_id == 1 else 2
-        self.score = Score(num_teams)
 
     def encode_input(self) -> bytes:
         message = "i".encode()
@@ -175,8 +162,8 @@ class Game:
                     if info.intersection and projectile.is_activated:
                         projectile.deactivate()
                         player.skill.number_of_activated -= 1
-        
-    def update_tick(self, delta_time) -> None:
+    
+    def server_receive_input(self) -> None:
         self.server.update(loop=True)
         while True:
             try:
@@ -191,6 +178,10 @@ class Game:
                 if self.server_addr_id[player_addr] == player.player_id:
                     player.update(self.players_input[player_addr])
                     break
+
+    def update_tick(self, delta_time) -> None:
+        self.tick -= GAME_TICK
+        self.server_receive_input()
 
         self.update_players_col(delta_time)
         self.update_skill_player_col(delta_time)
@@ -207,7 +198,6 @@ class Game:
         
         score_increase = self.objectives.update(self.players, delta_time)
         self.score.update(delta_time, self.players, score_increase)
-
         self.end = self.score.countdown_over or (100 in score_increase)
 
         self.server.send_queue.put(self.encode_game())
@@ -238,7 +228,7 @@ class Game:
     def draw(self) -> None:
         begin_drawing()
         
-        clear_background(GRAY)
+        clear_background(BLACK)
         self.map.draw        (self.map_offset, self.scaler, self.show_hitboxes)
         self.objectives.draw (self.map_offset, self.scaler, self.show_hitboxes)
         self.score.draw      (self.scaler)
@@ -257,5 +247,4 @@ class Game:
         unload_texture(self.map.map_sprite.texture)
         self.objectives.unload()
         self.music.unload()
-        close_audio_device()
         print("Game unloaded")

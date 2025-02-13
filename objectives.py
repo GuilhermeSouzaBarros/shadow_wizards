@@ -12,6 +12,7 @@ class Objectives:
 
         self.map_objectives = map_objectives
         self.map_id = map_id
+        self.load()
 
     def encode(self) -> bytes:
         message = "".encode()
