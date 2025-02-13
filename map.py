@@ -47,7 +47,6 @@ class Map:
                         # Adiciona o tile à lista de colisão caso 
                         # o tile seja do spawn de outro time
                         if team != tile_type - 8:
-                            print(f'*** {team} *** ')
                             team_collision_tiles[team].append([i, j])
                 if tile_type >= 12 and tile_type <= 13:
                     for team in range(0, self.num_teams):

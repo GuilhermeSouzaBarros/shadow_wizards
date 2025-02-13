@@ -48,10 +48,20 @@ class Menu:
             self.screens.append(MenuScreen(screen, self.font, self.window_size))
         self.current_screen = self.screens[initial_screen]
 
-        self.selected_character = 1
+        for group in self.screens[1].boxes:
+            if group.__class__ != SelectedGroup:
+                continue
+            self.selected_character = group.button_selected.target
+            break
+
+        for group in self.screens[2].boxes:
+            if group.__class__ != SelectedGroup:
+                continue
+            self.selected_map = group.button_selected.target
+            break
+
         self.selected_characters = {}
         self.server_addr_ip = server_addr_ip
-        self.selected_map = 1
         self.start_game = False
 
         self.server = server

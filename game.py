@@ -38,7 +38,7 @@ class Game:
                                 self.map.map_info['spawn_points'][f'player_{player_id}'][2],
                                 player_id, characters_id[player_id], map_id, f"player {player_id}"))
         self.objectives = Objectives(self.map.tile_size, self.map.map_info['objectives'], map_id)
-        self.score = Score(self.players, self.num_teams)
+        self.score = Score(window_size, self.players, self.num_teams)
         self.map_offset = None
         self.scaler = None
         self.show_hitboxes = False

@@ -4,10 +4,13 @@ from raylib import *
 from struct import pack, unpack
 
 from config import *
+from vectors import Vector2
+from shapes import Rectangle
+from menu_info.boxes import TextBox
 from player import Player
 
 class Score():
-    def __init__(self, players:list, num_teams=2):
+    def __init__(self, window_size:list, players:list, num_teams=2):
         self.players = players
         self.objectives_score = [0] * num_teams
         self.kills_score = [0] * num_teams
@@ -18,6 +21,8 @@ class Score():
         self.colors = [RED, BLUE, GREEN, GOLD]
 
         self.time_remaining:float = MATCH_DURATION
+
+        self.background = Rectangle(Vector2(0.2 * window_size[0], 0.2 * window_size[1]), Vector2(0.6 * window_size[0],  0.6 * window_size[1]))
     
     def encode(self) -> bytes:
         message = pack("d", self.time_remaining)
@@ -82,6 +87,7 @@ class Score():
         """
         if not (is_key_down(KEY_TAB)):
             return
+        self.background.draw((16, 16, 16, 128))
         text_pos = Vector2(10 * scaler, 0)
         for team in range(1, self.num_teams+1):
             score_txt = f"Team {team}: {self.final_score[team-1]}"
