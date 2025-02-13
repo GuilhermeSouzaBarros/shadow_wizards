@@ -60,6 +60,7 @@ class Game:
         else:
             self.scaler = draw_tile_size.x / self.map.tile_size
             self.map_offset = Vector2(0, (window_size[1] - self.map.num_rows * draw_tile_size.x) / 2)
+        self.score.update_scale(Vector2(window_size[0], window_size[1]))
 
     def encode_input(self) -> bytes:
         message = "i".encode()
@@ -197,7 +198,7 @@ class Game:
         self.update_sword_col()
         
         score_increase = self.objectives.update(self.players, delta_time)
-        self.score.update(delta_time, self.players, score_increase)
+        self.score.update(delta_time)
         self.end = self.score.countdown_over or (100 in score_increase)
 
         self.server.send_queue.put(self.encode_game())
@@ -231,9 +232,9 @@ class Game:
         clear_background(BLACK)
         self.map.draw        (self.map_offset, self.scaler, self.show_hitboxes)
         self.objectives.draw (self.map_offset, self.scaler, self.show_hitboxes)
-        self.score.draw      (self.scaler)
         for player in self.players:
             player.draw  (self.map_offset, self.scaler, self.show_hitboxes)
+        self.score.draw      (self.scaler)
 
         end_drawing()
     
@@ -247,4 +248,5 @@ class Game:
         unload_texture(self.map.map_sprite.texture)
         self.objectives.unload()
         self.music.unload()
+        self.score.unload()
         print("Game unloaded")

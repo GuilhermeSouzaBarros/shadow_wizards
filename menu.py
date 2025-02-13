@@ -95,7 +95,7 @@ class Menu:
                     self.client.server_addr = get_address()
 
                 elif button.type == "game_start":
-                    if len(self.selected_characters) > 1:
+                    if len(self.selected_characters) >= 0:
                         self.server.send_queue.put(self.encode("start"))
                         self.start_game = True
 
@@ -184,8 +184,6 @@ class Menu:
         
         if data == "start":
             message = "s".encode() + len(self.selected_characters).to_bytes(1)
-            print(self.selected_characters)
-            print(self.selected_map)
             for character in self.selected_characters.values():
                 message += character.to_bytes(1)
             message += self.selected_map.to_bytes(1)

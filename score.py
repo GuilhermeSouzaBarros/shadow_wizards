@@ -6,93 +6,89 @@ from struct import pack, unpack
 from config import *
 from vectors import Vector2
 from shapes import Rectangle
-from menu_info.boxes import TextBox
+from menu_info.boxes import Box, TextBox
 from player import Player
 
-class Score():
-    def __init__(self, window_size:list, players:list, num_teams=2):
+class PlayerInfoBox(Box):
+    def __init__(self, player:Player, font:Font, position:Vector2, size:Vector2, window_size:Vector2):
+        Box.__init__(self, position, size, window_size)
+        self.player = player
+        self.boxes = [
+            TextBox(f"{self.player.character_name}", font, 0.8, WHITE, Vector2(0.125 + size.x * 1/6, position.y), Vector2(0.3 * size.x, size.y), "caracter_name", window_size),
+            TextBox(f"{self.player.kills}",          font, 0.8, WHITE, Vector2(0.125 + size.x * 3/6, position.y), Vector2(0.3 * size.x, size.y), "player_kills",  window_size),
+            TextBox(f"{self.player.deaths}",         font, 0.8, WHITE, Vector2(0.125 + size.x * 5/6, position.y), Vector2(0.3 * size.x, size.y), "player_deaths", window_size),
+        ]
+
+    def update(self) -> None:
+        self.boxes[1].change_text(f"{self.player.kills}")
+        self.boxes[2].change_text(f"{self.player.deaths}")
+
+    def update_scale(self, window_size):
+        Box.update_scale(self, window_size)
+        for box in self.boxes:
+            box.update_scale(window_size)
+
+    def draw(self):
+        self.hitbox.draw(color_alpha(self.player.color, 0.5), outlines=False)
+        for box in self.boxes:
+            box.draw()
+
+class Score(Box):
+    def __init__(self, window_size:list, players:list, num_teams:int=2):
+        window_size = Vector2(window_size[0], window_size[1])
+        Box.__init__(self, Vector2(0.5, 0.5), Vector2(0.75, 0.75), window_size)
+        self.font = load_font_ex("fonts/PixAntiqua.ttf", 32, None, 250)
         self.players = players
-        self.objectives_score = [0] * num_teams
-        self.kills_score = [0] * num_teams
-        self.final_score = [0] * num_teams
         self.num_teams = num_teams
+        self.team_colors = [RED, BLUE, GREEN, GOLD]
+        self.boxes = []
+        num_players = len(self.players)
+        for i, player in enumerate(self.players):
+            self.boxes.append(PlayerInfoBox(player, self.font, Vector2(0.5, 0.125 + 0.75 * (0.5+i)/num_players), Vector2(0.75, 0.75/num_players), window_size))
         
-        self._font_size = 20
-        self.colors = [RED, BLUE, GREEN, GOLD]
-
         self.time_remaining:float = MATCH_DURATION
-
-        self.background = Rectangle(Vector2(0.2 * window_size[0], 0.2 * window_size[1]), Vector2(0.6 * window_size[0],  0.6 * window_size[1]))
     
+    def update_scale(self, window_size):
+        Box.update_scale(self, window_size)
+        for player_info in self.boxes:
+            player_info.update_scale(window_size)
+
+    def unload(self) -> None:
+        unload_font(self.font)
+
     def encode(self) -> bytes:
         message = pack("d", self.time_remaining)
-        for score in self.final_score:
-            message += score.to_bytes(1)
+        #for score in self.final_score:
+        #    message += score.to_bytes(1)
         return message
     
     def decode(self, bytes_string:bytes) -> int:
         pointer = 8
+        self.update(0)
         self.time_remaining = unpack("d", bytes_string[0:8])[0]
-        i = 0
-        while i < len(self.final_score):
-            self.final_score[i] = bytes_string[pointer]
-            i += 1
-            pointer += 1
         return pointer
     
     @property
     def countdown_over(self) -> bool:
         return self.time_remaining <= 0.0
 
-    def update(self, delta_time:float, players:list, score_increase:list=[]) -> None:
-        """
-        Função: update
-        Descrição:
-            Atualiza a pontuação de todos os times no jogo, levando em conta a quantidade de kills do time e a pontuação obtida através dos objetivos.
-        Parâmetros:
-            players: list - lista com todos os players do jogo;
-            score_increase: list - lista com a alteração da pontuação de todos os times após a atualização do estado dos objetivos.
-        Retorno:
-            Nenhum.
-        """
+    def update(self, delta_time:float) -> None:
         self.time_remaining -= delta_time
-
-        # Calcula a pontuação obtida através de kills
-        for player in players:
-            self.kills_score[player.team-1] = player.kills * 5
-        
-        # Calcula a pontuação obtida através de objetivos do jogo
-        for team in range(0, self.num_teams):
-            self.objectives_score[team] += score_increase[team % 2]
-
-        # Calcula a pontuação final dos times
-        for team in range(0, self.num_teams):
-            self.final_score[team] = self.kills_score[team] + self.objectives_score[team]
+        for box in self.boxes:
+            box.update()
 
     def draw_countdown(self, text_pos:Vector2, scaler:float) -> None:
         minutes = int(self.time_remaining / 60)
         seconds = int(self.time_remaining) % 60
         countdown_txt = f"{minutes}:{seconds:02d}"
-        draw_text_ex(get_font_default(), countdown_txt, text_pos, self._font_size * scaler, 1.0, RAYWHITE)
+        draw_text_ex(get_font_default(), countdown_txt, text_pos.to_list(), 10 * scaler, 1.0, RAYWHITE)
 
     def draw(self, scaler:float) -> None:
-        """
-        Função: draw
-        Descrição:
-            Desenha o placar do jogo com a pontuação de cada um dos times.
-        Parâmetros:
-            Nenhum.
-        Retorno:
-            Nenhum.
-        """
         if not (is_key_down(KEY_TAB)):
             return
-        self.background.draw((16, 16, 16, 128))
+        self.hitbox.draw((16, 16, 16, 128))
         text_pos = Vector2(10 * scaler, 0)
-        for team in range(1, self.num_teams+1):
-            score_txt = f"Team {team}: {self.final_score[team-1]}"
-            draw_text_ex(get_font_default(), score_txt, text_pos, self._font_size * scaler, 1.0, self.colors[team-1])
-            text_pos.x += 160 * scaler
-        
+        for player_info in self.boxes:
+            player_info.draw()
 
         self.draw_countdown(text_pos, scaler)

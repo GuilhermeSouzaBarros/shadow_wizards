@@ -88,10 +88,17 @@ class Box(ABC):
     
     @size.setter
     def size(self, size:Vector2):
-        ratio = size.x / self._size.x
+        ratio_x = size.x / self._size.x
+        self.true_size.x *= ratio_x
+        self.hitbox.size.x *= ratio_x
+        
+        ratio_y = size.y / self._size.y
+        self.true_size.y *= ratio_y
+        self.hitbox.size.y *= ratio_y
+
+        self.hitbox.lines = self.hitbox.to_lines()        
+
         self._size = size
-        self.true_size *= ratio
-        self.hitbox.size *= ratio
 
     def update(self):
         pass
