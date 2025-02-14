@@ -8,11 +8,14 @@ from imaginary import Imaginary
 from vectors import Vector2
 from shapes import Rectangle, Circle
 from collisions import CollisionInfo
+from math import degrees, atan2
 
 class Cart:
     def __init__(self, path:list, path_start:int, region_radius:int, tile_size:float):
         self.region_radius = region_radius
         self.tile_size = tile_size
+
+        self.sprite = load_texture("sprites/carroForte.png")
 
         row    = path[path_start][0]
         column = path[path_start][1]
@@ -29,6 +32,7 @@ class Cart:
         self.path_start   = path_start
         self.current_line = [path_start, path_start + 1]
         self.speed        = 0.5 # in tiles per second, keep it simple
+        self.angle = Imaginary(1, 0)
 
         self.color = WHITE
         self.curr_team = 0
@@ -36,16 +40,17 @@ class Cart:
         self.winning_team = 0
     
     def encode(self) -> bytes:
-        return pack("?dd", self.curr_team, self.hitbox.position.x, self.hitbox.position.y)
+        return pack("?dddd", self.curr_team, self.hitbox.position.x, self.hitbox.position.y, self.angle.real, self.angle.imaginary)
     
     def decode(self, bytes_string:bytes) -> int:
-        data = unpack("?dd", bytes_string[0:24])
+        data = unpack("?dddd", bytes_string[0:40])
         self.curr_team = data[0]
         position = Vector2(data[1], data[2])
+        self.angle = Imaginary(data[3], data[4])
         self.hitbox.position = position
         self.region.position = position.copy()
         self.update_color() 
-        return 24
+        return 40
 
     def update_color(self) -> None:
         if not self.curr_team:
@@ -96,6 +101,7 @@ class Cart:
                 self.winning_team = self.curr_team
                 final_result[self.curr_team-1] = 100
     
+        self.angle = Imaginary(self.hitbox.speed.x, self.hitbox.speed.y, 1)
         self.hitbox.delta_position(delta_time)
         self.region.position = self.hitbox.position.copy()
 
@@ -145,11 +151,32 @@ class Cart:
                 player.hitbox.position += (repulsion_dir * penetration)
 
     def draw(self, map_offset:Vector2, scaler:float, show_hitboxes:bool) -> None:
-        self.draw_cart   (map_offset, scaler)
+        self.draw_cart   (map_offset, scaler, show_hitboxes)
         self.draw_region (map_offset, scaler)
 
-    def draw_cart(self, map_offset:Vector2, scaler:float) -> None:
-        self.hitbox.draw(self.color, map_offset, scaler)
+    def draw_cart(self, map_offset:Vector2, scaler:float, hitbox:bool) -> None:
+        if hitbox:
+            self.hitbox.draw(self.color, map_offset, scaler)
+        else:
+            angle = degrees(atan2(self.angle.imaginary, self.angle.real))
+            angle += 360 * (angle < 0.0)
+            angle /= 90
+            angle = int(angle)
+            print("Angle", angle)
+
+            size_im_x = Imaginary(self.hitbox.size.x/2, 0.0)
+            size_im_y = Imaginary(0.0, self.hitbox.size.y/2.0)
+            up_left_corner = [self.hitbox.position.x - size_im_x.real - size_im_y.real,
+                                self.hitbox.position.y - size_im_x.imaginary - size_im_y.imaginary]
+            offset = Vector2(self.hitbox.size.x*0.5, self.hitbox.size.y*0.5)
+            pos = [map_offset.x + ((up_left_corner[0] + 15)*scaler), 
+                    map_offset.y + ((up_left_corner[1] + 32)*scaler)]
+            rectangle_dest = [round(pos[0]), round(pos[1]),
+                            round(scaler*self.hitbox.size.x),
+                            round(scaler*self.hitbox.size.y)]
+            draw_texture_pro(self.sprite, [0, angle*32, 32, 32], rectangle_dest, 
+                                [round(offset.x*scaler), round(2*offset.y*scaler)], 0, WHITE)
+        
 
     def draw_region(self, map_offset:Vector2, scaler:float) -> None:
         """

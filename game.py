@@ -239,7 +239,6 @@ class Game:
             if player.skill_name not in skill_frames:
                 return
             for hitbox in player.skill.hitboxes:
-                
                 hitbox.update_time()
 
         if (is_key_pressed(KEY_ESCAPE)):
