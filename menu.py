@@ -95,6 +95,8 @@ class Menu:
                 elif button.type == "change_ip":
                     if self.client:
                         self.client.server_addr = get_address()
+                        self.client.process_send.kill()
+                        self.client.process_get.kill()
 
                 elif button.type == "game_start":
                     if len(self.selected_characters) >= 2:

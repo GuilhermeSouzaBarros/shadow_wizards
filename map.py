@@ -115,13 +115,18 @@ class Map:
         Retorno:
             Nenhum.
         """
-        self.map_sprite.draw(map_offset, scaler)
-
-        # Constrói todos os retângulos dos tiles do mapa
-        for row in range(0, self.num_rows):
-            for column in range(0, self.num_columns):
-                tile = self.tiles[row][column]
-                if tile.is_destructible:
+        if not hitbox:
+            self.map_sprite.draw(map_offset, scaler)
+            for row in range(0, self.num_rows):
+                for column in range(0, self.num_columns):
+                    tile = self.tiles[row][column]
+                    if tile.type >= 3 and tile.type <= 6:
+                        tile.draw(map_offset, scaler, hitbox)
+        else:
+            # Constrói todos os retângulos dos tiles do mapa
+            for row in range(0, self.num_rows):
+                for column in range(0, self.num_columns):
+                    tile = self.tiles[row][column]
                     tile.draw(map_offset, scaler, hitbox)
 
     def load_map(self) -> dict:
