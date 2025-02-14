@@ -122,36 +122,11 @@ class Cart:
         """
         self.region = Circle(self.rectangle.position, self.region_radius)
 
-    # *** Função redundante, usar só para testes ***
-    def rec_circle_intersection(self, player:Circle):
-        # Retorna o quanto o player está penetrando o retângulo e o ponto do retângulo em que ocorre a colisão. Caso não tenha penetração, não retorna nenhum ponto de colisão.
-        
-        # Encontra o ponto mais próximo no retângulo ao centro do círculo
-        closest_x = max((self.hitbox.position.x - self.tile_size/2), min(player.position.x, (self.hitbox.position.x - self.tile_size/2) + self.hitbox.size.x))
-        closest_y = max((self.hitbox.position.y - self.tile_size/2), min(player.position.y, (self.hitbox.position.y - self.tile_size/2) + self.hitbox.size.y))
-        
-        distance = Vector2(player.position.x - closest_x, player.position.y - closest_y)
-        
-        distance = distance.module()
-
-        # Se a distância for menor que o raio, o player está colidindo com o retângulo
-        if distance < player.radius:
-            penetration = player.radius - distance
-            return penetration, Vector2(closest_x, closest_y)
-        return 0, None
-
     def update_players_col(self, players:list, delta_time:float) -> None:
         for player in players:
-            penetration, collision_point = self.rec_circle_intersection(player.hitbox)
-
-            # info = CollisionInfo.collision(self.hitbox, player.hitbox, delta_time, calculate_distance=True)
-
-            if penetration:
-                repulsion_dir = Vector2(player.hitbox.position.x - collision_point.x, player.hitbox.position.y - collision_point.y)
-                repulsion_length = repulsion_dir.module()
-                repulsion_dir = repulsion_dir / repulsion_length
-                
-                player.hitbox.position += (repulsion_dir * penetration)
+            info = CollisionInfo.collision(player.hitbox, self.hitbox, delta_time, calculate_distance=True)
+            if info.intersection:
+                player.hitbox.position -= info.distance
 
     def draw(self, map_offset:Vector2, scaler:float, show_hitboxes:bool) -> None:
         self.draw_cart   (map_offset, scaler, show_hitboxes)

@@ -41,13 +41,13 @@ class Laser(Skill):
         self.hitboxes = [Line(Vector2(0, 0), Vector2(0, 0), Domain(0, float('inf')))]
         stop_sound(self.sound)
   
-    def map_collision(self, laser:Line, map) -> ColLines:
+    def map_collision(self, laser:Line, tiles:list) -> ColLines:
         """
         Procura colisão do laser no mapa e retorna a colisão mais próxima
         """
         collisions = []
 
-        for tile in map.collision_hitboxes:
+        for tile in tiles:
             col = tile.collision_line(laser)
             if col and col['col'].t_line_1:
                 collisions.append(col)
@@ -58,14 +58,14 @@ class Laser(Skill):
         
         return False
 
-    def define_laser(self, player_pos:Vector2, angle:Imaginary, map) -> bool:
+    def define_laser(self, player_pos:Vector2, angle:Imaginary, map, team:int) -> bool:
         """
         Define direção do laser e suas reflexões
         """
         self.hitboxes = []
         self.hitboxes.append(Line(Vector2(angle.real, angle.imaginary), player_pos.copy(), Domain(0, float('inf'))))
         for i in range(0, self.reflections):
-            closest_col = self.map_collision(self.hitboxes[i], map)
+            closest_col = self.map_collision(self.hitboxes[i], map.team_collision_tiles[team-1])
 
             if closest_col == False:
                 return False
@@ -83,9 +83,9 @@ class Laser(Skill):
             self.hitboxes.append(Line(new_direction, closest_col['col'].point, Domain(0, float('inf'))))
         return True
 
-    def update(self, player_pos:Vector2, angle:Imaginary, player_input:dict, map) -> None:
+    def update(self, player_pos:Vector2, angle:Imaginary, player_input:dict, map, team:int) -> None:
         if self.skill_key(player_pos, angle, 0, player_input):
-            activate = self.define_laser(player_pos, angle, map)
+            activate = self.define_laser(player_pos, angle, map, team)
             if activate:
                 self.activate()
                 play_sound(self.sound)

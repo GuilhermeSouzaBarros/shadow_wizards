@@ -161,7 +161,9 @@ class Player:
                 self.sword.hitbox.draw(color, map_offset, scaler)
 
             with_hitbox = ["Gun", "Fireball", "Traps"]
-            if self.skill_name in with_hitbox:
+            if self.skill_name == "Laser":
+                self.skill.draw(map_offset, scaler)
+            elif self.skill_name in with_hitbox:
                 for skill_hitbox in self.skill.hitboxes:
                     if skill_hitbox.is_activated:
                         skill_hitbox.hitbox.draw(color, map_offset, scaler)
