@@ -12,6 +12,7 @@ class Objectives:
 
         self.map_objectives = map_objectives
         self.map_id = map_id
+        self.load()
 
     def encode(self) -> bytes:
         message = "".encode()
@@ -58,10 +59,14 @@ class Objectives:
         final_score_inc = [0, 0]
         for objective_type in self.objectives:
             for objective in self.objectives[objective_type]:
-                if 'flags' not in self.objectives:
-                    final_score_inc = objective.update(players=players, delta_time=delta_time)
+                if 'flags' in self.objectives:
+                    score_increase = objective.update(players, delta_time, flags=self.objectives['flags'] )
                 else:
-                    final_score_inc = objective.update(players=players, delta_time=delta_time, flags=self.objectives['flags'])
+                    score_increase = objective.update(players, delta_time)
+                i = 0
+                while i < len(score_increase):
+                    final_score_inc[i] += score_increase[i]
+                    i += 1
         return final_score_inc
 
     def draw(self, map_offset:Vector2, scaler:float, show_hitboxes:bool=False) -> None:

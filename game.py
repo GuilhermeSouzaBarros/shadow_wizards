@@ -1,10 +1,10 @@
 from pyray import *
 from raylib import *
-import struct
 
 from sockets.server import Server
 from sockets.client import Client
 
+from config import GAME_TICK
 from vectors import Vector2
 from collisions import CollisionInfo
 from player import Player
@@ -28,24 +28,29 @@ class Game:
                         "ability": False, "sword": False}})
     
         # *** Serão atualizados na função load_map quando o mapa for escolhido ***
-        self.map_id = map_id
-        self.map = None
+        self.map = Map(map_id)
         self.players = []
-        self.objectives = None
-        self.score = None
+        for player_id in characters_id:
+            self.players.append(Player(self.map.tile_size,
+                                self.map.map_info['spawn_points'][f'player_{player_id}'][0],
+                                self.map.map_info['spawn_points'][f'player_{player_id}'][1],
+                                self.map.map_info['spawn_points'][f'player_{player_id}'][2],
+                                player_id, characters_id[player_id], map_id, f"player {player_id}"))
+        self.num_teams = len(self.players) if map_id == 1 else 2
+        self.objectives = Objectives(self.map.tile_size, self.map.map_info['objectives'], map_id)
+        self.score = Score(window_size, self.players, self.num_teams)
         self.map_offset = None
         self.scaler = None
         self.show_hitboxes = False
+        self.finish = False
         self.end = False
 
         # lista de habilidades que afetam outros players
         self.active_skills = ["Fireball", "Gun", "Trap"]
 
-        init_audio_device()
         self.music = Music()
 
-        self.load_map(characters_id)   
-        self.update_draw_scale(window_size) 
+        self.update_draw_scale(window_size)
 
     def update_draw_scale(self, window_size:list) -> None:
         draw_tile_size = Vector2(window_size[0] / self.map.num_columns,
@@ -56,23 +61,7 @@ class Game:
         else:
             self.scaler = draw_tile_size.x / self.map.tile_size
             self.map_offset = Vector2(0, (window_size[1] - self.map.num_rows * draw_tile_size.x) / 2)
-
-    def load_map(self, players_id:list) -> None:
-        self.map = Map(self.map_id)
-        
-        for player_id in players_id:
-            self.players.append(Player(self.map.tile_size,
-                                self.map.map_info['spawn_points'][f'player_{player_id}'][0],
-                                self.map.map_info['spawn_points'][f'player_{player_id}'][1],
-                                self.map.map_info['spawn_points'][f'player_{player_id}'][2],
-                                player_id, players_id[player_id], self.map_id, f"player {player_id}"))
-
-        self.objectives = Objectives(self.map.tile_size, self.map.map_info['objectives'], self.map_id)
-        # Carrega todos os objetivos de acordo com o id do mapa
-        self.objectives.load()
-
-        num_teams = 4 if self.map_id == 1 else 2
-        self.score = Score(num_teams)
+        self.score.update_scale(Vector2(window_size[0], window_size[1]))
 
     def encode_input(self) -> bytes:
         message = "i".encode()
@@ -86,14 +75,12 @@ class Game:
             self.players_input[player][key] = bool(input[i])
 
     def encode_game(self) -> bytes:
-        if not self.end:
-            message = "g".encode()
-            for player in self.players:
-                message += player.encode()
-            message += self.objectives.encode()
-            message += self.score.encode()
-        else:
-            message = "e".encode()
+        message = "g".encode()
+        for player in self.players:
+            message += player.encode()
+        message += self.objectives.encode()
+        message += self.score.encode()
+        message += self.finish.to_bytes(1)
         return message
 
     def decode_game(self, game:bytes) -> None:
@@ -102,17 +89,15 @@ class Game:
             pointer += player.decode(game[pointer:])
         pointer += self.objectives.decode(game[pointer:])
         pointer += self.score.decode(game[pointer:])
+        self.finish = game[pointer]
 
     def update_players_col(self, delta_time:float) -> None:
-        for tile in self.map.collision_hitboxes:
-            for player in self.players:
-                if (player.skill_name == "Intangibility" and player.skill.is_activated):
-                    for border in self.map.borders:
-                        info = CollisionInfo.collision(player.hitbox, border, delta_time, calculate_distance=True)
-                        if info.intersection:
-                            player.hitbox.speed -= info.distance / delta_time
-                    continue
-                        
+        for player in self.players:  
+            tiles = self.map.team_collision_tiles[player.team - 1]
+            if (player.skill_name == "Intangibility" and player.skill.is_activated):
+                tiles = self.map.team_border_tiles[player.team - 1]
+            
+            for tile in tiles:
                 info = CollisionInfo.collision(player.hitbox, tile, delta_time, calculate_distance=True)
                 if info.intersection:
                     player.hitbox.speed -= info.distance / delta_time
@@ -123,7 +108,7 @@ class Game:
                 continue
 
             for player_b in self.players:
-                if player_a == player_b or not player_b.is_alive:
+                if player_a == player_b or not player_b.is_alive or player_a.team == player_b.team:
                     continue
                 
                 if player_b.skill_name == "Shield" and player_b.skill.is_activated:
@@ -136,7 +121,7 @@ class Game:
     def update_skill_player_col(self, delta_time:float) -> None:
         for player_a in self.players:
             for player_b in self.players:
-                if player_a == player_b:
+                if player_a == player_b or player_a.team == player_b.team:
                     continue
                 
                 projectiles = ["Gun", "Fireball", "Traps", "Laser"]
@@ -166,19 +151,20 @@ class Game:
                             player_b.died()
                             player_a.skill.apply_effect(hitbox)
                     
-    def update_skill_col(self, delta_time:float) -> None:
-        for tile in self.map.collision_hitboxes:
-            for player in self.players:
-                projectiles = ["Gun", "Fireball"]
-                if not (player.skill_name in projectiles):
+    def update_skill_col(self, delta_time:float) -> None:    
+        for player in self.players:
+            for tile in self.map.team_collision_tiles[player.team - 1]:
+                if not (player.skill_name in ["Gun", "Fireball"]):
                     continue
                 for projectile in player.skill.hitboxes:
                     info = CollisionInfo.collision(projectile.hitbox, tile, delta_time, calculate_distance=True)
                     if info.intersection and projectile.is_activated:
                         projectile.deactivate()
                         player.skill.number_of_activated -= 1
-        
-    def update_tick(self, delta_time) -> None:
+    
+    def server_receive_input(self) -> None:
+        if self.finish:
+            return
         self.server.update(loop=True)
         while True:
             try:
@@ -194,6 +180,10 @@ class Game:
                     player.update(self.players_input[player_addr])
                     break
 
+    def update_tick(self, delta_time) -> None:
+        self.tick -= GAME_TICK
+        self.server_receive_input()
+
         self.update_players_col(delta_time)
         self.update_skill_player_col(delta_time)
         self.update_skill_col(delta_time)
@@ -208,9 +198,8 @@ class Game:
         self.update_sword_col()
         
         score_increase = self.objectives.update(self.players, delta_time)
-        self.score.update(delta_time, self.players, score_increase)
-
-        self.end = self.score.countdown_over or (100 in score_increase)
+        self.score.update(delta_time, score_increase)
+        self.finish = self.score.countdown_over or (100 in self.score.team_scores)
 
         self.server.send_queue.put(self.encode_game())
     
@@ -223,10 +212,7 @@ class Game:
                 game_state = self.client.get_queue.get_nowait()
             except:
                 break
-            if (chr(game_state[0]) == "g"):
-                self.decode_game(game_state[1:])
-            else:
-                self.end = True
+            self.decode_game(game_state[1:])
 
     def update_frame(self) -> None:
         self.music.update()
@@ -241,18 +227,25 @@ class Game:
             for hitbox in player.skill.hitboxes:
                 hitbox.update_time()
 
-        if (is_key_pressed(KEY_ESCAPE)):
+        if (is_key_pressed(KEY_ESCAPE) and self.finish):
+            if self.server:
+                self.server.process_get.kill()
+                self.server.process_send.kill()
+            if self.client:
+                self.client.process_get.kill()
+                self.client.process_send.kill()
             self.end = True
         
     def draw(self) -> None:
         begin_drawing()
         
-        clear_background(GRAY)
-        self.map.draw        (self.map_offset, self.scaler, self.show_hitboxes)
-        self.objectives.draw (self.map_offset, self.scaler, self.show_hitboxes)
-        self.score.draw      (self.scaler)
-        for player in self.players:
-            player.draw  (self.map_offset, self.scaler, self.show_hitboxes)
+        clear_background(BLACK)
+        if not self.finish:
+            self.map.draw        (self.map_offset, self.scaler, self.show_hitboxes)
+            self.objectives.draw (self.map_offset, self.scaler, self.show_hitboxes)
+            for player in self.players:
+                player.draw  (self.map_offset, self.scaler, self.show_hitboxes)
+        self.score.draw      (self.scaler, self.finish)
 
         end_drawing()
     
@@ -272,5 +265,5 @@ class Game:
         unload_texture(self.map.map_sprite.texture)
         self.objectives.unload()
         self.music.unload()
-        close_audio_device()
+        self.score.unload()
         print("Game unloaded")

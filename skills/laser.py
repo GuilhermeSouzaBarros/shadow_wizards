@@ -21,7 +21,6 @@ class Laser(Skill):
         message = self.is_activated.to_bytes(1) + len(self.hitboxes).to_bytes(1)
         for line in self.hitboxes:
             message += pack("dddddd", line.direction.x, line.direction.y, line.point.x, line.point.y, line.limit_t.a, line.limit_t.b)
-        print(self.hitboxes[0].__str__)  
         return message
     
     def decode(self, bytes_string:bytes) -> int:
@@ -32,8 +31,7 @@ class Laser(Skill):
         while pointer < lines * 48:
             data = unpack("dddddd", bytes_string[pointer:pointer+48])
             self.hitboxes.append(Line(Vector2(data[0], data[1]), Vector2(data[2], data[3]), Domain(data[4], data[5])))
-            pointer += 48   
-        print(self.hitboxes[0].__str__)         
+            pointer += 48     
         return pointer
     
     def deactivate(self) -> None:

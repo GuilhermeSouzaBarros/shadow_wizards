@@ -60,7 +60,7 @@ class Flag(Objective):
                 break
 
 
-    def update(self, **kwargs) -> list:
+    def update(self, players:list, delta_time:float, **kwargs) -> list:
         """
         Função:
             update
@@ -71,13 +71,13 @@ class Flag(Objective):
         Retorno:
             Retorna uma lista vazia.
         """
-        self.check_taken(kwargs['players'])
+        self.check_taken(players)
         if self.taken:
-            for player in kwargs['players']:
+            for player in players:
                 if not player.has_flag or player.team == self.team:
                     continue
                 self.hitbox.position = player.hitbox.position.copy()
-        return []
+        return [0, 0]
     
     def draw(self, map_offset:Vector2, scaler:float, show_hitboxes:bool) -> None:
         """ 
@@ -150,7 +150,7 @@ class CapturePoint(Objective):
         """
         super().update_region()
 
-    def update(self, **kwargs) -> list:
+    def update(self, players:list, delta_time:float, **kwargs) -> list:
         """
         Função:
             update
@@ -166,12 +166,8 @@ class CapturePoint(Objective):
         for flag in kwargs['flags']:
             if flag.team == self.team:
                 continue
-            capture = self.check_flag_capture(kwargs['players'], flag)
-        if capture == 1:
-            return [self.pts_gain, 0]
-        elif capture == 2:
-            return [0, self.pts_gain]
-        return [0, 0]
+            capture = self.check_flag_capture(players, flag)
+        return [(capture == 1) * self.pts_gain, (capture == 2) * self.pts_gain]
 
     def draw(self, map_offset:Vector2, scaler:float, show_hitboxes:bool) -> None:
         """ 

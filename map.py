@@ -29,38 +29,34 @@ class Map:
         self.map_sprite = self.build_map_sprite()
 
         # Carrega todos os tiles do mapa
-        all_tiles = []
-        team_collision_tiles = [[] for _ in range(self.num_teams)]
-        border_tiles = []
-
-        for i in range(0, self.num_rows):
-            row = []
-            for j in range(0, self.num_columns):
-                tile_type = int(self.map_info['tiles'][i][j])
-                tile = self.build_tile(tile_type, i, j)
-                if tile_type == 1:
-                    border_tiles.append([i, j])
-                if (tile.has_collision):
-                    all_tiles.append([i, j])
-                if tile_type >= 8 and tile_type <= 11:
-                    for team in range(0, self.num_teams):
-                        # Adiciona o tile à lista de colisão caso 
-                        # o tile seja do spawn de outro time
-                        if team != tile_type - 8:
-                            print(f'*** {team} *** ')
-                            team_collision_tiles[team].append([i, j])
-                if tile_type >= 12 and tile_type <= 13:
-                    for team in range(0, self.num_teams):
-                        if team != tile_type - 12:
-                            team_collision_tiles[team].append([i, j])
-                
-                row.append(tile)
-            self.tiles.append(row)
-
-        self.collision_hitboxes = self.build_connected_barriers(all_tiles)
+        self.team_collision_tiles = []
+        self.team_border_tiles = []
+        
         for team in range(0, self.num_teams):
-            self.spawn_collision_hitboxes[team].append(self.build_connected_barriers(team_collision_tiles[team]))
-        self.borders = self.build_connected_barriers(border_tiles)
+            self.team_collision_tiles.append([])
+            self.team_border_tiles.append([])
+            for i in range(0, self.num_rows):
+                row = []
+                for j in range(0, self.num_columns):
+                    tile_type = int(self.map_info['tiles'][i][j])
+                    tile = self.build_tile(tile_type, i, j)
+                    if 1 <= tile_type and tile_type <= 6:
+                        self.team_collision_tiles[team].append([i, j])
+                    
+                    if tile_type >= 8 and tile_type <= 11:
+                        if team != tile_type - 8:
+                            self.team_collision_tiles[team].append([i, j])
+                            self.team_border_tiles[team].append([i, j])
+                    
+                    if tile_type == 1:
+                        self.team_border_tiles[team].append([i, j])
+
+                    row.append(tile)
+                self.tiles.append(row)
+                
+        for team in range(0, self.num_teams):
+            self.team_collision_tiles[team] = self.build_connected_barriers(self.team_collision_tiles[team])
+            self.team_border_tiles[team] = self.build_connected_barriers(self.team_border_tiles[team])
 
     def build_connected_barriers(self, all_tiles : list) -> list:
         blocks = []
@@ -109,7 +105,6 @@ class Map:
             hitboxes.append(hitbox)
         return hitboxes
 
-
     def draw(self, map_offset:Vector2, scaler:float, hitbox:bool) -> None:
         """
         Função: draw
@@ -126,7 +121,7 @@ class Map:
         for row in range(0, self.num_rows):
             for column in range(0, self.num_columns):
                 tile = self.tiles[row][column]
-                if hitbox or tile.type >= 3 and tile.type <= 6:
+                if tile.is_destructible:
                     tile.draw(map_offset, scaler, hitbox)
 
     def load_map(self) -> dict:
@@ -164,7 +159,7 @@ class Map:
         """
         if not tile_type:
             return tiles.Floor(self.tile_size, tile_type, row, column)
-        elif tile_type >= 2 and tile_type <= 6 or tile_type >= 12 and tile_type <= 13:
+        elif tile_type >= 2 and tile_type <= 6:
             return tiles.Barrier(self.tile_size, tile_type, row, column)
         elif tile_type == 1:
             return tiles.Border(self.tile_size, tile_type, row, column)

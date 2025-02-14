@@ -7,15 +7,15 @@ from menu import Menu
 from game import Game
 
 async def main():
+    set_trace_log_level(5)
     window = Window()
-
+    init_audio_device()
+    
     while not window.close_window:
-
         menu = Menu(window.size)
-        while not (menu.start_game or window.close_window):
+        while not (menu.start_game or window.close_window or menu.close_window):
             menu.update()
             
-            window.close_window = menu.close_window
             window.update()
             if is_window_resized():
                 window.update_size()
@@ -34,11 +34,10 @@ async def main():
                 window.update_size()    
                 game.update_draw_scale(window.size)
 
-            if game.server:
+            if game.server and not game.finish:
                 game.tick += get_frame_time()
                 while game.tick >= GAME_TICK:
                     game.update_tick(GAME_TICK)
-                    game.tick -= GAME_TICK
 
             if game.client:
                 game.update_client()
@@ -51,8 +50,8 @@ async def main():
         if not window.close_window:
             game.unload()
 
+    close_audio_device()
     close_window()
-
 
 if __name__ == "__main__":
     asyncio.run(main())

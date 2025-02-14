@@ -56,7 +56,7 @@ class Player:
         self.sprite = load_texture(self.sprite) 
 
         self.player_id = player_id
-        self.team = player_id if map_id == 1 else (player_id == 2 or player_id == 4) + 1
+        self.team = player_id if map_id == 1 else (not player_id % 2) + 1
 
         self.has_flag = False
 
@@ -186,20 +186,18 @@ class Player:
             if self.angle.to_degree() <= 180:
                 self.sword.draw(map_offset, scaler, color)
             self.skill.draw(map_offset, scaler)
-
-
-                
-    
+ 
     def encode(self) -> bytes:
-        message = pack("dddd???", self.hitbox.position.x, self.hitbox.position.y,
+        message = pack("dddd???ii", self.hitbox.position.x, self.hitbox.position.y,
                                   self.angle.real, self.angle.imaginary,
-                                  self.is_alive, self.sword.active, self.has_flag)
+                                  self.is_alive, self.sword.active, self.has_flag,
+                                  self.kills, self.deaths)
         message += self.skill.encode()
         return message
     
     def decode(self, byte_string:bytes) -> int:
-        pointer_offset = 35
-        datas = unpack("dddd???", byte_string[0:35])
+        pointer_offset = 44
+        datas = unpack("dddd???ii", byte_string[0:pointer_offset])
         self.hitbox.position = Vector2(datas[0], datas[1])
         self.angle.real = datas[2]
         self.angle.imaginary = datas[3]
@@ -209,6 +207,8 @@ class Player:
         else:
             self.sword.deactivate()
         self.has_flag = datas[6]
-        pointer_offset += self.skill.decode(byte_string[35:])
+        self.kills = datas[7]
+        self.deaths = datas[8]
+        pointer_offset += self.skill.decode(byte_string[pointer_offset:])
         return pointer_offset
     

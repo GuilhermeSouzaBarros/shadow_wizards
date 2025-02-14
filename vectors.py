@@ -64,7 +64,6 @@ class Domain(Vector2):
     def a(self, a:float) -> None:
         self.x = a
 
-
     @property
     def b(self) -> float:
         return self.y

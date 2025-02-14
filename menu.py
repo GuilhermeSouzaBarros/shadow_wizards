@@ -40,25 +40,32 @@ class MenuScreen():
 
 
 class Menu:
-    def __init__(self, window_size:list):
+    def __init__(self, window_size:list, initial_screen:int=0, server:Server=None, client:Client=None, server_addr_ip:dict={}):
         self.window_size = Vector2(window_size[0], window_size[1])
         self.font = load_font_ex("fonts/PixAntiqua.ttf", 32, None, 250)
-        self.current_screen = None
         self.screens = []
         for screen in MENU_SCREENS:
-            new_screen = MenuScreen(screen, self.font, self.window_size)
-            if new_screen.id == MENU_MAIN_ID:
-                self.current_screen = new_screen
-            self.screens.append(new_screen)
+            self.screens.append(MenuScreen(screen, self.font, self.window_size))
+        self.current_screen = self.screens[initial_screen]
 
-        self.selected_character = 1
+        for group in self.screens[1].boxes:
+            if group.__class__ != SelectedGroup:
+                continue
+            self.selected_character = group.button_selected.target
+            break
+
+        for group in self.screens[2].boxes:
+            if group.__class__ != SelectedGroup:
+                continue
+            self.selected_map = group.button_selected.target
+            break
+
         self.selected_characters = {}
-        self.server_addr_ip = {}
-        self.selected_map = 1
+        self.server_addr_ip = server_addr_ip
         self.start_game = False
 
-        self.server = None
-        self.client = None
+        self.server = server
+        self.client = client
 
         self.close_window = False
 
@@ -85,10 +92,11 @@ class Menu:
                         button.change_text("Searching...")
 
                 elif button.type == "change_ip":
-                    self.client.server_addr = get_address()
+                    if self.client:
+                        self.client.server_addr = get_address()
 
                 elif button.type == "game_start":
-                    if len(self.selected_characters) > 1:
+                    if len(self.selected_characters) >= 0:
                         self.server.send_queue.put(self.encode("start"))
                         self.start_game = True
 
@@ -190,13 +198,17 @@ class Menu:
                 if not addr in self.server.clients_addresses:
                     self.server.clients_addresses.append(addr)
                     self.server_addr_ip.update({addr: len(self.server_addr_ip) + 1})
+                    for box in self.screens[2].boxes:
+                        if issubclass(box.__class__, TextButton) and box.type == "open_lobby":
+                            box.change_text(f"Lobby: {len(self.server.clients_addresses)}/4 players")
+
                 self.server.send_queue.put(self.encode("ping"))
                 self.server.send_queue.put(self.encode("map"))
             else:
                 self.client.server_handshake = True
                 self.client.send_queue.put(self.encode("character"))
 
-        elif data_dec == "m":
+        elif data_dec == "m" and not self.server:
             self.selected_map = data[1]
             for group in self.screens[2].boxes:
                 if group.__class__ != SelectedGroup and group.type != "map":
