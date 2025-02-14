@@ -12,9 +12,11 @@ class Gun(Skill):
         self.number_of_bullets = 3
         self.number_of_activated = 0
         self.duration = 2
-        self._cooldown = 0.5
+        self._cooldown = 1
         self.speed_multiplier = 1
         self.sprite = load_texture("sprites/bullet.png")
+        self.sound = load_sound("sounds/gun-shot.mp3")
+        set_sound_volume(self.sound, 0.3)
         self.hitboxes = [Projectile(pos, self.tile_size, self.duration, self._cooldown, 
                         self.speed_multiplier) 
                         for _ in range(self.number_of_bullets)]
@@ -45,6 +47,7 @@ class Gun(Skill):
             for bullet in self.hitboxes:
                 if not bullet.is_activated:
                     bullet.activate(player_pos, angle)
+                    play_sound(self.sound)
                     self.number_of_activated += 1
                     self.last_activation = get_time()
                     break

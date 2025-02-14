@@ -17,7 +17,6 @@ class Projectile():
         self._cooldown = cooldown
         self.angle = Imaginary(1, -1)
         self.current_frame = 0
-        self.animation_time = 0.2
         self.last_animation = 0
 
     def activate(self, player_pos:Vector2, angle:Imaginary) -> None:
@@ -54,6 +53,11 @@ class Projectile():
             pointer_offset += 32
 
         return pointer_offset
+    
+    def update_time(self):
+        if self.is_activated and (get_time() - self.last_animation > 0.2):
+            self.last_animation = get_time()
+            self.current_frame += 1
 
     def update(self, *args) -> None:
         """
@@ -63,9 +67,6 @@ class Projectile():
         if get_time() - self.last_activation > self.duration:
             self.deactivate()
         if self.is_activated:
-            if get_time() - self.last_animation >= self.animation_time:
-                self.last_animation = get_time()
-                self.current_frame += 1
                 
             speed = self.tile_size*self.speed_multiplier
 

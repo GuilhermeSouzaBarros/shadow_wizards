@@ -7,6 +7,7 @@ class Shield(Skill):
         self.duration = 2
         self.size = Vector2(32, 32)
         self.sprite = load_texture("sprites/shield.png")
+        self.pos = Vector2(0, 0)
 
     def encode(self) -> bytes:
         message = pack("?", self.is_activated)

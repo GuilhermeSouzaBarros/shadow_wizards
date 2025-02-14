@@ -15,6 +15,8 @@ class Fireball(Skill):
         self.number_of_activated = 0
         self.speed_multiplier = 0.5
         self.sprite = load_texture("sprites/fireball.png")
+        self.sound = load_sound("sounds/fireball.mp3")
+        set_sound_volume(self.sound, 0.5)
         self.hitboxes = [Projectile(pos, self.tile_size, self.duration, self._cooldown, 
                         self.speed_multiplier) 
                         for _ in range(self.number_of_bullets)]
@@ -44,6 +46,7 @@ class Fireball(Skill):
             for bullet in self.hitboxes:
                 if not bullet.is_activated:
                     bullet.activate(player_pos, angle)
+                    play_sound(self.sound)
                     self.number_of_activated += 1
                     self.last_activation = get_time()
                     break

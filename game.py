@@ -150,6 +150,8 @@ class Game:
                             continue
                         info = CollisionInfo.collision(player_b.hitbox, hitbox.hitbox, delta_time)
                         if info.intersection and hitbox.is_activated:
+                            if skill_name == "Traps":
+                                play_sound(player_a.skill.sound)
                             player_a.killed()
                             player_b.died()
                             hitbox.deactivate()
@@ -232,6 +234,14 @@ class Game:
             self.show_hitboxes = not self.show_hitboxes
             print(f"Hiboxes {self.show_hitboxes}")
 
+        skill_frames = ["Traps", "Fireball"]
+        for player in self.players:
+            if player.skill_name not in skill_frames:
+                return
+            for hitbox in player.skill.hitboxes:
+                
+                hitbox.update_time()
+
         if (is_key_pressed(KEY_ESCAPE)):
             self.end = True
         
@@ -251,7 +261,13 @@ class Game:
         for player in self.players:
             unload_texture(player.sprite)
             unload_texture(player.sword.sprite)
-            skill_sprites = ["Fireball", "Traps"]
+            unload_sound(player.sword.sound)
+
+            skill_sounds = ["Fireball", "Traps", "Gun", "Laser"]
+            if(player.skill_name in skill_sounds):
+                unload_sound(player.skill.sound)
+
+            skill_sprites = ["Fireball", "Traps", "Gun", "Shield"]
             if(player.skill_name in skill_sprites):
                 unload_texture(player.skill.sprite)
         unload_texture(self.map.map_sprite.texture)

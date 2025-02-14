@@ -7,12 +7,14 @@ from shapes import *
 
 class Sword:
     def __init__(self, player_pos:Vector2) -> None:
-        self.cooldown = 1.0
-        self.time_activated = 0.5
+        self.cooldown = 2
+        self.time_activated = 0.3
         self.last_activation = 0.0
         self.active = False
 
         self.sprite = load_texture("sprites/sword.png")
+        self.sound = load_sound("sounds/sword-sound.mp3")
+        set_sound_volume(self.sound, 0.7)
 
         player_pos = player_pos.copy()
         sword_size = Vector2(40.0, 10.0)
@@ -23,6 +25,7 @@ class Sword:
         
         if current_time - self.last_activation >= self.cooldown:
             self.active = True
+            play_sound(self.sound)
             self.last_activation = current_time
             self.update(player_pos, angle, player_input)
     
@@ -60,7 +63,7 @@ class Sword:
         pos = [map_offset.x + ((up_left_corner[0])*scaler), 
                 map_offset.y + ((up_left_corner[1])*scaler)]
         rectangle_dest = [round(pos[0]), round(pos[1]),
-                        round(scaler*(self.hitbox.size.x + offset.x - 10)),
+                        round(scaler*(self.hitbox.size.x - 30 + offset.x)),
                         round(scaler*(self.hitbox.size.y + offset.y + 10))]
         draw_texture_pro(self.sprite, [0, 0, 32, 32], rectangle_dest, 
                             [round(offset.x*scaler), round(2*offset.y*scaler)], angle, WHITE)

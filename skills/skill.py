@@ -39,7 +39,7 @@ class Skill(ABC):
 
     def deactivate(self) -> None:
         self.is_activated = False
-
+ 
     @abstractmethod
     def encode(self) -> bytes:
         raise NotImplementedError

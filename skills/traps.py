@@ -8,7 +8,6 @@ class Trap():
         self.duration = duration
         self.tile_size = tile_size
         self.current_frame = 0
-        self.animation_time = 0.5
         self.last_animation = 0
         self.last_activation = 0
 
@@ -35,14 +34,13 @@ class Trap():
 
     def deactivate(self):
         self.is_activated = False
-    
-    
-    def update(self) -> None:
-        if self.is_activated:
-            if get_time() - self.last_animation >= self.animation_time:
-                    self.last_animation = get_time()
-                    self.current_frame += 1
 
+    def update_time(self):
+        if self.is_activated and (get_time() - self.last_animation > 1):
+            self.last_animation = get_time()
+            self.current_frame += 1
+
+    def update(self) -> None:
         if get_time() - self.last_activation > self.duration:
             self.deactivate()
     
@@ -81,6 +79,8 @@ class Traps(Skill):
         self._cooldown = 1
         self.tile_size = Vector2(32, 32)
         self.sprite = load_texture("sprites/mine.png")
+        self.sound = load_sound("sounds/explosion.mp3")
+        set_sound_volume(self.sound, 0.3)
         self.duration = 5
         self.hitboxes = [Trap(pos, self.tile_size, self.duration, self._cooldown) 
                       for _ in range(self.number_of_traps)]

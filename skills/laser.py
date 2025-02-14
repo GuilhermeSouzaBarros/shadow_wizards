@@ -6,13 +6,15 @@ class Laser(Skill):
         Habilidade de raios
         """
         super().__init__()
-        self._cooldown = 1
+        self._cooldown = 10
         self.duration = 1
         self.laser_size = Vector2(10, 10)
         self.max_size = Vector2(1000, 10)
         self.current_size = self.laser_size.copy()
         self.laser_size_cp = self.laser_size.copy()
         self.reflections = 4
+        self.sound = load_sound("sounds/laser.mp3")
+        set_sound_volume(self.sound, 0.5)
         self.hitboxes = [Line(Vector2(0, 0), player_pos.copy(), Domain(0, float('inf')))]
     
     def encode(self) -> bytes:
@@ -37,6 +39,7 @@ class Laser(Skill):
     def deactivate(self) -> None:
         super().deactivate()
         self.hitboxes = [Line(Vector2(0, 0), Vector2(0, 0), Domain(0, float('inf')))]
+        stop_sound(self.sound)
   
     def map_collision(self, laser:Line, map) -> ColLines:
         """
@@ -85,6 +88,7 @@ class Laser(Skill):
             activate = self.define_laser(player_pos, angle, map)
             if activate:
                 self.activate()
+                play_sound(self.sound)
             
         if self.can_deactivate():
             self.deactivate()
