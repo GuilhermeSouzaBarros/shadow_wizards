@@ -10,13 +10,15 @@ class Shield(Skill):
         self.pos = Vector2(0, 0)
 
     def encode(self) -> bytes:
-        message = pack("?", self.is_activated)
+        message = pack("dd?", self.pos.x, self.pos.y, self.is_activated)
         return message
     
     def decode(self, bytes_string:bytes) -> int:
-        data = unpack("?", bytes_string[0:1])
-        self.is_activated = data[0]
-        return 1
+        data = unpack("dd?", bytes_string[0:17])
+        self.pos.x = data[0]
+        self.pos.y = data[1]
+        self.is_activated = data[2]
+        return 17
     
     def update(self, player_pos:Vector2, angle:Imaginary, player_input:dict, *args) -> None:
         activate = self.skill_key(player_pos, angle, 1, player_input)
