@@ -9,10 +9,10 @@ from game import Game
 async def main():
     set_trace_log_level(5)
     window = Window()
-    menu = Menu(window.size)
     init_audio_device()
     
     while not window.close_window:
+        menu = Menu(window.size)
         while not (menu.start_game or window.close_window or menu.close_window):
             menu.update()
             
@@ -34,7 +34,7 @@ async def main():
                 window.update_size()    
                 game.update_draw_scale(window.size)
 
-            if game.server:
+            if game.server and not game.finish:
                 game.tick += get_frame_time()
                 while game.tick >= GAME_TICK:
                     game.update_tick(GAME_TICK)

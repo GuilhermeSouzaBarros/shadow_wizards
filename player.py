@@ -56,7 +56,7 @@ class Player:
         self.sprite = load_texture(self.sprite) 
 
         self.player_id = player_id
-        self.team = player_id if map_id == 1 else (player_id == 2 or player_id == 4) + 1
+        self.team = player_id if map_id == 1 else (not player_id % 2) + 1
 
         self.has_flag = False
 

@@ -30,6 +30,8 @@ class Cart:
         self.current_line = [path_start, path_start + 1]
         self.speed        = 0.5 # in tiles per second, keep it simple
 
+        self.max_point = [path_start, path_start]
+
         self.color = WHITE
         self.curr_team = 0
         self.end_push  = 0
@@ -78,7 +80,7 @@ class Cart:
 
         delta_pos = self.speed * self.tile_size * delta_time
         
-        final_result = [0, 0]
+        score = [0, 0]
 
         if (abs(distance.x) > delta_pos or abs(distance.y) > delta_pos) :
             self.hitbox.speed.x = sign_of(distance.x) * self.speed * self.tile_size
@@ -90,16 +92,19 @@ class Cart:
             next_point = -1 + 2 * to_point_in_line
             self.current_line[0] += next_point
             self.current_line[1] += next_point
+            if self.curr_team == 1 and self.current_line[0] > self.max_point[0]:
+                self.max_point[0] += 1
+                score[0] += 20
+                print(self.max_point)
+            elif self.curr_team == 2 and self.current_line[1] < self.max_point[1]:
+                self.max_point[1] -= 1
+                score[1] += 20
+                print(self.max_point)
 
-            if self.current_line[0] == -1 or self.current_line[1] == len(self.path):
-                self.end_push = 1
-                self.winning_team = self.curr_team
-                final_result[self.curr_team-1] = 100
-    
         self.hitbox.delta_position(delta_time)
         self.region.position = self.hitbox.position.copy()
 
-        return final_result
+        return score
     
     def update_region(self) -> None:
         """

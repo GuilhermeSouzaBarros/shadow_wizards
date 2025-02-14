@@ -29,7 +29,6 @@ class Game:
     
         # *** Serão atualizados na função load_map quando o mapa for escolhido ***
         self.map = Map(map_id)
-        self.num_teams = 4 if map_id == 1 else 2
         self.players = []
         for player_id in characters_id:
             self.players.append(Player(self.map.tile_size,
@@ -37,11 +36,13 @@ class Game:
                                 self.map.map_info['spawn_points'][f'player_{player_id}'][1],
                                 self.map.map_info['spawn_points'][f'player_{player_id}'][2],
                                 player_id, characters_id[player_id], map_id, f"player {player_id}"))
+        self.num_teams = len(self.players) if map_id == 1 else 2
         self.objectives = Objectives(self.map.tile_size, self.map.map_info['objectives'], map_id)
         self.score = Score(window_size, self.players, self.num_teams)
         self.map_offset = None
         self.scaler = None
         self.show_hitboxes = False
+        self.finish = False
         self.end = False
 
         # lista de habilidades que afetam outros players
@@ -74,14 +75,12 @@ class Game:
             self.players_input[player][key] = bool(input[i])
 
     def encode_game(self) -> bytes:
-        if not self.end:
-            message = "g".encode()
-            for player in self.players:
-                message += player.encode()
-            message += self.objectives.encode()
-            message += self.score.encode()
-        else:
-            message = "e".encode()
+        message = "g".encode()
+        for player in self.players:
+            message += player.encode()
+        message += self.objectives.encode()
+        message += self.score.encode()
+        message += self.finish.to_bytes(1)
         return message
 
     def decode_game(self, game:bytes) -> None:
@@ -90,17 +89,15 @@ class Game:
             pointer += player.decode(game[pointer:])
         pointer += self.objectives.decode(game[pointer:])
         pointer += self.score.decode(game[pointer:])
+        self.finish = game[pointer]
 
     def update_players_col(self, delta_time:float) -> None:
-        for tile in self.map.collision_hitboxes:
-            for player in self.players:
-                if (player.skill_name == "Intangibility" and player.skill.is_activated):
-                    for border in self.map.borders:
-                        info = CollisionInfo.collision(player.hitbox, border, delta_time, calculate_distance=True)
-                        if info.intersection:
-                            player.hitbox.speed -= info.distance / delta_time
-                    continue
-                        
+        for player in self.players:  
+            tiles = self.map.team_collision_tiles[player.team - 1]
+            if (player.skill_name == "Intangibility" and player.skill.is_activated):
+                tiles = self.map.team_border_tiles[player.team - 1]
+            
+            for tile in tiles:
                 info = CollisionInfo.collision(player.hitbox, tile, delta_time, calculate_distance=True)
                 if info.intersection:
                     player.hitbox.speed -= info.distance / delta_time
@@ -111,7 +108,7 @@ class Game:
                 continue
 
             for player_b in self.players:
-                if player_a == player_b or not player_b.is_alive:
+                if player_a == player_b or not player_b.is_alive or player_a.team == player_b.team:
                     continue
                 
                 if player_b.skill_name == "Shield" and player_b.skill.is_activated:
@@ -124,7 +121,7 @@ class Game:
     def update_skill_player_col(self, delta_time:float) -> None:
         for player_a in self.players:
             for player_b in self.players:
-                if player_a == player_b:
+                if player_a == player_b or player_a.team == player_b.team:
                     continue
                 
                 projectiles = ["Gun", "Fireball", "Traps", "Laser"]
@@ -152,11 +149,10 @@ class Game:
                             player_b.died()
                             player_a.skill.apply_effect(hitbox)
                     
-    def update_skill_col(self, delta_time:float) -> None:
-        for tile in self.map.collision_hitboxes:
-            for player in self.players:
-                projectiles = ["Gun", "Fireball"]
-                if not (player.skill_name in projectiles):
+    def update_skill_col(self, delta_time:float) -> None:    
+        for player in self.players:
+            for tile in self.map.team_collision_tiles[player.team - 1]:
+                if not (player.skill_name in ["Gun", "Fireball"]):
                     continue
                 for projectile in player.skill.hitboxes:
                     info = CollisionInfo.collision(projectile.hitbox, tile, delta_time, calculate_distance=True)
@@ -165,6 +161,8 @@ class Game:
                         player.skill.number_of_activated -= 1
     
     def server_receive_input(self) -> None:
+        if self.finish:
+            return
         self.server.update(loop=True)
         while True:
             try:
@@ -198,8 +196,8 @@ class Game:
         self.update_sword_col()
         
         score_increase = self.objectives.update(self.players, delta_time)
-        self.score.update(delta_time)
-        self.end = self.score.countdown_over or (100 in score_increase)
+        self.score.update(delta_time, score_increase)
+        self.finish = self.score.countdown_over or (100 in self.score.team_scores)
 
         self.server.send_queue.put(self.encode_game())
     
@@ -212,10 +210,7 @@ class Game:
                 game_state = self.client.get_queue.get_nowait()
             except:
                 break
-            if (chr(game_state[0]) == "g"):
-                self.decode_game(game_state[1:])
-            else:
-                self.end = True
+            self.decode_game(game_state[1:])
 
     def update_frame(self) -> None:
         self.music.update()
@@ -223,18 +218,26 @@ class Game:
             self.show_hitboxes = not self.show_hitboxes
             print(f"Hiboxes {self.show_hitboxes}")
 
-        if (is_key_pressed(KEY_ESCAPE)):
+        if (is_key_pressed(KEY_ESCAPE) and self.finish):
+            if self.server:
+                self.server.process_get.kill()
+                self.server.process_send.kill()
+            if self.client:
+                self.client.process_get.kill()
+                self.client.process_send.kill()
+                
             self.end = True
         
     def draw(self) -> None:
         begin_drawing()
         
         clear_background(BLACK)
-        self.map.draw        (self.map_offset, self.scaler, self.show_hitboxes)
-        self.objectives.draw (self.map_offset, self.scaler, self.show_hitboxes)
-        for player in self.players:
-            player.draw  (self.map_offset, self.scaler, self.show_hitboxes)
-        self.score.draw      (self.scaler)
+        if not self.finish:
+            self.map.draw        (self.map_offset, self.scaler, self.show_hitboxes)
+            self.objectives.draw (self.map_offset, self.scaler, self.show_hitboxes)
+            for player in self.players:
+                player.draw  (self.map_offset, self.scaler, self.show_hitboxes)
+        self.score.draw      (self.scaler, self.finish)
 
         end_drawing()
     

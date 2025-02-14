@@ -92,7 +92,8 @@ class Menu:
                         button.change_text("Searching...")
 
                 elif button.type == "change_ip":
-                    self.client.server_addr = get_address()
+                    if self.client:
+                        self.client.server_addr = get_address()
 
                 elif button.type == "game_start":
                     if len(self.selected_characters) >= 0:

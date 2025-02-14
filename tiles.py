@@ -15,7 +15,7 @@ class Tile(ABC):
         self.type = type
 
         # Controla se o tile é destrutível ou não
-        self.is_destructible = self.type >= 3 and self.type <= 6 or self.type >=11 and self.type <= 12
+        self.is_destructible = self.type >= 3 and self.type <= 6 or self.type >=11 and self.type <= 13
 
         self.has_collision = not(self.type == 7 or self.type == 8 or (not self.type))
 

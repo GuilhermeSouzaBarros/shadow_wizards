@@ -8,7 +8,7 @@ from time import time
 
 class Domination(Objective):
     def __init__(self, tile_size:int, row:int, column:int, radius:float):
-        super().__init__(tile_size, row, column, radius, 1)
+        super().__init__(tile_size, row, column, radius, 2)
         self.curr_team = 0        
         self.last_increment:float = 0.0
 
@@ -57,7 +57,7 @@ class Domination(Objective):
             return teams_inside[0]
         return 0
     
-    def update(self, **kwargs) -> list:
+    def update(self, players:list, delta_time:float) -> list:
         """
         Função: update
         Descrição:
@@ -68,7 +68,7 @@ class Domination(Objective):
             Retorna uma lista com o acréscimo de pontos de cada time após a verificação.
         """
         self.update_region()
-        self.curr_team = self.check_domination(kwargs['players'])        
+        self.curr_team = self.check_domination(players)        
 
         pts_increase = [0,0]
         if self.curr_team:
