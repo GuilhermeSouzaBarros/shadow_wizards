@@ -52,6 +52,7 @@ class Menu:
             if group.__class__ != SelectedGroup:
                 continue
             self.selected_character = group.button_selected.target
+            self.screens[1].boxes[1].change_text(SKILLS[self.selected_character])
             break
 
         for group in self.screens[2].boxes:
@@ -96,7 +97,7 @@ class Menu:
                         self.client.server_addr = get_address()
 
                 elif button.type == "game_start":
-                    if len(self.selected_characters) >= 0:
+                    if len(self.selected_characters) >= 2:
                         self.server.send_queue.put(self.encode("start"))
                         self.start_game = True
 

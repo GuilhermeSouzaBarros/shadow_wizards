@@ -31,7 +31,7 @@ class Cart:
         self.path         = path
         self.path_start   = path_start
         self.current_line = [path_start, path_start + 1]
-        self.speed        = 0.5 # in tiles per second, keep it simple
+        self.speed        = 0.75 # in tiles per second, keep it simple
         self.angle = Imaginary(1, 0)
         self.max_point = [path_start, path_start]
 
@@ -99,12 +99,12 @@ class Cart:
             if self.curr_team == 1 and self.current_line[0] > self.max_point[0]:
                 self.max_point[0] += 1
                 score[0] += 20
-                print(self.max_point)
             elif self.curr_team == 2 and self.current_line[1] < self.max_point[1]:
                 self.max_point[1] -= 1
                 score[1] += 20
-                print(self.max_point)
-
+            if self.current_line[0] == -1 or self.current_line[0] == 11:
+                self.end_push = True
+        self.angle = Imaginary(self.hitbox.speed.x, self.hitbox.speed.y, 1)
         self.hitbox.delta_position(delta_time)
         self.region.position = self.hitbox.position.copy()
 
@@ -165,7 +165,6 @@ class Cart:
             angle += 360 * (angle < 0.0)
             angle /= 90
             angle = int(angle)
-            print("Angle", angle)
 
             size_im_x = Imaginary(self.hitbox.size.x/2, 0.0)
             size_im_y = Imaginary(0.0, self.hitbox.size.y/2.0)
