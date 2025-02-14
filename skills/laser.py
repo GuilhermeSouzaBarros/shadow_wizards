@@ -25,6 +25,8 @@ class Laser(Skill):
     
     def decode(self, bytes_string:bytes) -> int:
         self.is_activated = bytes_string[0]
+        if not is_sound_playing(self.sound) and self.is_activated:
+            play_sound(self.sound)
         self.hitboxes = []
         lines = bytes_string[1]
         pointer = 2
