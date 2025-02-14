@@ -100,6 +100,7 @@ class Menu:
                     continue
                 if group.type == "character":
                     self.selected_character = group.button_selected.target
+                    self.current_screen.boxes[1].change_text(SKILLS[self.selected_character])
                     if self.client and self.client.server_handshake:
                         self.client.send_queue.put(self.encode("character"))
 

@@ -3,7 +3,7 @@ from skills.skill import *
 class Shield(Skill):
     def __init__(self):
         super().__init__()
-        self._cooldown = 1
+        self._cooldown = 5
         self.duration = 2
         self.size = Vector2(32, 32)
         self.sprite = load_texture("sprites/shield.png")

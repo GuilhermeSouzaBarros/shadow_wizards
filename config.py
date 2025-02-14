@@ -31,14 +31,14 @@ CHARACTER_PURPLE    = {"id": 8, "name": "Purple", "sprite": "sprites/wizard.png"
 
 CHARACTERS = (CHARACTER_RED, CHARACTER_BLUE, CHARACTER_PINK, CHARACTER_LIME, CHARACTER_GOLD, CHARACTER_YELLOW, CHARACTER_DARKGREEN, CHARACTER_PURPLE)
 
-SKILLS = {"Fireball": "Joga uma bola de fogo que ao atingir algo explode", 
-          "Dash": "Dá um impulso no personagem", 
-          "Gun": "Permite atirar várias balas", 
-          "Traps": "Perimite colocar armadilhas no chão, que podem causar dano ou outro efeito", 
-          "SuperSpeed": "Jogador possui maior velocidade", 
-          "Intangibility": "Permite atravessar paredes", 
-          "Shield": "Por alguns segundos o jogador não recebe dano", 
-          "Laser": "Atira um laser na direção que o jogador está olhando"}
+SKILLS = {1: "Fires a ball of fire", 
+          2: "Gives you a momentary boost", 
+          3: "Allows you to shoot multiple bullets", 
+          4: "Place traps that kill enemies", 
+          5: "For those who love running", 
+          6: "You can walk through walls", 
+          7: "Protect you from damage for a few seconds", 
+          8: "Do you want a laser beam? Take it!"}
 
 BASE_WIDTH = 800
 BASE_HEIGHT = 600

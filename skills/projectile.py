@@ -93,6 +93,6 @@ class Projectile():
                             round(scaler * (self.hitbox.radius + offset) * 2),
                             round(scaler * (self.hitbox.radius + offset) * 2)]
                 draw_texture_pro(args[-2], [self.current_frame*32, 0, 32, 32], rectangle_dest, 
-                                 [round(offset*scaler), round(2*offset*scaler)], angle, PINK)
+                                 [round(offset*scaler), round(2*offset*scaler)], angle, WHITE)
            
         
