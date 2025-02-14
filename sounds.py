@@ -14,7 +14,6 @@ class Music:
         play_music_stream(self.soundtrack)
 
     def update(self):
-        return
         update_music_stream(self.soundtrack)
 
     def unload(self):
