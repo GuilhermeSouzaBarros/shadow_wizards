@@ -263,6 +263,10 @@ class Game:
             skill_sprites = ["Fireball", "Traps", "Gun", "Shield"]
             if(player.skill_name in skill_sprites):
                 unload_texture(player.skill.sprite)
+        if self.server:
+            self.server.close()
+        if self.client:
+            self.client.close()
         unload_texture(self.map.map_sprite.texture)
         self.objectives.unload()
         self.music.unload()

@@ -34,3 +34,11 @@ class BaseSocket(ABC):
     def update(self, loop:bool=False) -> None:
         self.update_get(loop)
         self.update_send(loop)
+
+    def close(self) -> None:
+        if self.process_get and self.process_get.is_alive():
+            self.process_get.kill()
+        if self.process_send and self.process_send.is_alive():
+            self.process_send.kill()
+        self.socket.close()
+        
