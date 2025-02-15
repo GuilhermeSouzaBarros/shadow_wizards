@@ -25,13 +25,11 @@ class Flag(Objective):
         pos = Vector2(data[0], data[1])
         self.hitbox.position = pos
         return 17
-    
-    def update_region(self) -> None:
-        super().update_region()
 
     def check_taken(self, players: list) -> None:
+        self.taken = False
         for player in players:
-            if player.team == self.team:
+            if player.team == self.team or not player.is_alive:
                 continue
 
             info = CollisionInfo.collision(player.hitbox, self.hitbox)
@@ -39,6 +37,8 @@ class Flag(Objective):
                 self.taken = True
                 player.has_flag = True
                 break
+            else:
+                player.has_flag = False
 
 
     def update(self, players:list, delta_time:float, **kwargs) -> list:
@@ -48,6 +48,8 @@ class Flag(Objective):
                 if not player.has_flag or player.team == self.team:
                     continue
                 self.hitbox.position = player.hitbox.position.copy()
+        else:
+            self.update_region()
         return [0, 0]
     
     def draw(self, map_offset:Vector2, scaler:float, show_hitboxes:bool) -> None:

@@ -153,6 +153,7 @@ class Game:
                             player_a.killed()
                             player_b.died()
                             player_a.skill.apply_effect(hitbox)
+                            
                     
     def update_skill_col(self, delta_time:float) -> None:    
         for player in self.players:
