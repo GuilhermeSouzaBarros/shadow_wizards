@@ -38,6 +38,9 @@ class SuperSpeed(Skill):
     def decode(self, bytes_string:bytes) -> int:
         return 0
     
+    def deactivate(self):
+        pass
+
     def update(self, *args) -> None:
         pass
 

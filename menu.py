@@ -99,9 +99,8 @@ class Menu:
                         self.client.process_get.kill()
 
                 elif button.type == "game_start":
-                    if len(self.selected_characters) >= 2:
-                        self.server.send_queue.put(self.encode("start"))
-                        self.start_game = True
+                    self.server.send_queue.put(self.encode("start"))
+                    self.start_game = True
 
                 elif button.type == "exit":
                     self.close_window = True

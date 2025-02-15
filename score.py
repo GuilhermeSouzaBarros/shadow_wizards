@@ -116,10 +116,12 @@ class Score(Box):
         self.boxes[0].change_text(f"{minutes}:{seconds:02d}")
 
         i = 0
-        while i < len(score_increase):
-            self.team_scores[i] += score_increase[i]
-            i += 1
-        
+        try:
+            while i < len(score_increase):
+                self.team_scores[i] += score_increase[i]
+                i += 1
+        except:
+            return
         i = 0
         for box in self.boxes:
             if issubclass(box.__class__, TextBox) and box.type == "team_score":

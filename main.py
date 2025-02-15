@@ -20,7 +20,7 @@ async def main():
             if is_window_resized():
                 window.update_size()
                 menu.update_scale(window.size)
-            window.close_window = menu.close_window
+            window.close_window = window.close_window or menu.close_window
             menu.draw()
             await asyncio.sleep(0)
 
