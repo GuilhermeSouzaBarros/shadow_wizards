@@ -195,7 +195,7 @@ class Game:
             if (player.hitbox.position.x <= 0 or player.hitbox.position.y <= 0 or
                 player.hitbox.position.x >= 25 * 32 or player.hitbox.position.y >= 15 * 32):
                 #Fail safe if player gets out of map
-                player.hitbox.position.position = player.start_pos.copy()
+                player.hitbox.position = player.start_pos.copy()
                 player.angle           = player.start_angle.copy()
 
             for player_addr in self.server_addr_id:
