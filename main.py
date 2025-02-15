@@ -7,7 +7,7 @@ from menu import Menu
 from game import Game
 
 async def main():
-    set_trace_log_level(5)
+    #set_trace_log_level(5)
     window = Window()
     init_audio_device()
     

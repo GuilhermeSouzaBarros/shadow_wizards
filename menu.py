@@ -13,15 +13,19 @@ from sockets.client import Client
 
 class MenuScreen():
     def __init__(self, json_path:str, font:Font, window_size:Vector2):
+        self.window_size = window_size
         self.font = font
         self.info = load(open(json_path, 'r'))
         self.id = self.info['id']
         self.esc_page = self.info['esc_page']
         self.background_color = self.info['background']
 
+        self.background_image = load_texture("sprites/metropole.png")
+
         self.boxes = load_boxes(font, window_size, self.info)
 
     def update_scale(self, window_size:Vector2):
+        self.window_size = window_size
         for box in self.boxes:
             box.update_scale(window_size)
 
@@ -32,7 +36,8 @@ class MenuScreen():
     def draw(self):
         begin_drawing()
         clear_background(self.background_color)
-        
+        draw_texture_pro(self.background_image, [0,0, 1344, 768], [0,0, self.window_size.x, self.window_size.y], [0,0], 0, color_brightness(self.background_color, -0.10))
+
         for box in self.boxes:
             box.draw()
 
@@ -162,6 +167,7 @@ class Menu:
     def unload(self) -> None:
         unload_font(self.font)
         for screen in self.screens:
+            unload_texture(screen.background_image)
             for sprite_haver in screen.boxes:    
                 if sprite_haver.__class__ == Render:
                     unload_texture(sprite_haver.texture)

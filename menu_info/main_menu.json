@@ -8,14 +8,14 @@
             "font_size": 1,
             "position": [0.5, 0.175],
             "size": [0.9, 0.27],
-            "color": [20, 20, 20, 255]
+            "color": [255, 255, 255, 255]
         }
     ],
     "text_buttons": [
         {
             "string": "Join Lobby",
             "font_size": 0.8,
-            "position": [0.25, 0.4],
+            "position": [0.25, 0.55],
             "size": [0.35, 0.1],
             "text_color": [20, 20, 20, 255],
             "button_color": [225, 125, 50, 255],
@@ -25,22 +25,12 @@
         {
             "string": "Host Lobby",
             "font_size": 0.8,
-            "position": [0.25, 0.55],
+            "position": [0.25, 0.7],
             "size": [0.35, 0.1],
             "text_color": [20, 20, 20, 255],
             "button_color": [125, 225, 50, 255],
             "type": "screen",
             "target": 2
-        },
-        {
-            "string": "Options",
-            "font_size": 0.8,
-            "position": [0.25, 0.7],
-            "size": [0.35, 0.1],
-            "text_color": [20, 20, 20, 255],
-            "button_color": [125, 225, 225, 255],
-            "type": "screen",
-            "target": 0
         },
         {
             "string": "Quit",
