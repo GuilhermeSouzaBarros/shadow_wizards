@@ -24,7 +24,6 @@ class Tile(ABC):
             Vector2(tile_size, tile_size)
         )
 
-
     @abstractmethod    
     def draw(self, map_offset:list, scaler:float, draw_hitbox:bool) -> None:
         """ Este método é um método abstrato. """            
@@ -33,40 +32,18 @@ class Tile(ABC):
 
 class Floor(Tile):
     def __init__(self, tile_size: Vector2, type:int, row:int, column:int) -> None:
-        """ Inicializa o objeto Floor. """
         super().__init__(tile_size, type, row, column)
     
     def draw(self, map_offset:Vector2, scaler:float, draw_hitbox:bool) -> None:
-        """ 
-        Função: draw
-        Descrição:
-            Desenha o tile de chão do mapa.
-        Parâmetros:
-            map_offset:Vector2 - posição do pixel do canto superior esquerdo do mapa.
-            scaler:float - transforma as coordenadas do jogo para as de desenho.
-        Retorno:
-            Nenhum.     
-        """
         self.hitbox.draw(GRAY, map_offset, scaler, outlines=False)
 
 
 class Rails(Tile):
     def __init__(self, tile_size: Vector2, type:int, row:int, column:int) -> None:
-        """ Inicializa o objeto Floor. """
         super().__init__(tile_size, type, row, column)
         self.is_end = (row == 6 and column == 2) or (row == 8 and column == 22)
 
     def draw(self, map_offset:Vector2, scaler:float, draw_hitbox:bool) -> None:
-        """ 
-        Função: draw
-        Descrição:
-            Desenha os tiles de trilhos do mapa.
-        Parâmetros:
-            map_offset:Vector2 - posição do pixel do canto superior esquerdo do mapa.
-            scaler:float - transforma as coordenadas do jogo para as de desenho.
-        Retorno:
-            Nenhum.     
-        """
         # Desenha os trilhos de fim
         if self.is_end:
             color = MAGENTA
@@ -77,61 +54,28 @@ class Rails(Tile):
 
 class Border(Tile):
     def __init__(self, tile_size: Vector2, type:int, row:int, column:int) -> None:
-        """ Inicializa o objeto Border. """
         super().__init__(tile_size, type, row, column)
 
     def draw(self, map_offset:Vector2, scaler:float, draw_hitbox:bool) -> None:
-        """ 
-        Função: draw
-        Descrição:
-            Desenha os tiles de borda do mapa.
-        Parâmetros:
-            map_offset:Vector2 - posição do pixel do canto superior esquerdo do mapa.
-            scaler:float - transforma as coordenadas do jogo para as de desenho.
-        Retorno:
-            Nenhum.     
-        """
         color = BLACK
         self.hitbox.draw(color, map_offset, scaler, outlines=False)
 
 class SpawnPoint(Tile):
     def __init__(self, tile_size: Vector2, type:int, row:int, column:int) -> None:
-        """ Inicializa o objeto Border. """
         super().__init__(tile_size, type, row, column)
 
     def draw(self, map_offset:Vector2, scaler:float, draw_hitbox:bool) -> None:
-        """ 
-        Função: draw
-        Descrição:
-            Desenha os tiles de spawn point.
-        Parâmetros:
-            map_offset:Vector2 - posição do pixel do canto superior esquerdo do mapa.
-            scaler:float - transforma as coordenadas do jogo para as de desenho.
-        Retorno:
-            Nenhum.     
-        """
         color = DARKBLUE
         self.hitbox.draw(color, map_offset, scaler, outlines=False)
 
 class Barrier(Tile):
     def __init__(self, tile_size: Vector2, type:int, row:int, column:int) -> None:
-        """ Inicializa o objeto barreira. """
         super().__init__(tile_size, type, row, column)
         self.is_destroyed = False 
         if self.is_destructible:
             self.sprite = self.build_destructible_barrier()
 
     def draw(self, map_offset:Vector2, scaler:float, draw_hitbox:bool) -> None:
-        """ 
-        Função: draw
-        Descrição:
-            Desenha os tiles barreira, caso a mesma ainda esteja de pé.
-        Parâmetros:
-            map_offset:Vector2 - posição do pixel do canto superior esquerdo do mapa.
-            scaler:float - transforma as coordenadas do jogo para as de desenho.
-        Retorno:
-            Nenhum.     
-        """  
         if self.is_destroyed:
             return
         
@@ -148,15 +92,6 @@ class Barrier(Tile):
             self.hitbox.draw(color, map_offset, scaler, outlines=False)
 
     def build_destructible_barrier(self):
-        """
-        Método: build_destructible_barrier
-        Descrição: 
-            Constrói os sprites dos tiles destrutíveis do mapa.
-        Parâmetros:
-            Nenhum.
-        Retorno: Nenhum.
-        """
-        
         # Sprite de cone
         if self.type == 3:
             return sprite.DestructibleTileSprite('sprites/cones.png', 0, self.hitbox.size)

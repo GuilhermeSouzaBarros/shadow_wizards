@@ -21,24 +21,10 @@ class Domination(Objective):
         return 1
 
     def update_region(self) -> None:
-        """
-        Função: update_region
-        Descrição:
-            Atualiza a região de dominação.
-        Parâmetros:
-            Nenhum.
-        Retorno:
-            Nenhum
-        """
         super().update_region()
 
     def check_domination(self, players:list) -> int:
         """
-        Função: check_domination
-        Descrição:
-            Verifica se a área de dominação está sendo dominada por algum time.
-        Parâmetros:
-            players: list - lista com todos os jogadores no jogo
         Retorno: 
             0, quando nenhum time estiver dominando a área;
             1, quando o time 1 estiver dominando a área;
@@ -58,15 +44,6 @@ class Domination(Objective):
         return 0
     
     def update(self, players:list, delta_time:float) -> list:
-        """
-        Função: update
-        Descrição:
-            Atualiza a região de dominação e verifica se algum time está dominando a região. Caso algum time estiver dominando, retorna a alteração da pontuação do time de acordo com o tempo de dominação.
-        Parâmetros:
-            players: list - uma lista com todos os jogadores do jogo.
-        Retorno:
-            Retorna uma lista com o acréscimo de pontos de cada time após a verificação.
-        """
         self.update_region()
         self.curr_team = self.check_domination(players)        
 
@@ -79,15 +56,8 @@ class Domination(Objective):
         return pts_increase
 
     def draw(self, map_offset:Vector2, scaler:float, show_hitboxes:bool) -> None:
-        """
-        Função: draw
-        Descrição:
-            Desenha a área de dominação do jogo de acordo com o time que estiver dominando a área.
-        Parâmetros:
-            Nenhum.
-        Retorno:
-            Nenhum.
-        """
+        # Desenha a região de dominação de acordo com o time que está dominando a área
+
         if self.curr_team == 1:
             # Desenha a área de dominação quando o time 1 está dominando
             color = RED

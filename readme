@@ -1,7 +1,0 @@
-Criar ambiente virutal:
-    sudo apt install python3.12-venv
-    python3.12 -m venv env
-    source env/bin/activate
-
-Instalar imports:
-    pip install -r requirements.txt

@@ -111,15 +111,6 @@ class Cart:
         return score
     
     def update_region(self) -> None:
-        """
-        Função: update_region
-        Descrição:
-            Atualiza a região do carrinho.
-        Parâmetros:
-            Nenhum.
-        Retorno:
-            Nenhum
-        """
         self.region = Circle(self.rectangle.position, self.region_radius)
 
     def update_players_col(self, players:list, delta_time:float) -> None:
@@ -156,15 +147,6 @@ class Cart:
         
 
     def draw_region(self, map_offset:Vector2, scaler:float) -> None:
-        """
-        Função: draw
-        Descrição:
-            Desenha a região de movimentação do carrinho de acordo com o time que estiver movimentando o carrinho.
-        Parâmetros:
-            Nenhum.
-        Retorno:
-            Nenhum.
-        """
         pos = [map_offset.x + (self.region.position.x * scaler),
                map_offset.y + (self.region.position.y * scaler)]
         draw_circle_lines_v(pos, self.region.radius * scaler, self.color)
@@ -172,11 +154,6 @@ class Cart:
 
     def check_domination(self, players:list) -> int:
         """
-        Função: check_domination
-        Descrição:
-            Verifica se o carrinho está sendo movimentado por algum time.
-        Parâmetros:
-            players: list - lista com todos os jogadores no jogo
         Retorno: 
             0, quando nenhum time estiver movimentando o carrinho;
             1, quando o time 1 estiver movimentando o carrinho;
