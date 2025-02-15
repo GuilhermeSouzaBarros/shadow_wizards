@@ -192,13 +192,13 @@ class Game:
         self.update_skill_col(delta_time)
         for player in self.players:
             for player_addr in self.server_addr_id:
-                player.hitbox.delta_position(delta_time)
-                if (player.hitbox.position.x <= 0 or player.hitbox.position.y <= 0 or
-                    player.hitbox.position.x >= 25 * 32 or player.hitbox.position.y >= 15 * 32):
-                    #Fail safe if player gets out of map
-                    player.hitbox.position = player.start_pos.copy()
-                    player.angle           = player.start_angle.copy()
                 if self.server_addr_id[player_addr] == player.player_id:
+                    player.hitbox.delta_position(delta_time)
+                    if (player.hitbox.position.x <= 0 or player.hitbox.position.y <= 0 or
+                        player.hitbox.position.x >= 25 * 32 or player.hitbox.position.y >= 15 * 32):
+                        #Fail safe if player gets out of map
+                        player.hitbox.position = player.start_pos.copy()
+                        player.angle           = player.start_angle.copy()
                     if player.is_alive:
                         player.skill.update(player.hitbox.position.copy(), player.angle.copy(), self.players_input[player_addr], self.map, player.team)
                         player.sword.update(player.hitbox.position, player.angle, self.players_input[player_addr])
