@@ -123,6 +123,9 @@ class Game:
             for player_b in self.players:
                 if player_a == player_b or player_a.team == player_b.team or not player_b.is_alive:
                     continue
+
+                if player_b.skill_name == "Shield" and player_b.skill.is_activated:
+                    continue
                 
                 projectiles = ["Gun", "Fireball", "Traps", "Laser"]
                 skill_name = player_a.skill_name
