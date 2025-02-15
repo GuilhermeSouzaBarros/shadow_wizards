@@ -53,6 +53,7 @@ class Fireball(Skill):
 
     def deactivate(self) -> None:
         self.is_activated = False
+        self.number_of_activated = 0
         for fire_ball in self.hitboxes:
             fire_ball.deactivate()
 

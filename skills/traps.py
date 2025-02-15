@@ -115,6 +115,7 @@ class Traps(Skill):
 
     def deactivate(self) -> None:
         self.is_activated = False
+        self.number_of_activated = 0
         for trap in self.hitboxes:
             trap.deactivate()
 

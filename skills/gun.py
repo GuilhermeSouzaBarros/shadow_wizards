@@ -54,6 +54,7 @@ class Gun(Skill):
 
     def deactivate(self) -> None:
         self.is_activated = False
+        self.number_of_activated = 0
         for bullet in self.hitboxes:
             bullet.deactivate()
 
