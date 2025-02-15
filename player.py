@@ -143,7 +143,7 @@ class Player:
         self.has_flag = False
         self.start_time = get_time()
         self.hitbox.speed = Vector2(0, 0)
-
+        self.skill.deactivate()
         self.sword.deactivate()
 
     def draw(self, map_offset:Vector2, scaler:float, hitbox:bool) -> None:
