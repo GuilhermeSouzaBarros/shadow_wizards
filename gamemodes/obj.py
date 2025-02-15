@@ -17,24 +17,17 @@ class Objective(ABC):
         self.pts_gain = pts_gain # Acréscimo de pontos do time com a conquista do objetivo
 
     def update_region(self) -> None:
-        """
-        Função: update_region
-        Descrição:
-            Atualiza a região do objetivo.
-        Parâmetros:
-            Nenhum.
-        Retorno:
-            Nenhum
-        """
         position = Vector2(self.tile_size * (self.column + 0.5), self.tile_size * (self.row + 0.5))
         self.hitbox = Circle(position, self.radius)
 
     @abstractmethod
     def encode(self) -> bytes:
+        """ Este método é um método abstrato. """
         raise NotImplementedError
     
     @abstractmethod
     def decode(self, bytes_string:bytes) -> int:
+        """ Este método é um método abstrato. """
         raise NotImplementedError
     
     @abstractmethod

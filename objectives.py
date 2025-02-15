@@ -29,15 +29,7 @@ class Objectives:
         return pointer
 
     def load(self) -> None:
-        """
-        Função: load
-        Descrição:
-            Carrega todos os objetivos de acordo com o modo de jogo determinado pelo map_id.
-        Parâmetros:
-            Nenhum.
-        Retorno:
-            Nenhum.
-        """
+        # Carrega os objetivos do mapa de acordo com o seu ID
         if self.map_id == 2:
             self.load_cart() 
         elif self.map_id == 3:
@@ -47,15 +39,6 @@ class Objectives:
             self.load_domination()
 
     def update(self, players:list, delta_time:float) -> list:
-        """
-        Função: update
-        Descrição:
-            Atualiza a região dos objetivos, calcula e retorna o incremento da pontuação de cada time.
-        Parâmetros:
-            players: list - uma lista com todos os jogadores da partida
-        Retorno:
-            Uma lista com o incremento da pontuação de cada time.
-        """
         final_score_inc = [0, 0]
         for objective_type in self.objectives:
             for objective in self.objectives[objective_type]:
@@ -70,15 +53,6 @@ class Objectives:
         return final_score_inc
 
     def draw(self, map_offset:Vector2, scaler:float, show_hitboxes:bool=False) -> None:
-        """
-        Função: draw
-        Descrição:
-            Desenha todos os objetivos da partida.
-        Parâmetros:
-            Nenhum.
-        Retorno:
-            Nenhum:
-        """
         for objective_type in self.objectives:
             for objective in self.objectives[objective_type]:
                 objective.draw(map_offset, scaler, show_hitboxes)
@@ -97,37 +71,22 @@ class Objectives:
         self.objectives.update({'carts': [Cart(path, path_start, region_radius, self.tile_size)]})
 
     def load_flags(self) -> None:
-        """
-        Função: load_flag
-        Descrição:
-            Carrega a bandeira e a adiciona à lista de objetivos.
-        Parâmetros:
-            Nenhum.
-        Retorno:
-            Nenhum.
-        """
+        # Carrega a bandeira do time 1
         self.objectives.update({'flags': []})
         column = self.map_objectives['flags']['team_1']['column']
         row = self.map_objectives['flags']['team_1']['row']
         radius = self.map_objectives['flags']['team_1']['radius']
         self.objectives['flags'].append(Flag(self.tile_size, row, column, radius, 1))
 
+        # Carrega a bandeira do time 2
         column = self.map_objectives['flags']['team_2']['column']
         row = self.map_objectives['flags']['team_2']['row']
         radius = self.map_objectives['flags']['team_2']['radius']
         self.objectives['flags'].append(Flag(self.tile_size, row, column, radius, 2))
 
     def load_capture_points(self) -> None:
-        """
-        Função: load_capture_points
-        Descrição:
-            Carrega a área de captura de ambos os times e as adiciona à lista de objetivos.
-        Parâmetros:
-            Nenhum.
-        Retorno:
-            Nenhum.
-        """
         self.objectives.update({'capture_points': []})
+
         # Carrega o ponto de captura do time 1
         column = self.map_objectives['capture_points']['team_1']['column']
         row = self.map_objectives['capture_points']['team_1']['row']
@@ -141,15 +100,6 @@ class Objectives:
         self.objectives['capture_points'].append(CapturePoint(self.tile_size, row, column, radius, 2))
 
     def load_domination(self) -> None:
-        """
-        Função: load_domination
-        Descrição:
-            Carrega a área de dominação e a adiciona à lista de objetivos.
-        Parâmetros:
-            Nenhum.
-        Retorno:
-            Nenhum.
-        """
         column = self.map_objectives['zone']['column']
         row = self.map_objectives['zone']['row']
         radius = self.map_objectives['zone']['radius']
