@@ -121,7 +121,7 @@ class Game:
     def update_skill_player_col(self, delta_time:float) -> None:
         for player_a in self.players:
             for player_b in self.players:
-                if player_a == player_b or player_a.team == player_b.team:
+                if player_a == player_b or player_a.team == player_b.team or not player_b.is_alive:
                     continue
                 
                 projectiles = ["Gun", "Fireball", "Traps", "Laser"]
@@ -211,9 +211,9 @@ class Game:
         while True:
             try:
                 game_state = self.client.get_queue.get_nowait()
+                self.decode_game(game_state[1:])
             except:
                 break
-            self.decode_game(game_state[1:])
 
     def update_frame(self) -> None:
         self.music.update()
