@@ -52,6 +52,10 @@ class Gun(Skill):
                     self.last_activation = get_time()
                     break
 
+    def deactivate(self) -> None:
+        self.is_activated = False
+        for bullet in self.hitboxes:
+            bullet.deactivate()
 
     def update(self, player_pos, angle:Imaginary, player_input:dict, *args) -> None:
         """

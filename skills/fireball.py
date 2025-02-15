@@ -13,7 +13,7 @@ class Fireball(Skill):
         self._cooldown = 3
         self.number_of_bullets = 1
         self.number_of_activated = 0
-        self.speed_multiplier = 0.5
+        self.speed_multiplier = 5
         self.sprite = load_texture("sprites/fireball.png")
         self.sound = load_sound("sounds/fireball.mp3")
         set_sound_volume(self.sound, 0.5)
@@ -50,6 +50,11 @@ class Fireball(Skill):
                     self.number_of_activated += 1
                     self.last_activation = get_time()
                     break
+
+    def deactivate(self) -> None:
+        self.is_activated = False
+        for fire_ball in self.hitboxes:
+            fire_ball.deactivate()
 
     def update(self, player_pos:Vector2, angle:Imaginary, player_input:dict, *args) -> None:
         for bullet in self.hitboxes:

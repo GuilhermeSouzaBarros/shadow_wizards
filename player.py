@@ -44,7 +44,7 @@ class Player:
         self.respawn     = 2
         self.start_time  = 0
         self.angle       = Imaginary(start_angle[0], start_angle[1])
-        self.speed_multiplier = 4.0
+        self.speed_multiplier = 4.6
 
         self.sword = Sword(pos)
         self.skill = self.choose_character(character_id, pos.copy())

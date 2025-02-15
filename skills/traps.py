@@ -113,6 +113,10 @@ class Traps(Skill):
                     self.last_activation = current_time
                     break
 
+    def deactivate(self) -> None:
+        self.is_activated = False
+        for trap in self.hitboxes:
+            trap.deactivate()
 
     def update(self, player_pos:Vector2, angle:Imaginary, player_input:dict, *args) -> None:
         current_time = get_time()

@@ -39,7 +39,7 @@ async def main():
                 while game.tick >= GAME_TICK:
                     game.update_tick(GAME_TICK)
 
-            if game.client:
+            if game.client and not game.finish:
                 game.update_client()
 
             game.update_frame()

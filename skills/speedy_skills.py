@@ -7,9 +7,9 @@ class Dash(Skill):
         no player caso a skill dash seja usada
         """
         super().__init__()
-        self.speed_multiplier = 20.0
-        self._cooldown = 1
-        self.duration = 0.1
+        self.speed_multiplier = 25.0
+        self._cooldown = 1.25
+        self.duration = 0.15
 
     def encode(self) -> bytes:
         return "".encode()
@@ -29,7 +29,7 @@ class Dash(Skill):
 class SuperSpeed(Skill):
     def __init__(self) -> None:
         super().__init__()
-        self.speed_multiplier = 6.0
+        self.speed_multiplier = 7.0
         self.is_activated = True
 
     def encode(self) -> bytes:
