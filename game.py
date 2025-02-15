@@ -191,14 +191,13 @@ class Game:
         self.update_skill_player_col(delta_time)
         self.update_skill_col(delta_time)
         for player in self.players:
-            player.hitbox.delta_position(delta_time)
-            if (player.hitbox.position.x <= 0 or player.hitbox.position.y <= 0 or
-                player.hitbox.position.x >= 25 * 32 or player.hitbox.position.y >= 15 * 32):
-                #Fail safe if player gets out of map
-                player.hitbox.position = player.start_pos.copy()
-                player.angle           = player.start_angle.copy()
-
             for player_addr in self.server_addr_id:
+                player.hitbox.delta_position(delta_time)
+                if (player.hitbox.position.x <= 0 or player.hitbox.position.y <= 0 or
+                    player.hitbox.position.x >= 25 * 32 or player.hitbox.position.y >= 15 * 32):
+                    #Fail safe if player gets out of map
+                    player.hitbox.position = player.start_pos.copy()
+                    player.angle           = player.start_angle.copy()
                 if self.server_addr_id[player_addr] == player.player_id:
                     if player.is_alive:
                         player.skill.update(player.hitbox.position.copy(), player.angle.copy(), self.players_input[player_addr], self.map, player.team)
@@ -233,18 +232,11 @@ class Game:
         skill_frames = ["Traps", "Fireball"]
         for player in self.players:
             if player.skill_name not in skill_frames:
-                return
+                continue
             for hitbox in player.skill.hitboxes:
                 hitbox.update_time()
 
-        if (is_key_pressed(KEY_ESCAPE) and self.finish):
-            if self.server:
-                self.server.process_get.kill()
-                self.server.process_send.kill()
-            if self.client:
-                self.client.process_get.kill()
-                self.client.process_send.kill()
-            self.end = True
+        self.end = is_key_pressed(KEY_ESCAPE) and self.finish
 
     def draw(self) -> None:
         begin_drawing()

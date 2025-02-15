@@ -29,7 +29,7 @@ class Dash(Skill):
 class SuperSpeed(Skill):
     def __init__(self) -> None:
         super().__init__()
-        self.speed_multiplier = 7.0
+        self.speed_multiplier = 8.0
         self.is_activated = True
 
     def encode(self) -> bytes:

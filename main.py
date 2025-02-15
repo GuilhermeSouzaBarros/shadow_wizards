@@ -13,14 +13,14 @@ async def main():
     
     while not window.close_window:
         menu = Menu(window.size)
-        while not (menu.start_game or window.close_window or menu.close_window):
+        while not (menu.start_game or window.close_window):
             menu.update()
             
             window.update()
             if is_window_resized():
                 window.update_size()
                 menu.update_scale(window.size)
-
+            window.close_window = menu.close_window
             menu.draw()
             await asyncio.sleep(0)
 
