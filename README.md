@@ -3,7 +3,7 @@ O jogo Shadow Wizards consiste em um jogo multijogador de batalha localizado em 
 
 As partidas do jogo são realizadas em um servidor local (LAN), com suporte de até 4 jogadores simultâneos. Para organizar uma partida, os jogadores devem estar na mesma rede de internet e na mesma versão do jogo. 
 
-Cada partida tem duração de 3 minutos, e o vencedor é aquele que conseguir a maior quantidade de pontos de acordo com os objetivos do modo de jogo selecionado.
+Cada partida tem duração de no máximo 3 minutos, e o vencedor é aquele que conseguir a maior quantidade de pontos de acordo com os objetivos do modo de jogo selecionado.
 
 ## Mapas do Jogo
 ### Mapa 1 - Mata-Mata
@@ -19,10 +19,14 @@ No mapa Capture the Flag, os jogadores são divididos em dois times, cada um em 
 
 O time vencedor é aquele que conseguir capturar o maior número de bandeiras adversárias.
 
+Caso um dos times leve 4 bandeiras adversárias para sua área de captura antes que o cronômetro chegue a 0, a partida é encerrada e o time é declarado vencedor.
+
 ### Mapa 4 - Domination 
 No mapa de Domination, os jogadores são divididos em dois times, e o grande objetivo do modo de jogo é dominar pelo máximo de tempo a área de dominação, localizada no centro do mapa. 
 
 Para dominar a região é preciso que somente jogadores do próprio time estejam ocupando a área. Caso algum jogador adversário também ocupe a área, a zona é declarada como não tomada.
+
+Caso um dos times consiga 100 pontos antes do fim do cronômetro, a partida é encerrada com o time responsável como vencedor.
 
 ## Manual de Execução
 ### Instalação dos Requerimentos do Jogo
@@ -59,6 +63,7 @@ Para iniciar uma partida, primeiro o host do servidor deverá seguir os seguinte
 - Dentro da página de "Host Lobby", o jogador responsável pelo servidor tem a possibilidade de selecionar o modo de jogo desejado para a partida clicando em um dos botões à direita. Caso o jogador não selecione manualmente nenhum modo de jogo, a partida acontecerá em um mapa aleatório.
 - Na interface de "Join Lobby" cada um dos players do jogo têm a opção de selecionar o personagem desejado para a partida, clicando no ícone de um deles, posicionados à direta da tela. A habilidade de cada personagem é descrita do lado esquerdo da tela.
 - É possível organizar uma partida com mais de um jogador localmente, basta executar o código do jogo outras vezes em terminais separados e seguir os mesmos passos para executar em LAN, porém não será possível controlar jogadores de janelas diferentes da selecionada.
+- Iniciar a partida com somente um jogador é possível, porém não é garantido que todas as funcionalidades funcionem como o esperado.
 
 ## Comandos do Jogo
 | Tecla | Ação |
